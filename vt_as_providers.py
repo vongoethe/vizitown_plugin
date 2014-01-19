@@ -1,5 +1,4 @@
 from vt_utils_singleton import Singleton
-from vt_utils_converter import X3DTranslateToThreeJs
 from PyQt4.QtCore import *
 from PyQt4.QtSql import *
 
@@ -47,7 +46,6 @@ class PostgisProvider:
         self.column = column
         self.srid = srid
         self.geometry = ""
-        self.translator = X3DTranslateToThreeJs()
 
         if self.db.open():
             print "Connection established to database %s -> %s" % (host, dbname)
@@ -56,7 +54,7 @@ class PostgisProvider:
             getGeometry = "SELECT GeometryType({column_}) FROM {table_} LIMIT 1".format(column_=column, table_=table)
             query.exec_(getGeometry)
             query.next()
-            self.geometry = query.value(0).toString()
+            self.geometry = query.value(0)
         else:
             raise Exception('Connection to database cannot be established')
 
