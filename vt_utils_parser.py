@@ -1,14 +1,18 @@
 import re
-import vt_as_providers
 
 
-def vectorToPostgisProvider(source):
-    print source
-    m = re.match(r"dbname='(?P<dbname>.*?)' host=(?P<host>\d+.\d+.\d+.\d+) port=(?P<port>\d+) user='(?P<user>.*?)' password='(?P<password>.*?)' .* srid=(?P<srid>\d+) .* table=(?P<table>\S+) \((?P<column>.*?)\)", source)
-    return vt_as_providers.PostgisProvider(m.group('host'),
-                                           m.group('dbname'),
-                                           m.group('user'),
-                                           m.group('password'),
-                                           m.group('srid'),
-                                           m.group('table'),
-                                           m.group('column'))
+def parseVector(source):
+    m = re.match(r"""
+    \s*dbname='(?P<dbname>.*?)'\s*host=(?P<host>\d+.\d+.\d+.\d+)\s*port=(?P<port>\d+)
+    \s*user='(?P<user>.*?)'\s*password='(?P<password>.*?)'\s*.*
+    \s*srid=(?P<srid>\d+)\s*.*\s*table=(?P<table>\S+)\s*\((?P<column>.*?)\)""", source, re.X)
+    return {
+        'dbname': m.group('dbname'),
+        'host': m.group('host'),
+        'port': m.group('port'),
+        'user': m.group('user'),
+        'password': m.group('password'),
+        'srid': m.group('srid'),
+        'table': m.group('table'),
+        'column': m.group('column'),
+    }
