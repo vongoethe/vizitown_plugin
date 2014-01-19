@@ -127,11 +127,23 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.cb_tuile.setCurrentIndex(1)
 
     def checkIsNumber(self, port):
-            return port.isdigit() and int(port) < 65536 and int(port) > 1024
+        return port.isdigit() and int(port) < 65536 and int(port) > 1024
+
+    def getSizeTile(self, index):
+        if index==0:
+            return 256
+        if index==1:
+            return 512
+        if index==2:
+            return 1024
+        if index==3:
+            return 2048
+        if index==4:
+            return 4096
 
     ## Generate and launch the rendering of the 3D scene
     def on_btnGenerate_released(self):
-        sizeTuile = self.cb_tuile.currentText()
+        sizeTuile = self.getSizeTile(self.cb_tuile.currentIndex())
         if self.checkIsNumber(self.Numero_Port.text()):
             port = self.Numero_Port.text()
         else:
