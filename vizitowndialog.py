@@ -68,6 +68,16 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.listWidget_Left.clear()
         self.listWidget_Right.clear()
 
+    def getGeometry(self, layer):
+        if layer.wkbType() == QGis.WKBPoint:
+            return 'point'
+        if layer.wkbType() == QGis.WKBPolygon:
+            return 'Polygon'
+        if layer.wkbType() == QGis.WKBLineString:
+            return 'LineString'
+        if layer.wkbType() == QGis.WKBMultiPolygon:
+            return 'Multipolygon'
+
     def isDem(self, layer):
         return (layer.type() == QgsMapLayer.RasterLayer and layer.providerType() == "gdal" and layer.bandCount() == 1) and not layer.source().startswith('dbname')
 
