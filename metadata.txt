@@ -13,8 +13,8 @@ name=ViziTown
 qgisMinimumVersion=2.0
 description=ViziTown
 version=0.1
-author=Cubee
-email=lp_vizitown@googlegroups.com
+author=Cubee(ESIPE)
+email=vizitown@gmail.com
 
 # end of mandatory metadata
 
@@ -29,7 +29,7 @@ tags=
 homepage=
 tracker=
 repository=
-icon=icon.png
+icon=vt.png
 # experimental flag
 experimental=True
 

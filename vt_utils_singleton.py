@@ -18,13 +18,12 @@ class Singleton:
     def __init__(self, decorated):
         self._decorated = decorated
 
+    ## instance
+    # Returns the singleton instance. Upon its first call, it creates a
+    # new instance of the decorated class and calls its `__init__` method.
+    # On all subsequent calls, the already created instance is returned.
     def instance(self):
-        """
-        Returns the singleton instance. Upon its first call, it creates a
-        new instance of the decorated class and calls its `__init__` method.
-        On all subsequent calls, the already created instance is returned.
 
-        """
         try:
             return self._instance
         except AttributeError:

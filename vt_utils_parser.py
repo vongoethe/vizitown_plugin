@@ -1,6 +1,6 @@
 import re
 
-
+## Parse a string
 def parseVector(source):
     m = re.match(r"""
     \s*dbname='(?P<dbname>.*?)'\s*host=(?P<host>\d+.\d+.\d+.\d+)\s*port=(?P<port>\d+)

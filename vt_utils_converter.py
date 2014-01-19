@@ -1,6 +1,6 @@
 import re
 
-
+## Converts an X3D formats in a json
 def translateX3DToThreeJs(message):
 
     deb = "<IndexedFaceSet  coordIndex='"

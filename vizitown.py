@@ -6,8 +6,8 @@
  2D to 3D
                               -------------------
         begin                : 2014-01-09
-        copyright            : (C) 2014 by Cubee
-        email                : lp_vizitown@googlegroups.com
+        copyright            : (C) 2014 by Cubee(ESIPE)
+        email                : vizitown@gmail.com
  ***************************************************************************/
 
 /***************************************************************************
@@ -81,7 +81,6 @@ class Vizitown:
         dialog = self.dlg
         dialog.initExtent(self.iface.mapCanvas().extent())
         dialog.loadLayers()
-        # dialog.getExtent(self.iface.mapCanvas())
         QObject.connect(self.iface.mapCanvas(), SIGNAL("extentsChanged()"), self.info)
         # show the dialog
         self.dlg.show()

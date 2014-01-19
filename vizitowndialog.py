@@ -72,6 +72,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.listWidget_Left.clear()
         self.listWidget_Right.clear()
 
+    ## Get the geometry of the layer
     def getGeometry(self, layer):
         if layer.wkbType() == QGis.WKBPoint:
             return 'point'
@@ -82,7 +83,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         if layer.wkbType() == QGis.WKBMultiPolygon:
             return 'Multipolygon'
 
-    ## Return True if the layer is a DEM ?? which come from a database
+    ## Return True if the layer is a DEM which come from a database
     def isDem(self, layer):
         return (layer.type() == QgsMapLayer.RasterLayer and
                 layer.providerType() == "gdal" and
@@ -126,9 +127,9 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         print self.checkIsNumber(self.Numero_Port.text())
 
     def checkIsNumber(self, port):
-        if port.isdigit():
-            print port + '<65536'
-            return port<65536
+            return int(port) < 65536 and int(port) > 1024
+        #else:
+         #   QMessageBox.information(self, 'Warning',"The port isn't a number",QMessageBox.Ok)
 
     ## Generate and launch the rendering of the 3D scene
     def on_btnGenerate_released(self):
@@ -145,12 +146,14 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.appServer = VTAppServer(self)
             self.appServer.start()
             self.btnGenerate.setText("Server is running")
-            self.openWebBrowser()
+            self.openWebBrowser(port)
             self.appServerRunning = True
 
+    ## Open a web browser
     def openWebBrowser(self, port):
-        url = 'file:///' + os.path.join(os.path.dirname(os.path.abspath(__file__)), 'index.php') + '?port=' + port
-        webbrowser.open(url)
+       # url = 'file:///' + os.path.join(os.path.dirname(os.path.abspath(__file__)), 'index.php') + '?port=' + port
+        url = 'file:///' + os.path.join(os.path.dirname(os.path.abspath(__file__)), 'index.html') 
+        webbrowser.open(url,2)
 
     ## Create all providers with the selected layers in the GUI
     def createProviders(self):
