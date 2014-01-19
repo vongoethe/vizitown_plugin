@@ -2,6 +2,17 @@ import json
 import cyclone.websocket
 from vt_utils_converter import X3DTranslateToThreeJs
 from vt_as_providers import ProviderManager
+from vt_as_sync import SyncManager
+
+
+## A handler give initial parameters to the browser
+class InitHandler(cyclone.web.RequestHandler):
+    def initialize(self, initParam):
+        self.initParam = initParam
+
+    ## Handle GET HTTP
+    def get(self):
+        self.write(json.dumps(self.initParam, separators=(',', ':')))
 
 
 ## Data Handler
@@ -41,6 +52,7 @@ class SyncHandler(cyclone.websocket.WebSocketHandler):
     ## Method call when the websocket is opened
     def connectionMade(self):
         print "WebSocket sync opened"
+        SyncManager.instance().addListener(self)
 
     ## Method call when a message is received
     def messageReceived(self, message):

@@ -49,7 +49,7 @@ class X3DTranslateToThreeJs:
 
 }"""
 
-    ## parse method to manage the process in the class and 
+    ## parse method to manage the process in the class and
     #  use the appropriate process in function of the data
     #  @param message to stock the data
     #  @param geometry to check the type of geometry

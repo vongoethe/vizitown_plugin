@@ -1,16 +1,18 @@
-## Singleton Class define a pattern to limit the number of instance 
+
+
+## Singleton Class define a pattern to limit the number of instance
 #  in run at once.
 #  A non-thread-safe helper class to ease implementing singletons.
 #  This should be used as a decorator -- not a metaclass -- to the
 #  class that should be a singleton.
-#  
+#
 #  The decorated class can define one `__init__` function that
 #  takes only the `self` argument. Other than that, there are
 #  no restrictions that apply to the decorated class.
-#  
+#
 #  To get the singleton instance, use the `Instance` method. Trying
 #  to use `__call__` will result in a `TypeError` being raised.
-#  
+#
 #  Limitations: The decorated class cannot be inherited from.
 class Singleton:
 
@@ -35,7 +37,7 @@ class Singleton:
     def __call__(self):
         raise TypeError('Singletons must be accessed through `Instance()`.')
 
-    ## Instance check 
+    ## Instance check
     #  @param inst an instance to check
     #  @return if an instance already exists
     def __instancecheck__(self, inst):

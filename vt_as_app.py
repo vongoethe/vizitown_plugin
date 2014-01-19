@@ -37,13 +37,14 @@ class VTAppServer(QObject):
 
     ## Constructor.
     #  @param parent  the QObject parent
-    def __init__(self, parent):
+    def __init__(self, parent, initParam):
         QObject.__init__(self, parent)
         self.rollbackImporter = None
         self.appThread = None
         self.timer = None
         self.saveStdout = sys.stdout
         self.saveStderr = sys.stderr
+        self.initParam = initParam
 
     ## Start the application server
     def start(self):
@@ -53,7 +54,7 @@ class VTAppServer(QObject):
         self.rollbackImporter = RollbackImporter()
         from cyclone_thread import CycloneThread
 
-        self.appThread = CycloneThread(self.parent())
+        self.appThread = CycloneThread(self.parent(), self.initParam)
 
         # Use this signal from the thread to indicate the thread exited
         QObject.connect(self.appThread, SIGNAL("runFinished(PyQt_PyObject)"),

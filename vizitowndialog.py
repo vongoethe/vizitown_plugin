@@ -107,7 +107,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             if self.isDem(layer):
                 self.cb_MNT.addItem(layer.name(), id)
             if self.isVector(layer):
-                name = layer.name() + ' ' + re.search("(\(.*\)+)",layer.source()).group(0)
+                name = layer.name() + ' ' + re.search("(\(.*\)+)", layer.source()).group(0)
                 item = QtGui.QListWidgetItem(name, self.listWidget_Left)
                 item.setData(QtCore.Qt.UserRole, layer)
             if self.isRaster(layer):
@@ -156,7 +156,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.appServerRunning = False
         else:
             self.createProviders()
-            self.appServer = VTAppServer(self)
+            initParam = self.getInitParam()
+            self.appServer = VTAppServer(self, initParam)
             self.appServer.start()
             self.btnGenerate.setText("Server is running")
             self.openWebBrowser(port)
@@ -174,3 +175,17 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             d = vt_utils_parser.parseVector(vectorLayer.source())
             provider = PostgisProvider(d['host'], d['dbname'], d['user'], d['password'], d['srid'], d['table'], d['column'])
             ProviderManager.instance().addVectorProvider(provider)
+
+    def getInitParam(self):
+        return {
+            'tileSize': None,
+            'extent': None,
+            'images': ['img_name_1'],
+            'rootImgUrl': None,
+            'extent': {
+                'Xmin': None,
+                'Ymin': None,
+                'Xmax': None,
+                'Ymax': None,
+            }
+        }
