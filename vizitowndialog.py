@@ -75,7 +75,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     ## Get the geometry of the layer
     def getGeometry(self, layer):
         if layer.wkbType() == QGis.WKBPoint:
-            return 'point'
+            return 'Point'
         if layer.wkbType() == QGis.WKBPolygon:
             return 'Polygon'
         if layer.wkbType() == QGis.WKBLineString:
@@ -105,6 +105,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         layerListIems = QgsMapLayerRegistry().instance().mapLayers().items()
         for id, layer in layerListIems:
             if self.isDem(layer):
+               # item = QtGui.QAbstractItemModel(self.cb_MNT)
+               # item.setData(id, layer, QtCore.Qt.UserRole)
                 self.cb_MNT.addItem(layer.name(), id)
             if self.isVector(layer):
                 name = layer.name() + ' ' + re.search("(\(.*\)+)", layer.source()).group(0)
@@ -126,10 +128,16 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.Numero_Port.setText("8888")
         self.cb_tuile.setCurrentIndex(1)
 
-    def checkIsNumber(self, port):
-        return port.isdigit() and int(port) < 65536 and int(port) > 1024
+    ## Get the port number. If the port isn't good this function return the value by default, 8888
+    def getPort(self):
+        if self.Numero_Port.text().isdigit() and int(self.Numero_Port.text()) < 65536 and int(self.Numero_Port.text()) > 1024 :
+            return self.Numero_Port.text()
+        else:
+            return 8888
 
-    def getSizeTile(self, index):
+    ## Get the size tile
+    def getSizeTile(self):
+        index = self.cb_tuile.currentIndex()
         if index==0:
             return 256
         if index==1:
@@ -143,12 +151,6 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
     ## Generate and launch the rendering of the 3D scene
     def on_btnGenerate_released(self):
-        sizeTuile = self.getSizeTile(self.cb_tuile.currentIndex())
-        if self.checkIsNumber(self.Numero_Port.text()):
-            port = self.Numero_Port.text()
-        else:
-            port = 8888
-
         if self.appServerRunning:
             self.btnGenerate.setText("Server is stopping")
             self.appServer.stop()
@@ -176,16 +178,22 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             provider = PostgisProvider(d['host'], d['dbname'], d['user'], d['password'], d['srid'], d['table'], d['column'])
             ProviderManager.instance().addVectorProvider(provider)
 
+    #def createRasterProviders(self):
+        #dem = RasterProvider(name, extent, srid, source, httpRessource)
+        #ProviderManager.instance().dem = dem
+        #texture = RasterProvider(name, extent, srid, source, httpRessource)
+        #ProviderManager.instance().raster = texture
+
     def getInitParam(self):
         return {
-            'tileSize': None,
-            'extent': None,
+            'tileSize': self.getSizeTile(),
             'images': ['img_name_1'],
-            'rootImgUrl': None,
+            'rootImgUrl': "http://localhost:" + self.getPort() + "/rasters",
             'extent': {
-                'Xmin': None,
-                'Ymin': None,
-                'Xmax': None,
-                'Ymax': None,
-            }
+                'Xmin': self.Xmin.setText("%.4f" % extent.xMinimum()),
+                'Ymin': self.Ymin.setText("%.4f" % extent.yMinimum()),
+                'Xmax': self.Xmax.setText("%.4f" % extent.xMaximum()),
+                'Ymax': self.Ymax.setText("%.4f" % extent.yMaximum()),
+            },
+            'port' : self.getPort()
         }
