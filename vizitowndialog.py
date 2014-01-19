@@ -79,10 +79,14 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             return 'Multipolygon'
 
     def isDem(self, layer):
-        return (layer.type() == QgsMapLayer.RasterLayer and layer.providerType() == "gdal" and layer.bandCount() == 1) and not layer.source().startswith('dbname')
+        return (layer.type() == QgsMapLayer.RasterLayer and
+                layer.providerType() == "gdal" and
+                layer.bandCount() == 1) and not layer.source().startswith('dbname')
 
     def isRaster(self, layer):
-        return (layer.type() == QgsMapLayer.RasterLayer and layer.providerType() == "gdal" and layer.bandCount() >= 3) and not layer.source().startswith('dbname')
+        return (layer.type() == QgsMapLayer.RasterLayer and
+                layer.providerType() == "gdal" and
+                layer.bandCount() >= 3) and not layer.source().startswith('dbname')
 
     def isVector(self, layer):
         return (layer.type() == QgsMapLayer.VectorLayer) and layer.source().startswith('dbname')
@@ -110,11 +114,20 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
     # Set the tab advanced option by default
     def on_but_defaut_released(self):
-        self.Numero_Port.setText("8888")
-        self.cb_tuile.setCurrentIndex(1)
+        #self.Numero_Port.setText("8888")
+        #self.cb_tuile.setCurrentIndex(1)
+        print self.checkIsNumber(self.Numero_Port.text())
+
+    def checkIsNumber(self, port):
+        if port.isdigit():
+            print port + '<65536'
+            return port<65536
 
     # Run the 3D scene
     def on_btnGenerate_released(self):
+        sizeTuile = self.cb_tuile.currentText()
+        port = self.Numero_Port.text()
+
         if self.appServerRunning:
             self.btnGenerate.setText("Server is stopping")
             self.appServer.stop()
@@ -128,8 +141,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.openWebBrowser()
             self.appServerRunning = True
 
-    def openWebBrowser(self):
-        url = 'http://localhost:8888'
+    def openWebBrowser(self, port):
+        url = 'file:///' + os.path.join(os.path.dirname(os.path.abspath(__file__)), 'index.php') + '?port=' + port
         webbrowser.open(url)
 
     def createProviders(self):

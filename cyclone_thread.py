@@ -8,12 +8,16 @@ from vt_test_handlers import PingHandler, EchoHandler
 from vt_as_handlers import DataHandler, SyncHandler
 
 
-class MainHandler(cyclone.web.RequestHandler):
-    def get(self):
-        self.write("Hello, world")
-
-
+## CycloneThread
+#  A specific thread to run cyclone in it.
+#  It use the QThread implementation.
 class CycloneThread(QThread):
+
+    ## Constructor
+    #  @param parentObject the parent QObject
+    #  @param debug if True add two default handlers,
+    #  '/test/echo' a echo server in websocket and
+    #  '/test/ping' handle HTTP GET request and return "pong"
     def __init__(self, parentObject, debug=True):
         QThread.__init__(self, parentObject.thread())
         self.debug = debug
@@ -28,6 +32,7 @@ class CycloneThread(QThread):
             handlers.append((r'/test/ping', PingHandler))
         run(host="127.0.0.1", port=8888, more_handlers=handlers)
 
+    ## Stop the cyclone server
     def stop(self):
         try:
             unrun()
