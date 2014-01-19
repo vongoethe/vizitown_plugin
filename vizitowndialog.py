@@ -122,19 +122,19 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
     ## Set the tab advanced option by default
     def on_but_defaut_released(self):
-        #self.Numero_Port.setText("8888")
-        #self.cb_tuile.setCurrentIndex(1)
-        print self.checkIsNumber(self.Numero_Port.text())
+        self.Numero_Port.setText("8888")
+        self.cb_tuile.setCurrentIndex(1)
 
     def checkIsNumber(self, port):
-            return int(port) < 65536 and int(port) > 1024
-        #else:
-         #   QMessageBox.information(self, 'Warning',"The port isn't a number",QMessageBox.Ok)
+            return port.isdigit() and int(port) < 65536 and int(port) > 1024
 
     ## Generate and launch the rendering of the 3D scene
     def on_btnGenerate_released(self):
         sizeTuile = self.cb_tuile.currentText()
-        port = self.Numero_Port.text()
+        if self.checkIsNumber(self.Numero_Port.text()):
+            port = self.Numero_Port.text()
+        else:
+            port = 8888
 
         if self.appServerRunning:
             self.btnGenerate.setText("Server is stopping")
@@ -151,7 +151,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
     ## Open a web browser
     def openWebBrowser(self, port):
-        url = 'http://localhost:' + port 
+        url = 'http://localhost:' + str(port)
         webbrowser.open(url)
 
     ## Create all providers with the selected layers in the GUI
