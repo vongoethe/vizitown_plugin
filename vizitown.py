@@ -26,12 +26,14 @@ import subprocess
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
+from qgis.gui import *
+
 # Initialize Qt resources from file resources.py
 import resources_rc
 # Import the code for the dialog
 import vt_as_app
 from vizitowndialog import VizitownDialog
-import vt_utils_extent
+
 
 
 class Vizitown:
@@ -69,11 +71,17 @@ class Vizitown:
         self.iface.removeToolBarIcon(self.action)
         # run method that performs all the real work
 
-    def run(self):
+    def info(self):
+        xMin = self.iface.mapCanvas().extent().xMinimum()
+        yMin = self.iface.mapCanvas().extent().yMinimum()
+        xMax = self.iface.mapCanvas().extent().xMaximum()
+        yMax = self.iface.mapCanvas().extent().yMaximum()
+
+    def run(self): 
         dialog = self.dlg
         dialog.initExtent(self.iface.mapCanvas().extent())
         dialog.loadLayers()
+        # dialog.getExtent(self.iface.mapCanvas())
+        QObject.connect(self.iface.mapCanvas(), SIGNAL("extentsChanged()"), self.info)
         # show the dialog
         self.dlg.show()
-        tool = vt_utils_extent.extent(self.iface.mapCanvas())
-        self.iface.mapCanvas().setMapTool(tool)

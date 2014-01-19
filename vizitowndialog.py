@@ -31,6 +31,7 @@ from qgis.gui import *
 import vt_utils_parser
 from vt_as_app import VTAppServer
 from vt_as_providers import ProviderManager, PostgisProvider
+import vt_utils_extent
 
 
 class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
