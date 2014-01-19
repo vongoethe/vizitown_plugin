@@ -84,3 +84,6 @@ class Vizitown:
 
         # show the dialog
         self.dlg.show()
+
+    def canvasReleaseEvent(self, event):
+        print 'dans vizitown.py'

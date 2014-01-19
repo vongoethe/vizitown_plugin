@@ -14,7 +14,7 @@ class extent(QgsMapTool):
         yMin = self.canvas.extent().yMinimum()
         xMax = self.canvas.extent().xMaximum()
         yMax = self.canvas.extent().yMaximum()
-	print xMin
+        print xMin
         print yMin
         print xMax
         print yMax
