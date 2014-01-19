@@ -1,4 +1,5 @@
 from vt_utils_singleton import Singleton
+from PyQt4.QtCore import *
 from PyQt4.QtSql import *
 
 
@@ -27,7 +28,6 @@ class PostgisProvider:
         self.table = table
         self.column = column
         self.srid = srid
-        print self
 
         if self.db.open():
             print "Connection established to database %s -> %s" % (host, dbname)
@@ -36,35 +36,24 @@ class PostgisProvider:
 
     def requestTile(self, Xmin, Ymin, Xmax, Ymax):
         query = QSqlQuery(self.db)
-        query.prepare("""
-            SELECT ST_AsGeoJSON(:column)
-            FROM :table
-            WHERE ST_Intersects(geom, ST_GeomFromText(
-                'POLYGON((
-                    :Xmin :Ymin,
-                    :Xmax :Ymin,
-                    :Xmax :Ymax,
-                    :Xmin :Ymax,
-                    :Xmin :Ymin))',
-                :srid)
-            );
-        """)
-        query.bindValue(":column", self.column)
-        query.bindValue(":table", self.table)
-        query.bindValue(":Xmin", Xmin)
-        query.bindValue(":Ymin", Ymin)
-        query.bindValue(":Xmax", Xmax)
-        query.bindValue(":Ymax", Ymax)
-        query.bindValue(":srid", self.srid)
-        query.exec_()
+        polygon = "POLYGON(({Xmin_} {Ymin_}, {Xmax_} {Ymin_}, {Xmax_} {Ymax_}, {Xmin_} {Ymax_}, {Xmin_} {Ymin_}))"
+            .format(Xmin_=Xmin, Xmax_=Xmax, Ymin_=Ymin, Ymax_=Ymax) 
+        q = "SELECT ST_AsGeoJSON({column_}) FROM {table_} WHERE ST_Intersects(geom, ST_GeomFromText('{polygon_}', {srid_}))"
+            .format(column_=self.column, table_=self.table, polygon_= polygon, srid_=self.srid)
+
+        if not query.exec_(q):
+            print query.lastQuery()
+            print query.lastError().text()
+            raise Exception('DB request failed')
         result = []
         while query.next():
+            print query
             result.append(query.value(0))
         return result
 
 
 class RasterProvider:
-    def __init__(self, name, exent, srid, source, httpRessource):
+    def __init__(self, name, extent, srid, source, httpRessource):
         self.name = name
         self.extent = extent
         self.srid = srid
