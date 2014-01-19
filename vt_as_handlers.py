@@ -1,4 +1,3 @@
-import json
 import cyclone.websocket
 import vt_as_providers
 
@@ -16,8 +15,14 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
     #  @param message in JSON format like:
     #  '{"Xmin": 0, "Ymin": 0, "Xmax": 50, "Ymax": 50}'
     def messageReceived(self, message):
-        result = providers.ProviderManager.Instance().requestTile(*json.loads(message))
-        self.sendMessage(json.dumps(result, separators=(',', ':')))
+        vectors = providers.ProviderManager.Instance().requestTile(*json.loads(message))
+        translator = X3DTranslateToThreeJs()
+        for v in vectors:
+            ## TODO: Maybe make a buffer
+            while v['it'].next():
+                result = str(v['it'].value(0).toString())
+                json_ = X3DTranslateToThreeJs().parse(result, v['geom'])
+                self.sendMessage(json_)
 
     ## Method call when the websocket is closed
     def connectionLost(self):

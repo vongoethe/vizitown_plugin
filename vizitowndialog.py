@@ -31,7 +31,6 @@ from qgis.gui import *
 import vt_utils_parser
 from vt_as_app import VTAppServer
 from vt_as_providers import ProviderManager, PostgisProvider
-import vt_utils_extent
 
 
 ## Vizitown dialog in QGIS GUI
@@ -83,7 +82,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         if layer.wkbType() == QGis.WKBMultiPolygon:
             return 'Multipolygon'
 
-    ## Return True if the layer is a DEM which come from a database
+    ## Return True if the layer is a Data Elevation Model which come from a database
     def isDem(self, layer):
         return (layer.type() == QgsMapLayer.RasterLayer and
                 layer.providerType() == "gdal" and
@@ -158,6 +157,6 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     def createProviders(self):
         for i in range(self.listWidget_Right.count()):
             vectorLayer = self.listWidget_Right.item(i).data(QtCore.Qt.UserRole)
-            d = vt_utils_parser.vectorToPostgisProvider(vectorLayer.source())
-            provider = PostgisProviderd(d['host'], d['dbname'], d['user'], d['password'], d['srid'], d['table'], d['column'])
-            ProviderManager.instance().addProvider(provider)
+            d = vt_utils_parser.parseVector(vectorLayer.source())
+            provider = PostgisProvider(d['host'], d['dbname'], d['user'], d['password'], d['srid'], d['table'], d['column'])
+            ProviderManager.instance().addVectorProvider(provider)

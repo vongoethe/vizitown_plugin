@@ -9,17 +9,19 @@ from PyQt4.QtSql import *
 @Singleton
 class ProviderManager:
     def __init__(self):
-        self.providers = []
+        self.vectors = []
+        self.dem = None
+        self.raster = None
 
     ## Add a provider to the manager
     #  @param p the provider to add
-    def addProvider(self, p):
-        self.providers.append(p)
+    def addVectorProvider(self, p):
+        self.vectors.append(p)
 
     ## Request a tile for all his providers
     def requestTile(self, Xmin, Ymin, Xmax, Ymax):
         result = []
-        for p in self.providers:
+        for p in self.vectors:
             result.append(p.requestTile(Xmin, Ymin, Xmax, Ymax))
         return result
 
@@ -81,7 +83,7 @@ class PostgisProvider:
             request = self._request_triangulate(polygon)
 
         else:
-            #Multipoint, multipolygon, others...
+            # Multipoint, multipolygon, others...
             raise Exception('Can\'t request this kind of geometry')
 
         request += intersect
@@ -91,11 +93,7 @@ class PostgisProvider:
             print query.lastError().text()
             raise Exception('DB request failed')
 
-        while query.next():
-            result = str(query.value(0).toString())
-            json = self.translator.parse(result, self.geometry)
-            # TODO SEND json via websocket to browser
-            # Perhaps can add a buffer to send 5 or 10 geometries
+        return {'it': query, 'geom': self.geometry}
 
     def _request_point_line(self, polygon):
         return "SELECT ST_AsX3D(ST_Force3D({column_})) FROM {table_}".format(column_=self.column, table_=self.table)
