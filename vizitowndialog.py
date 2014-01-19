@@ -151,9 +151,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
     ## Open a web browser
     def openWebBrowser(self, port):
-       # url = 'file:///' + os.path.join(os.path.dirname(os.path.abspath(__file__)), 'index.php') + '?port=' + port
-        url = 'file:///' + os.path.join(os.path.dirname(os.path.abspath(__file__)), 'index.html') 
-        webbrowser.open(url,2)
+        url = 'http://localhost:' + port 
+        webbrowser.open(url)
 
     ## Create all providers with the selected layers in the GUI
     def createProviders(self):
