@@ -26,4 +26,6 @@
 from vt_as_providers import ProviderManager, PostgisProvider
 
 pg = PostgisProvider("37.58.147.68", "data", "lecture", "viziRead", "2154", "test", "geom")
-print pg.geometry
+#print pg.geometry
+result = pg.requestTile(0,0, 50,50)
+#print str(result)
