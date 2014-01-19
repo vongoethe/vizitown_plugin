@@ -154,7 +154,7 @@ class translateX3D(unittest.TestCase):
     # POLYHEDRAL
     def test_out_json_polyhedral(self):
         json = self.translator.parse(self.lod1, self.geomPolyh)
-        self.assertEqual(json, self.resultPolyh)
+        self.assertEqual(json, self.resultPolyhgit)
 
     def test_nb_vertice_polyhedral(self):
         json = self.translator.parse(self.lod1, self.geomPolyh)

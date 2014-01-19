@@ -1,4 +1,5 @@
 from vt_utils_singleton import Singleton
+from vt_utils_converter import X3DTranslateToThreeJs
 from PyQt4.QtCore import *
 from PyQt4.QtSql import *
 
@@ -43,35 +44,64 @@ class PostgisProvider:
         self.table = table
         self.column = column
         self.srid = srid
+        self.geometry = ""
+        self.translator = X3DTranslateToThreeJs()
 
         if self.db.open():
             print "Connection established to database %s -> %s" % (host, dbname)
+
+            query = QSqlQuery(self.db)
+            getGeometry = "SELECT GeometryType({column_}) FROM {table_} LIMIT 1".format(column_=column, table_=table)
+            query.exec_(getGeometry)
+            query.next()
+            self.geometry = query.value(0).toString()
         else:
             raise Exception('Connection to database cannot be established')
 
     ## Return all the result contains in the extent in param
     def requestTile(self, Xmin, Ymin, Xmax, Ymax):
         query = QSqlQuery(self.db)
+        request = ""
+
         polygon = """POLYGON(({Xmin_} {Ymin_}, {Xmax_} {Ymin_}, {Xmax_} {Ymax_}, {Xmin_} {Ymax_}, {Xmin_} {Ymin_}))
         """.format(Xmin_=Xmin,
                    Xmax_=Xmax,
                    Ymin_=Ymin,
                    Ymax_=Ymax)
-        q = """SELECT ST_AsGeoJSON({column_}) FROM {table_} WHERE ST_Intersects(geom, ST_GeomFromText('{polygon_}', {srid_}))
-        """.format(column_=self.column,
-                   table_=self.table,
-                   polygon_=polygon,
-                   srid_=self.srid)
 
-        if not query.exec_(q):
+        intersect = " WHERE ST_Intersects(geom, ST_GeomFromText('{polygon_}', {srid_}))".format(polygon_=polygon, srid_=self.srid)
+
+        if (self.geometry == 'POINT' or
+                self.geometry == 'LINESTRING' or
+                self.geometry == 'MULTILINESTRING'):
+            request = self._request_point_line(polygon)
+
+        elif (self.geometry == 'POLYGONE' or
+                self.geometry == 'POLYHEDRALSURFACE'):
+            request = self._request_triangulate(polygon)
+
+        else:
+            #Multipoint, multipolygon, others...
+            raise Exception('Can\'t request this kind of geometry')
+
+        request += intersect
+
+        if not query.exec_(request):
             print query.lastQuery()
             print query.lastError().text()
             raise Exception('DB request failed')
-        result = []
+
         while query.next():
-            print query
-            result.append(query.value(0))
-        return result
+            result = str(query.value(0).toString())
+            json = self.translator.parse(result, self.geometry)
+            # TODO SEND json via websocket to browser
+            # Perhaps can add a buffer to send 5 or 10 geometries
+
+    def _request_point_line(self, polygon):
+        return "SELECT ST_AsX3D(ST_Force3D({column_})) FROM {table_}".format(column_=self.column, table_=self.table)
+
+    def _request_triangulate(self, polygon):
+        return "SELECT ST_AsX3D(ST_Tesselate(ST_Force3D({column_}))) FROM {table_}".format(column_=self.column, table_=self.table)
 
 
 ## Raster provider
