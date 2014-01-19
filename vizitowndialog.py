@@ -22,6 +22,7 @@
 
 import os
 import webbrowser
+import re
 
 from ui_vizitown import Ui_Vizitown
 from PyQt4 import QtCore, QtGui
@@ -106,7 +107,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             if self.isDem(layer):
                 self.cb_MNT.addItem(layer.name(), id)
             if self.isVector(layer):
-                item = QtGui.QListWidgetItem(layer.name(), self.listWidget_Left)
+                name = layer.name() + ' ' + re.search("(\(.*\)+)",layer.source()).group(0)
+                item = QtGui.QListWidgetItem(name, self.listWidget_Left)
                 item.setData(QtCore.Qt.UserRole, layer)
             if self.isRaster(layer):
                 self.cb_Raster.addItem(layer.name(), id)
