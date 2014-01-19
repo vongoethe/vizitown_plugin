@@ -90,16 +90,16 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
                 self.cb_Raster.addItem(layer.name(), id)
 
     # Add vector layer in a right listView
-    def add(self):
+    def on_but_Add_released(self):
         self.listWidget_Right.addItem(self.listWidget_Left.takeItem(self.listWidget_Left.currentRow()))
 
     # Remove vector layer in a right listView
-    def suppr(self):
+    def on_but_Supp_released(self):
         self.listWidget_Left.addItem(self.listWidget_Right.takeItem(self.listWidget_Right.currentRow()))
 
     # Set the tab advanced option by default
-    def defaut(self):
-        self.Numero_Port.setText("1042")
+    def on_but_defaut_released(self):
+        self.Numero_Port.setText("8888")
         self.cb_tuile.setCurrentIndex(1)
 
     # Run the 3D scene

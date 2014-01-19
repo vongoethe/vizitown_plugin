@@ -49,7 +49,6 @@ class Vizitown:
             self.translator.load(localePath)
             if qVersion() > '4.3.3':
                 QCoreApplication.installTranslator(self.translator)
-
         # Create the dialog (after translation) and keep reference
         self.dlg = VizitownDialog()
 
@@ -74,16 +73,7 @@ class Vizitown:
         dialog = self.dlg
         dialog.initExtent(self.iface.mapCanvas().extent())
         dialog.loadLayers()
-        # Action for each button
-        dialog.but_Add.clicked.connect(dialog.add)
-        dialog.but_Supp.clicked.connect(dialog.suppr)
-        dialog.but_defaut.clicked.connect(dialog.defaut)
-
-        tool = vt_utils_extent.extent(self.iface.mapCanvas())
-        self.iface.mapCanvas().setMapTool(tool)
-
         # show the dialog
         self.dlg.show()
-
-    def canvasReleaseEvent(self, event):
-        print 'dans vizitown.py'
+        tool = vt_utils_extent.extent(self.iface.mapCanvas())
+        self.iface.mapCanvas().setMapTool(tool)
