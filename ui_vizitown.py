@@ -167,7 +167,7 @@ class Ui_Vizitown(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Layers), _translate("Vizitown", "Layers", None))
         self.groupBox_4.setTitle(_translate("Vizitown", "Server", None))
         self.label_7.setText(_translate("Vizitown", "Port number", None))
-        self.Numero_Port.setText(_translate("Vizitown", "1042", None))
+        self.Numero_Port.setText(_translate("Vizitown", "8888", None))
         self.groupBox_5.setTitle(_translate("Vizitown", "Scene", None))
         self.label_8.setText(_translate("Vizitown", "Tile size", None))
         self.but_defaut.setText(_translate("Vizitown", "Par defaut", None))

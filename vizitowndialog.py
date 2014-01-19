@@ -26,6 +26,7 @@ import webbrowser
 from ui_vizitown import Ui_Vizitown
 from PyQt4 import QtCore, QtGui
 from qgis.core import *
+from qgis.gui import *
 
 import vt_utils_parser
 from vt_as_app import VTAppServer
@@ -51,21 +52,20 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.Ymin.setText("%.4f" % extent.yMinimum())
         self.Xmax.setText("%.4f" % extent.xMaximum())
         self.Ymax.setText("%.4f" % extent.yMaximum())
+        # Set the values of the taile by default
+        self.cb_tuile.clear()
+        self.cb_tuile.addItem('256 x 256')
+        self.cb_tuile.addItem('512 x 512')
+        self.cb_tuile.addItem('1024 x 1024')
+        self.cb_tuile.addItem('2048 x 2048')
+        self.cb_tuile.addItem('4096 x 4096')
+        self.cb_tuile.setCurrentIndex(1)
 
     def clearListWidget(self):
         self.cb_MNT.clear()
         self.cb_Raster.clear()
         self.listWidget_Left.clear()
         self.listWidget_Right.clear()
-
-	# Set the values of the taile by default
-	def initTile(self):
-		self.cb_tuile.addItem('256 x 256')
-		self.cb_tuile.addItem('512 x 512')
-		self.cb_tuile.addItem('1024 x 1024')
-		self.cb_tuile.addItem('2048 x 2048')
-		self.cb_tuile.addItem('4096 x 4096')
-		self.cb_tuile.setCurrentIndex(1)
 
     def isDem(self, layer):
         return (layer.type() == QgsMapLayer.RasterLayer and layer.providerType() == "gdal" and layer.bandCount() == 1) and not layer.source().startswith('dbname')
@@ -100,8 +100,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     # Set the tab advanced option by default
     def defaut(self):
         self.Numero_Port.setText("1042")
-        self.Haut_Tuile.setText("")
-        self.Larg_Tuile.setText("")
+        self.cb_tuile.setCurrentIndex(1)
 
     # Run the 3D scene
     def on_btnGenerate_released(self):

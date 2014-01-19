@@ -31,6 +31,7 @@ import resources_rc
 # Import the code for the dialog
 import vt_as_app
 from vizitowndialog import VizitownDialog
+import vt_utils_extent
 
 
 class Vizitown:
@@ -77,5 +78,9 @@ class Vizitown:
         dialog.but_Add.clicked.connect(dialog.add)
         dialog.but_Supp.clicked.connect(dialog.suppr)
         dialog.but_defaut.clicked.connect(dialog.defaut)
+
+        tool = vt_utils_extent.extent(self.iface.mapCanvas())
+        self.iface.mapCanvas().setMapTool(tool)
+
         # show the dialog
         self.dlg.show()
