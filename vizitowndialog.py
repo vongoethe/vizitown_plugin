@@ -58,18 +58,23 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.listWidget_Left.clear()
         self.listWidget_Right.clear()
 
+	# Set the values of the taile by default
+	def initTile(self):
+		self.cb_tuile.addItem('256 x 256')
+		self.cb_tuile.addItem('512 x 512')
+		self.cb_tuile.addItem('1024 x 1024')
+		self.cb_tuile.addItem('2048 x 2048')
+		self.cb_tuile.addItem('4096 x 4096')
+		self.cb_tuile.setCurrentIndex(1)
+
     def isDem(self, layer):
-        return (layer.type() == QgsMapLayer.RasterLayer and
-                layer.providerType() == "gdal" and
-                layer.bandCount() == 1)
+        return (layer.type() == QgsMapLayer.RasterLayer and layer.providerType() == "gdal" and layer.bandCount() == 1) and not layer.source().startswith('dbname')
 
     def isRaster(self, layer):
-        return (layer.type() == QgsMapLayer.RasterLayer and
-                layer.providerType() == "gdal" and
-                layer.bandCount() >= 3)
+        return (layer.type() == QgsMapLayer.RasterLayer and layer.providerType() == "gdal" and layer.bandCount() >= 3) and not layer.source().startswith('dbname')
 
     def isVector(self, layer):
-        return (layer.type() == QgsMapLayer.VectorLayer)
+        return (layer.type() == QgsMapLayer.VectorLayer) and layer.source().startswith('dbname')
 
     # Add layer in combobox and listWidget
     def loadLayers(self):
@@ -114,8 +119,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.appServerRunning = True
 
     def openWebBrowser(self):
-        url = 'file:///' + os.path.join(os.path.dirname(os.path.abspath(__file__)), 'index.html')
-        webbrowser.open(url, 2)
+        url = 'http://localhost:8888'
+        webbrowser.open(url)
 
     def createProviders(self):
         for i in range(self.listWidget_Right.count()):
