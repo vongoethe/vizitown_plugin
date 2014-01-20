@@ -66,6 +66,9 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.cb_tuile.addItem('4096 x 4096')
         self.cb_tuile.setCurrentIndex(1)
 
+        self.Numero_Port.setText("8888")
+
+
     ## Reset all widgets
     def clearListWidget(self):
         self.cb_MNT.clear()
