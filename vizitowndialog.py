@@ -51,6 +51,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
     ## Set the default extent
     def initExtent(self, extent):
+        self.extent = extent
         self.Xmin.setText("%.4f" % extent.xMinimum())
         self.Ymin.setText("%.4f" % extent.yMinimum())
         self.Xmax.setText("%.4f" % extent.xMaximum())
@@ -162,7 +163,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.appServer = VTAppServer(self, initParam)
             self.appServer.start()
             self.btnGenerate.setText("Server is running")
-            self.openWebBrowser(port)
+            self.openWebBrowser(self.getPort())
             self.appServerRunning = True
 
     ## Open a web browser
@@ -190,10 +191,10 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             'images': ['img_name_1'],
             'rootImgUrl': "http://localhost:" + self.getPort() + "/rasters",
             'extent': {
-                'Xmin': self.Xmin.setText("%.4f" % extent.xMinimum()),
-                'Ymin': self.Ymin.setText("%.4f" % extent.yMinimum()),
-                'Xmax': self.Xmax.setText("%.4f" % extent.xMaximum()),
-                'Ymax': self.Ymax.setText("%.4f" % extent.yMaximum()),
+                'Xmin': self.Xmin.setText("%.4f" % self.extent.xMinimum()),
+                'Ymin': self.Ymin.setText("%.4f" % self.extent.yMinimum()),
+                'Xmax': self.Xmax.setText("%.4f" % self.extent.xMaximum()),
+                'Ymax': self.Ymax.setText("%.4f" % self.extent.yMaximum()),
             },
             'port' : self.getPort()
         }
