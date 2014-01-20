@@ -57,6 +57,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.Xmax.setText("%.4f" % extent.xMaximum())
         self.Ymax.setText("%.4f" % extent.yMaximum())
 
+    ## Set the the of the combobox
+    def initComboBox(self):
         ## Set the values of the taile by default
         self.cb_tuile.clear()
         self.cb_tuile.addItem('256 x 256')
@@ -68,6 +70,14 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
         self.Numero_Port.setText("8888")
 
+        ## Set the value of the zoom level
+        self.cb_zoom.clear()
+        self.cb_zoom.addItem('1')
+        self.cb_zoom.addItem('2')
+        self.cb_zoom.addItem('3')
+        self.cb_zoom.addItem('4')
+        self.cb_zoom.addItem('5')
+        self.cb_zoom.setCurrentIndex(1)
 
     ## Reset all widgets
     def clearListWidget(self):
@@ -75,6 +85,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.cb_Raster.clear()
         self.listWidget_Left.clear()
         self.listWidget_Right.clear()
+        self.progressBar.hide()
 
     ## Get the geometry of the layer
     def getGeometry(self, layer):
@@ -118,17 +129,18 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
                 self.cb_Raster.addItem(layer.name(), layer)
 
     ## Add vector layer in a right listView
-    def on_but_Add_released(self):
+    def on_btn_add_released(self):
         self.listWidget_Right.addItem(self.listWidget_Left.takeItem(self.listWidget_Left.currentRow()))
 
     ## Remove vector layer in a right listView
-    def on_but_Supp_released(self):
+    def on_btn_supp_released(self):
         self.listWidget_Left.addItem(self.listWidget_Right.takeItem(self.listWidget_Right.currentRow()))
 
     ## Set the tab advanced option by default
-    def on_but_defaut_released(self):
+    def on_btn_defaut_released(self):
         self.Numero_Port.setText("8888")
         self.cb_tuile.setCurrentIndex(1)
+        self.cb_zoom.setCurrentIndex(1)
 
     ## Get the port number. If the port isn't good this function return the value by default, 8888
     def getPort(self):
@@ -140,31 +152,33 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     ## Get the size tile
     def getSizeTile(self):
         index = self.cb_tuile.currentIndex()
-        if index==0:
+        if index == 0:
             return 256
-        if index==1:
+        if index == 1:
             return 512
-        if index==2:
+        if index == 2:
             return 1024
-        if index==3:
+        if index == 3:
             return 2048
-        if index==4:
+        if index == 4:
             return 4096
 
     ## Generate and launch the rendering of the 3D scene
-    def on_btnGenerate_released(self):
+    def on_btn_generate_released(self):
         if self.appServerRunning:
-            self.btnGenerate.setText("Server is stopping")
+            self.progressBar.hide()
+            self.btn_generate.setText("Server is stopping")
             self.appServer.stop()
-            self.btnGenerate.setText("Generate")
+            self.btn_generate.setText("Generate")
             self.appServerRunning = False
         else:
+            self.progressBar.show()
             self.createVectorProviders()
             self.createRasterProviders()
             initParam = self.getInitParam()
             self.appServer = VTAppServer(self, initParam)
             self.appServer.start()
-            self.btnGenerate.setText("Server is running")
+            self.btn_generate.setText("Server is running")
             self.openWebBrowser(self.getPort())
             self.appServerRunning = True
 
