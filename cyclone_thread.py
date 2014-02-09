@@ -17,7 +17,11 @@ class CycloneThread(QThread):
 
     def stop(self):
         if self.running:
-            unrun()
+            try:
+                unrun()
+            except:
+                self.running = False
+                pass
         
     def isLaunched (self):
         return self.running

@@ -94,7 +94,6 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         
     # Run the 3D scene
     def on_btnGenerate_released(self):
-        print "Launching server"
         if self.appServer.isRunning():
             self.btnGenerate.setText("Generate")
             self.appServer.stop()
