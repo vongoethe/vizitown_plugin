@@ -40,14 +40,7 @@ class RollbackImporter(object):
   
     def _import(self, name, globals={}, locals={}, fromlist=[], level=-1):
         """Our import method."""
-        func = apply(self.realimport, (name, globals, locals, fromlist, level))
-        if (self._stopped):
-            self.oldmodules[name] = sys.modules[name]
-        return func
-        
-    def stop (self):
-        self._stopped = True
-
+        return apply(self.realimport, (name, globals, locals, fromlist, level))
 
 class VTAppServer(QObject):
     def __init__(self, parent):
@@ -62,7 +55,7 @@ class VTAppServer(QObject):
         
         self.rollbackImporter = RollbackImporter()
         from cyclone_thread import CycloneThread
-        self.rollbackImporter.stop();
+        #self.rollbackImporter.stop();
         
         self.appThread = CycloneThread(self.parent())
         
