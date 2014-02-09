@@ -29,6 +29,7 @@ class RollbackImporter(object):
         self.oldmodules = sys.modules.copy()
         self.realimport = __builtin__.__import__
         __builtin__.__import__ = self._import
+        self._stopped = False
   
     def uninstall(self):
         """Unload all modules since __init__ and restore the original import."""
@@ -39,7 +40,13 @@ class RollbackImporter(object):
   
     def _import(self, name, globals={}, locals={}, fromlist=[], level=-1):
         """Our import method."""
-        return apply(self.realimport, (name, globals, locals, fromlist, level))
+        func = apply(self.realimport, (name, globals, locals, fromlist, level))
+        if (self._stopped):
+            self.oldmodules[name] = sys.modules[name]
+        return func
+        
+    def stop (self):
+        self._stopped = True
 
 
 class VTAppServer(QObject):
@@ -47,17 +54,15 @@ class VTAppServer(QObject):
         QObject.__init__(self, parent)
         self.rollbackImporter = None
         self.appThread = None
-        self.timer = QTimer()
-        QObject.connect(self.timer, SIGNAL("timeout()"),
-                        self.yieldAppThread)
+        self.timer = None
     
     def start(self):
         # Unload cyclone
-        if self.rollbackImporter:
-            self.rollbackImporter.uninstall()
+        self.stop()
+        
         self.rollbackImporter = RollbackImporter()
         from cyclone_thread import CycloneThread
-        #self.rollbackImporter.stop();
+        self.rollbackImporter.stop();
         
         self.appThread = CycloneThread(self.parent())
         
@@ -70,18 +75,24 @@ class VTAppServer(QObject):
                         self.stop)
         
         self.appThread.start()
+        
+        self.timer = QTimer()
+        QObject.connect(self.timer, SIGNAL("timeout()"),
+                        self.yieldAppThread)
         self.timer.start(10)
     
     def stop(self):
         if self.appThread:
             self.appThread.stop()
-        self.timer.stop()
+            while (self.appThread.isRunning()):
+                self.thread().msleep(10)
+            del self.appThread
+            self.appThread = None
+        if self.rollbackImporter:
+            self.rollbackImporter.uninstall()
+        if self.timer:
+            self.timer.stop()
         
     def yieldAppThread(self):
         if self.appThread:
             self.appThread.msleep(1)
-
-    def isRunning (self):
-        if self.appThread:
-            return self.appThread.isLaunched()
-        return False

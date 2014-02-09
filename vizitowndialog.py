@@ -35,7 +35,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         QtGui.QDialog.__init__(self)
         self.setupUi(self)
         self.destroyed.connect(self.closeEvent)
-        self.appServer = VTAppServer(self)
+        self.appServer = None
+        self.appServerRunning = False
 
     def closeEvent(self, QCloseEvent):
         self.appServer.stop()
@@ -94,10 +95,15 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         
     # Run the 3D scene
     def on_btnGenerate_released(self):
-        if self.appServer.isRunning():
-            self.btnGenerate.setText("Generate")
+        if self.appServerRunning:
+            self.btnGenerate.setText("Server is stopping")
             self.appServer.stop()
+            self.btnGenerate.setText("Generate")
+            self.appServerRunning = False
         else:
-            self.btnGenerate.setText("Server is running")
+            
+            self.appServer = VTAppServer(self)
             self.appServer.start()
+            self.btnGenerate.setText("Server is running")
+            self.appServerRunning = True
         

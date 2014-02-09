@@ -131,5 +131,4 @@ def run(**settings):
     reactor.run()
     
 def unrun():
-    if reactor.running:
-        reactor.stop()
+    reactor.stop()
