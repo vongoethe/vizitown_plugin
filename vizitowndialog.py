@@ -20,14 +20,14 @@
  ***************************************************************************/
 """
 
-from multiprocessing import Process, Queue
 from PyQt4 import QtCore, QtGui
 from qgis.core import *
 import os
-import re
-import vt_as_app
+import webbrowser
 from ui_vizitown import Ui_Vizitown
 from vt_as_app import VTAppServer
+from vt_as_providers import ProviderManager, PostgisProvider
+
 
 class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
@@ -47,26 +47,26 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.Ymin.setText("%.4f" % extent.yMinimum())
         self.Xmax.setText("%.4f" % extent.xMaximum())
         self.Ymax.setText("%.4f" % extent.yMaximum())
-        
+
     def clearListWidget (self):
         self.cb_MNT.clear()
         self.cb_Raster.clear()
         self.listWidget_Left.clear()
         self.listWidget_Right.clear()
-        
+
     def isDem (self, layer):
         return (layer.type() == QgsMapLayer.RasterLayer and
                 layer.providerType() == "gdal" and
                 layer.bandCount() == 1)
-    
+
     def isRaster (self, layer):
         return (layer.type() == QgsMapLayer.RasterLayer and
                 layer.providerType() == "gdal" and
                 layer.bandCount() >= 3)
-    
+
     def isVector (self, layer):
         return (layer.type() == QgsMapLayer.VectorLayer)
-    
+
     # Add layer in combobox and listWidget
     def loadLayers(self):
         self.clearListWidget()
@@ -75,7 +75,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             if self.isDem(layer):
                 self.cb_MNT.addItem(layer.name(), id)
             if self.isVector(layer):
-                self.listWidget_Left.addItem(layer.name())
+                item = QtGui.QListWidgetItem(layer.name(), self.listWidget_Left)
+                item.setData(QtCore.Qt.UserRole, layer.source())
             if self.isRaster(layer):
                 self.cb_Raster.addItem(layer.name(), id)
 
@@ -92,7 +93,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.Numero_Port.setText("1042")
         self.Haut_Tuile.setText("")
         self.Larg_Tuile.setText("")
-        
+
     # Run the 3D scene
     def on_btnGenerate_released(self):
         if self.appServerRunning:
@@ -101,9 +102,19 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.btnGenerate.setText("Generate")
             self.appServerRunning = False
         else:
-            
+            self.createProviders()
             self.appServer = VTAppServer(self)
             self.appServer.start()
             self.btnGenerate.setText("Server is running")
+            self.openWebBrowser()
             self.appServerRunning = True
-        
+
+    def openWebBrowser(self):
+        url = 'file:///' + os.path.join(os.path.dirname(os.path.abspath(__file__)), 'index.html')
+        webbrowser.open(url, 2)
+
+    def createProviders(self):
+        for i in range(self.listWidget_Right.count()):
+            vectorLayer = self.listWidget_Right.item(i).data(QtCore.Qt.UserRole)
+            provider = vt_utils_parser.vectorToPostgisProvider(vectorLayer.source())
+            ProviderManager.Instance().addProvider(provider)

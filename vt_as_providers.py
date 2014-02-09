@@ -7,6 +7,9 @@ class ProviderManager:
     def __init__(self):
         self.providers = []
 
+    def addProvider(self, p):
+        self.providers.append(p)
+
     def requestTile(self, Xmin, Ymin, Xmax, Ymax):
         result = []
         for p in self.providers:
@@ -15,18 +18,18 @@ class ProviderManager:
 
 
 class PostgisProvider:
-    def __init__(self, host_name, database_name, user_name, password, table):
+    def __init__(self, host, dbname, user, password, srid, table):
         self.db = QSqlDatabase.addDatabase("QPSQL")
-        self.db.setHostName(host_name)
-        self.db.setDatabaseName(database_name)
-        self.db.setUserName(user_name)
+        self.db.setHostName(host)
+        self.db.setDatabaseName(dbname)
+        self.db.setUserName(user)
         self.db.setPassword(password)
         self.table = table
         self.column = None
-        self.srid = None
+        self.srid = srid
 
         if self.db.open():
-            print "Connection established to database %s -> %s" % (host_name, database_name)
+            print "Connection established to database %s -> %s" % (host, dbname)
         else:
             raise Exception('Connection to database cannot be established')
 
@@ -57,3 +60,15 @@ class PostgisProvider:
         while query.next():
             result.append(query.value(0))
         return result
+
+
+class RasterProvider:
+    def __init__(self, name, exent, srid, source, httpRessource):
+        self.name = name
+        self.extent = extent
+        self.srid = srid
+        self.source = source
+        self.httpRessource = httpRessource
+
+    def requestTile(self, Xmin, Ymin, Xmax, Ymax):
+        pass
