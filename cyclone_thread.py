@@ -20,4 +20,7 @@ class CycloneThread(QThread):
         run(host="127.0.0.1", port=8888, more_handlers=[(r'/echo', EchoHandler), (r'/', PingHandler)])
 
     def stop(self):
-        unrun()
+        try:
+            unrun()
+        except:
+            pass

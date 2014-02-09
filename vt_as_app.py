@@ -65,8 +65,8 @@ class VTAppServer(QObject):
     
     def stop(self):
         if self.appThread:
-            self.appThread.stop()
             while (self.appThread.isRunning()):
+                self.appThread.stop()
                 self.thread().msleep(10)
                 QCoreApplication.instance().processEvents()
             del self.appThread
