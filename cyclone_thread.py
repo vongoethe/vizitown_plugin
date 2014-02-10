@@ -14,7 +14,7 @@ class MainHandler(cyclone.web.RequestHandler):
 
 
 class CycloneThread(QThread):
-    def __init__(self, parentObject, debug = True):
+    def __init__(self, parentObject, debug=True):
         QThread.__init__(self, parentObject.thread())
         self.debug = debug
 
