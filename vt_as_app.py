@@ -40,23 +40,12 @@ class VTAppServer(QObject):
         self.rollbackImporter = None
         self.appThread = None
         self.timer = None
-        
-    def delModule(self, module):
-        return (module.startswith('twisted') or
-                module.startswith('zope') or
-                module.startswith('vizitown.cyclone') or
-                module.startswith('cyclone'))
-    
-    def unload(self):
-        for module in sys.modules.keys():
-            if self.delModule(module):
-                del sys.modules[module]
     
     def start(self):
         # Unload cyclone
         self.stop()
         
-        #self.rollbackImporter = RollbackImporter()
+        self.rollbackImporter = RollbackImporter()
         from cyclone_thread import CycloneThread
         
         self.appThread = CycloneThread(self.parent())
@@ -84,9 +73,8 @@ class VTAppServer(QObject):
                 QCoreApplication.instance().processEvents()
             del self.appThread
             self.appThread = None
-        #if self.rollbackImporter:
-        #    self.rollbackImporter.uninstall()
-        self.unload()
+        if self.rollbackImporter:
+            self.rollbackImporter.uninstall()
         if self.timer:
             self.timer.stop()
         
