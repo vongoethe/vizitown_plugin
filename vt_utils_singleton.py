@@ -23,7 +23,7 @@ class Singleton:
         Returns the singleton instance. Upon its first call, it creates a
         new instance of the decorated class and calls its `__init__` method.
         On all subsequent calls, the already created instance is returned.
-        
+
         """
         try:
             return self._instance

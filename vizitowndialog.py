@@ -42,7 +42,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.appServerRunning = False
 
     def closeEvent(self, QCloseEvent):
-        if self.appServer: 
+        if self.appServer:
             self.appServer.stop()
 
     # Set the default extent
@@ -52,23 +52,23 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.Xmax.setText("%.4f" % extent.xMaximum())
         self.Ymax.setText("%.4f" % extent.yMaximum())
 
-    def clearListWidget (self):
+    def clearListWidget(self):
         self.cb_MNT.clear()
         self.cb_Raster.clear()
         self.listWidget_Left.clear()
         self.listWidget_Right.clear()
 
-    def isDem (self, layer):
+    def isDem(self, layer):
         return (layer.type() == QgsMapLayer.RasterLayer and
                 layer.providerType() == "gdal" and
                 layer.bandCount() == 1)
 
-    def isRaster (self, layer):
+    def isRaster(self, layer):
         return (layer.type() == QgsMapLayer.RasterLayer and
                 layer.providerType() == "gdal" and
                 layer.bandCount() >= 3)
 
-    def isVector (self, layer):
+    def isVector(self, layer):
         return (layer.type() == QgsMapLayer.VectorLayer)
 
     # Add layer in combobox and listWidget

@@ -68,7 +68,7 @@ class Vizitown:
         self.iface.removePluginMenu(u"&ViziTown", self.action)
         self.iface.removeToolBarIcon(self.action)
         # run method that performs all the real work
-     
+
     def run(self):
         dialog = self.dlg
         dialog.initExtent(self.iface.mapCanvas().extent())
@@ -79,4 +79,3 @@ class Vizitown:
         dialog.but_defaut.clicked.connect(dialog.defaut)
         # show the dialog
         self.dlg.show()
-
