@@ -76,7 +76,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
                 self.cb_MNT.addItem(layer.name(), id)
             if self.isVector(layer):
                 item = QtGui.QListWidgetItem(layer.name(), self.listWidget_Left)
-                item.setData(QtCore.Qt.UserRole, layer.source())
+                item.setData(QtCore.Qt.UserRole, layer)
             if self.isRaster(layer):
                 self.cb_Raster.addItem(layer.name(), id)
 
