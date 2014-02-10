@@ -131,4 +131,4 @@ def run(**settings):
     reactor.run()
     
 def unrun():
-    reactor.stop()
+    reactor.callFromThread(reactor.stop)
