@@ -1,9 +1,8 @@
 import sys
 import os
-import __builtin__
 
 from PyQt4.QtCore import *
-
+from pprint import pprint
 
 class RollbackImporter(object):
     """
@@ -27,19 +26,13 @@ class RollbackImporter(object):
     def __init__(self):
         """Init the RollbackImporter and setup the import proxy."""
         self.oldmodules = sys.modules.copy()
-        #self.realimport = __builtin__.__import__
-        #__builtin__.__import__ = self._import
-  
+        
     def uninstall(self):
         """Unload all modules since __init__ and restore the original import."""
         for module in sys.modules.keys():
             if not self.oldmodules.has_key(module):
                 del sys.modules[module]
-        #__builtin__.__import__ = self.realimport
-  
-    def _import(self, name, globals={}, locals={}, fromlist=[], level=-1):
-        """Our import method."""
-        return apply(self.realimport, (name, globals, locals, fromlist, level))
+                
 
 class VTAppServer(QObject):
     def __init__(self, parent):
@@ -47,11 +40,23 @@ class VTAppServer(QObject):
         self.rollbackImporter = None
         self.appThread = None
         self.timer = None
+        
+    def delModule(self, module):
+        return (module.startswith('twisted') or
+                module.startswith('zope') or
+                module.startswith('vizitown.cyclone') or
+                module.startswith('cyclone'))
+    
+    def unload(self):
+        for module in sys.modules.keys():
+            if self.delModule(module):
+                del sys.modules[module]
     
     def start(self):
         # Unload cyclone
         self.stop()
-        self.rollbackImporter = RollbackImporter()
+        
+        #self.rollbackImporter = RollbackImporter()
         from cyclone_thread import CycloneThread
         
         self.appThread = CycloneThread(self.parent())
@@ -73,13 +78,15 @@ class VTAppServer(QObject):
     
     def stop(self):
         if self.appThread:
-            self.appThread.stop()
             while (self.appThread.isRunning()):
+                self.appThread.stop()
                 self.thread().msleep(10)
+                QCoreApplication.instance().processEvents()
             del self.appThread
             self.appThread = None
-        if self.rollbackImporter:
-            self.rollbackImporter.uninstall()
+        #if self.rollbackImporter:
+        #    self.rollbackImporter.uninstall()
+        self.unload()
         if self.timer:
             self.timer.stop()
         

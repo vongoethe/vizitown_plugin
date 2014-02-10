@@ -1,9 +1,16 @@
 import sys
-from cyclone.bottle import run, route, unrun
-
 from PyQt4.QtCore import *
 
+import cyclone.web
+from cyclone.bottle import run, route, unrun
+
 from vt_test_handlers import PingHandler, EchoHandler
+
+
+class MainHandler(cyclone.web.RequestHandler):
+    def get(self):
+        self.write("Hello, world")
+    
 
 class CycloneThread(QThread):
     def __init__(self, parentObject):
