@@ -20,11 +20,14 @@
  ***************************************************************************/
 """
 
-from PyQt4 import QtCore, QtGui
-from qgis.core import *
 import os
 import webbrowser
+
 from ui_vizitown import Ui_Vizitown
+from PyQt4 import QtCore, QtGui
+from qgis.core import *
+
+import vt_utils_parser
 from vt_as_app import VTAppServer
 from vt_as_providers import ProviderManager, PostgisProvider
 
@@ -39,7 +42,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.appServerRunning = False
 
     def closeEvent(self, QCloseEvent):
-        self.appServer.stop()
+        if self.appServer: 
+            self.appServer.stop()
 
     # Set the default extent
     def initExtent(self, extent):
@@ -117,4 +121,4 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         for i in range(self.listWidget_Right.count()):
             vectorLayer = self.listWidget_Right.item(i).data(QtCore.Qt.UserRole)
             provider = vt_utils_parser.vectorToPostgisProvider(vectorLayer.source())
-            ProviderManager.Instance().addProvider(provider)
+            ProviderManager.instance().addProvider(provider)

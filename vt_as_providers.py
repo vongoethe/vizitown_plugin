@@ -18,15 +18,16 @@ class ProviderManager:
 
 
 class PostgisProvider:
-    def __init__(self, host, dbname, user, password, srid, table):
+    def __init__(self, host, dbname, user, password, srid, table, column):
         self.db = QSqlDatabase.addDatabase("QPSQL")
         self.db.setHostName(host)
         self.db.setDatabaseName(dbname)
         self.db.setUserName(user)
         self.db.setPassword(password)
         self.table = table
-        self.column = None
+        self.column = column
         self.srid = srid
+        print self
 
         if self.db.open():
             print "Connection established to database %s -> %s" % (host, dbname)
