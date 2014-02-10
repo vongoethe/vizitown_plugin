@@ -120,5 +120,6 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     def createProviders(self):
         for i in range(self.listWidget_Right.count()):
             vectorLayer = self.listWidget_Right.item(i).data(QtCore.Qt.UserRole)
-            provider = vt_utils_parser.vectorToPostgisProvider(vectorLayer.source())
+            d = vt_utils_parser.vectorToPostgisProvider(vectorLayer.source())
+            provider = PostgisProviderd(d['host'], d['dbname'], d['user'], d['password'], d['srid'], d['table'], d['column'])
             ProviderManager.instance().addProvider(provider)

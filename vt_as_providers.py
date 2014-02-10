@@ -36,10 +36,14 @@ class PostgisProvider:
 
     def requestTile(self, Xmin, Ymin, Xmax, Ymax):
         query = QSqlQuery(self.db)
-        polygon = "POLYGON(({Xmin_} {Ymin_}, {Xmax_} {Ymin_}, {Xmax_} {Ymax_}, {Xmin_} {Ymax_}, {Xmin_} {Ymin_}))"
-            .format(Xmin_=Xmin, Xmax_=Xmax, Ymin_=Ymin, Ymax_=Ymax) 
-        q = "SELECT ST_AsGeoJSON({column_}) FROM {table_} WHERE ST_Intersects(geom, ST_GeomFromText('{polygon_}', {srid_}))"
-            .format(column_=self.column, table_=self.table, polygon_= polygon, srid_=self.srid)
+        polygon = "POLYGON(({Xmin_} {Ymin_}, {Xmax_} {Ymin_}, {Xmax_} {Ymax_}, {Xmin_} {Ymax_}, {Xmin_} {Ymin_}))".format(Xmin_=Xmin,
+                                                                                                                          Xmax_=Xmax,
+                                                                                                                          Ymin_=Ymin,
+                                                                                                                          Ymax_=Ymax)
+        q = "SELECT ST_AsGeoJSON({column_}) FROM {table_} WHERE ST_Intersects(geom, ST_GeomFromText('{polygon_}', {srid_}))".format(column_=self.column,
+                                                                                                                                    table_=self.table,
+                                                                                                                                    polygon_=polygon,
+                                                                                                                                    srid_=self.srid)
 
         if not query.exec_(q):
             print query.lastQuery()
