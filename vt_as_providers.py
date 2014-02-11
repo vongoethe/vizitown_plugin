@@ -43,9 +43,16 @@ class PostgisProvider:
         self.table = table
         self.column = column
         self.srid = srid
+        self.geometry = ""
 
         if self.db.open():
             print "Connection established to database %s -> %s" % (host, dbname)
+            
+            query = QSqlQuery(self.db)
+            getGeometry = "SELECT GeometryType({column_} FROM {table_} LIMIT 1"
+            query.exec_(getGeometry)
+            query.next()
+            print query.value(0)
         else:
             raise Exception('Connection to database cannot be established')
 
@@ -69,7 +76,6 @@ class PostgisProvider:
             raise Exception('DB request failed')
         result = []
         while query.next():
-            print query
             result.append(query.value(0))
         return result
 
