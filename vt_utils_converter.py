@@ -8,6 +8,8 @@ class X3DTranslateToThreeJs:
         self.nbFaces = 0
         self.nbVertices = 0
 
+        self.nbPointVertice = 3
+
         self.__json = """{
     "metadata" :
     {
@@ -49,11 +51,29 @@ class X3DTranslateToThreeJs:
 
         if geometry == 'POINT':
             return self.__parse_point(message)
+        else:
+            xmldoc = minidom.parseString(message)
+            if geometry == 'LINESTRING' or geometry == 'MULTILINESTRING':
+                return self.__parse_line(xmldoc)
 
     def __parse_point(self, message):
+        nbFace = "0"
+        nbPoint = "1"
 
         vertice = re.sub(' ', ',', message)
-        return self.__get_json("0", "1", None, vertice)
+        return self.__get_json(nbFace, nbPoint, None, vertice)
+
+    def __parse_line(self, xmldoc):
+        nbFace = "0"
+
+        nodeVertice = xmldoc.getElementsByTagName('Coordinate')
+        vertices = nodeVertice[0].getAttribute('point')
+        vertices = re.sub(' ', ',', vertices)
+        vertices = vertices[:-1]
+
+        verticesTab = vertices.split(',')
+        nbVertice = len(verticesTab) / self.nbPointVertice
+        return self.__get_json(nbFace, str(nbVertice), None, vertices)
 
     def __get_json(self, nbFaces, nbVertices, faces, vertices):
         self.__define_field(nbFaces, nbVertices)
@@ -66,6 +86,8 @@ class X3DTranslateToThreeJs:
         json = re.sub("{TAB_VERTICES}", vertices, json)
         if faces is not None:
             json = re.sub("{TAB_FACES}", faces, json)
+        else:
+            json = re.sub("{TAB_FACES}", "", json)
 
         return json
 
