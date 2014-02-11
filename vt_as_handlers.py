@@ -11,7 +11,7 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
     def connectionMade(self):
         print "WebSocket opened"
 
-    ## Method call when a message is received 
+    ## Method call when a message is received
     #  Request all content in the extent specified in the message
     #  @param message in JSON format like:
     #  '{"Xmin": 0, "Ymin": 0, "Xmax": 50, "Ymax": 50}'
@@ -32,7 +32,7 @@ class SyncHandler(cyclone.websocket.WebSocketHandler):
     def connectionMade(self):
         print "WebSocket opened"
 
-    ## Method call when a message is received 
+    ## Method call when a message is received
     def messageReceived(self, message):
         pass  # TODO
 
