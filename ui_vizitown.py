@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_vizitown.ui'
 #
-# Created: Sat Feb 08 19:04:28 2014
-#      by: PyQt4 UI code generator 4.10.2
+# Created: Mon Feb 10 16:56:28 2014
+#      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -100,22 +100,14 @@ class Ui_Vizitown(object):
         self.gridLayout_4.addWidget(self.groupBox_4, 0, 0, 1, 1)
         self.groupBox_5 = QtGui.QGroupBox(self.Opt)
         self.groupBox_5.setObjectName(_fromUtf8("groupBox_5"))
-        self.gridLayout_5 = QtGui.QGridLayout(self.groupBox_5)
-        self.gridLayout_5.setObjectName(_fromUtf8("gridLayout_5"))
+        self.horizontalLayout_4 = QtGui.QHBoxLayout(self.groupBox_5)
+        self.horizontalLayout_4.setObjectName(_fromUtf8("horizontalLayout_4"))
         self.label_8 = QtGui.QLabel(self.groupBox_5)
         self.label_8.setObjectName(_fromUtf8("label_8"))
-        self.gridLayout_5.addWidget(self.label_8, 0, 0, 1, 1)
-        self.Haut_Tuile = QtGui.QLineEdit(self.groupBox_5)
-        self.Haut_Tuile.setText(_fromUtf8(""))
-        self.Haut_Tuile.setObjectName(_fromUtf8("Haut_Tuile"))
-        self.gridLayout_5.addWidget(self.Haut_Tuile, 0, 1, 1, 1)
-        self.Larg_Tuile = QtGui.QLineEdit(self.groupBox_5)
-        self.Larg_Tuile.setText(_fromUtf8(""))
-        self.Larg_Tuile.setObjectName(_fromUtf8("Larg_Tuile"))
-        self.gridLayout_5.addWidget(self.Larg_Tuile, 1, 1, 1, 1)
-        self.label_9 = QtGui.QLabel(self.groupBox_5)
-        self.label_9.setObjectName(_fromUtf8("label_9"))
-        self.gridLayout_5.addWidget(self.label_9, 1, 0, 1, 1)
+        self.horizontalLayout_4.addWidget(self.label_8)
+        self.cb_tuile = QtGui.QComboBox(self.groupBox_5)
+        self.cb_tuile.setObjectName(_fromUtf8("cb_tuile"))
+        self.horizontalLayout_4.addWidget(self.cb_tuile)
         self.gridLayout_4.addWidget(self.groupBox_5, 1, 0, 1, 1)
         self.but_defaut = QtGui.QPushButton(self.Opt)
         self.but_defaut.setObjectName(_fromUtf8("but_defaut"))
@@ -175,10 +167,9 @@ class Ui_Vizitown(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Layers), _translate("Vizitown", "Layers", None))
         self.groupBox_4.setTitle(_translate("Vizitown", "Server", None))
         self.label_7.setText(_translate("Vizitown", "Port number", None))
-        self.Numero_Port.setText(_translate("Vizitown", "1042", None))
+        self.Numero_Port.setText(_translate("Vizitown", "8888", None))
         self.groupBox_5.setTitle(_translate("Vizitown", "Scene", None))
-        self.label_8.setText(_translate("Vizitown", "Tile width", None))
-        self.label_9.setText(_translate("Vizitown", "Tile height", None))
+        self.label_8.setText(_translate("Vizitown", "Tile size", None))
         self.but_defaut.setText(_translate("Vizitown", "Par defaut", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Opt), _translate("Vizitown", "Preferences", None))
         self.label_11.setText(_translate("Vizitown", "Xmin", None))

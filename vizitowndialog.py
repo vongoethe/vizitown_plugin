@@ -26,12 +26,14 @@ import webbrowser
 from ui_vizitown import Ui_Vizitown
 from PyQt4 import QtCore, QtGui
 from qgis.core import *
+from qgis.gui import *
 
 import vt_utils_parser
 from vt_as_app import VTAppServer
 from vt_as_providers import ProviderManager, PostgisProvider
 
 
+## Vizitown dialog in QGIS GUI
 class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
     def __init__(self):
@@ -41,37 +43,51 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.appServer = None
         self.appServerRunning = False
 
+    ## Behavior whit a close event
     def closeEvent(self, QCloseEvent):
         if self.appServer:
             self.appServer.stop()
 
-    # Set the default extent
+    ## Set the default extent
     def initExtent(self, extent):
         self.Xmin.setText("%.4f" % extent.xMinimum())
         self.Ymin.setText("%.4f" % extent.yMinimum())
         self.Xmax.setText("%.4f" % extent.xMaximum())
         self.Ymax.setText("%.4f" % extent.yMaximum())
 
+        ## Set the values of the taile by default
+        self.cb_tuile.clear()
+        self.cb_tuile.addItem('256 x 256')
+        self.cb_tuile.addItem('512 x 512')
+        self.cb_tuile.addItem('1024 x 1024')
+        self.cb_tuile.addItem('2048 x 2048')
+        self.cb_tuile.addItem('4096 x 4096')
+        self.cb_tuile.setCurrentIndex(1)
+
+    ## Reset all widgets
     def clearListWidget(self):
         self.cb_MNT.clear()
         self.cb_Raster.clear()
         self.listWidget_Left.clear()
         self.listWidget_Right.clear()
 
+    ## Return True if the layer is a DEM ?? which come from a database
     def isDem(self, layer):
         return (layer.type() == QgsMapLayer.RasterLayer and
                 layer.providerType() == "gdal" and
-                layer.bandCount() == 1)
+                layer.bandCount() == 1) and not layer.source().startswith('dbname')
 
+    ## Return True if the layer is a Raster which come from a database
     def isRaster(self, layer):
         return (layer.type() == QgsMapLayer.RasterLayer and
                 layer.providerType() == "gdal" and
-                layer.bandCount() >= 3)
+                layer.bandCount() >= 3) and not layer.source().startswith('dbname')
 
+    ## Return True if the layer is a Vector which come from a database
     def isVector(self, layer):
-        return (layer.type() == QgsMapLayer.VectorLayer)
+        return (layer.type() == QgsMapLayer.VectorLayer) and layer.source().startswith('dbname')
 
-    # Add layer in combobox and listWidget
+    ## Add layer in combobox and listWidget
     def loadLayers(self):
         self.clearListWidget()
         layerListIems = QgsMapLayerRegistry().instance().mapLayers().items()
@@ -84,21 +100,20 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             if self.isRaster(layer):
                 self.cb_Raster.addItem(layer.name(), id)
 
-    # Add vector layer in a right listView
-    def add(self):
+    ## Add vector layer in a right listView
+    def on_but_Add_released(self):
         self.listWidget_Right.addItem(self.listWidget_Left.takeItem(self.listWidget_Left.currentRow()))
 
-    # Remove vector layer in a right listView
-    def suppr(self):
+    ## Remove vector layer in a right listView
+    def on_but_Supp_released(self):
         self.listWidget_Left.addItem(self.listWidget_Right.takeItem(self.listWidget_Right.currentRow()))
 
-    # Set the tab advanced option by default
-    def defaut(self):
-        self.Numero_Port.setText("1042")
-        self.Haut_Tuile.setText("")
-        self.Larg_Tuile.setText("")
+    ## Set the tab advanced option by default
+    def on_but_defaut_released(self):
+        self.Numero_Port.setText("8888")
+        self.cb_tuile.setCurrentIndex(1)
 
-    # Run the 3D scene
+    ## Generate and launch the rendering of the 3D scene
     def on_btnGenerate_released(self):
         if self.appServerRunning:
             self.btnGenerate.setText("Server is stopping")
@@ -113,12 +128,15 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.openWebBrowser()
             self.appServerRunning = True
 
+    ## Open the default web browser
     def openWebBrowser(self):
-        url = 'file:///' + os.path.join(os.path.dirname(os.path.abspath(__file__)), 'index.html')
-        webbrowser.open(url, 2)
+        url = 'http://localhost:8888'
+        webbrowser.open(url)
 
+    ## Create all providers with the selected layers in the GUI
     def createProviders(self):
         for i in range(self.listWidget_Right.count()):
             vectorLayer = self.listWidget_Right.item(i).data(QtCore.Qt.UserRole)
-            provider = vt_utils_parser.vectorToPostgisProvider(vectorLayer.source())
+            d = vt_utils_parser.vectorToPostgisProvider(vectorLayer.source())
+            provider = PostgisProviderd(d['host'], d['dbname'], d['user'], d['password'], d['srid'], d['table'], d['column'])
             ProviderManager.instance().addProvider(provider)
