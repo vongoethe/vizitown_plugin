@@ -26,6 +26,7 @@ import webbrowser
 from ui_vizitown import Ui_Vizitown
 from PyQt4 import QtCore, QtGui
 from qgis.core import *
+from qgis.gui import *
 
 import vt_utils_parser
 from vt_as_app import VTAppServer
@@ -51,6 +52,14 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.Ymin.setText("%.4f" % extent.yMinimum())
         self.Xmax.setText("%.4f" % extent.xMaximum())
         self.Ymax.setText("%.4f" % extent.yMaximum())
+        # Set the values of the taile by default
+        self.cb_tuile.clear()
+        self.cb_tuile.addItem('256 x 256')
+        self.cb_tuile.addItem('512 x 512')
+        self.cb_tuile.addItem('1024 x 1024')
+        self.cb_tuile.addItem('2048 x 2048')
+        self.cb_tuile.addItem('4096 x 4096')
+        self.cb_tuile.setCurrentIndex(1)
 
     def clearListWidget(self):
         self.cb_MNT.clear()
@@ -59,17 +68,13 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.listWidget_Right.clear()
 
     def isDem(self, layer):
-        return (layer.type() == QgsMapLayer.RasterLayer and
-                layer.providerType() == "gdal" and
-                layer.bandCount() == 1)
+        return (layer.type() == QgsMapLayer.RasterLayer and layer.providerType() == "gdal" and layer.bandCount() == 1) and not layer.source().startswith('dbname')
 
     def isRaster(self, layer):
-        return (layer.type() == QgsMapLayer.RasterLayer and
-                layer.providerType() == "gdal" and
-                layer.bandCount() >= 3)
+        return (layer.type() == QgsMapLayer.RasterLayer and layer.providerType() == "gdal" and layer.bandCount() >= 3) and not layer.source().startswith('dbname')
 
     def isVector(self, layer):
-        return (layer.type() == QgsMapLayer.VectorLayer)
+        return (layer.type() == QgsMapLayer.VectorLayer) and layer.source().startswith('dbname')
 
     # Add layer in combobox and listWidget
     def loadLayers(self):
@@ -85,18 +90,17 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
                 self.cb_Raster.addItem(layer.name(), id)
 
     # Add vector layer in a right listView
-    def add(self):
+    def on_but_Add_released(self):
         self.listWidget_Right.addItem(self.listWidget_Left.takeItem(self.listWidget_Left.currentRow()))
 
     # Remove vector layer in a right listView
-    def suppr(self):
+    def on_but_Supp_released(self):
         self.listWidget_Left.addItem(self.listWidget_Right.takeItem(self.listWidget_Right.currentRow()))
 
     # Set the tab advanced option by default
-    def defaut(self):
-        self.Numero_Port.setText("1042")
-        self.Haut_Tuile.setText("")
-        self.Larg_Tuile.setText("")
+    def on_but_defaut_released(self):
+        self.Numero_Port.setText("8888")
+        self.cb_tuile.setCurrentIndex(1)
 
     # Run the 3D scene
     def on_btnGenerate_released(self):
@@ -114,8 +118,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.appServerRunning = True
 
     def openWebBrowser(self):
-        url = 'file:///' + os.path.join(os.path.dirname(os.path.abspath(__file__)), 'index.html')
-        webbrowser.open(url, 2)
+        url = 'http://localhost:8888'
+        webbrowser.open(url)
 
     def createProviders(self):
         for i in range(self.listWidget_Right.count()):
