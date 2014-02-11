@@ -55,6 +55,10 @@ class X3DTranslateToThreeJs:
             xmldoc = minidom.parseString(message)
             if geometry == 'LINESTRING' or geometry == 'MULTILINESTRING':
                 return self.__parse_line(xmldoc)
+            elif geometry == 'POLYGON' or geometry == 'MULTIPOLYGON' or geometry == 'POLYHEDRALSURFACE':
+                return self.__parse_triangle(xmldoc)
+            else:
+                return None
 
     def __parse_point(self, message):
         nbFace = "0"
@@ -66,14 +70,40 @@ class X3DTranslateToThreeJs:
     def __parse_line(self, xmldoc):
         nbFace = "0"
 
+        vertices = self.__get_vertices(xmldoc)
+        nbVertice = self.__count_vertice(vertices)
+
+        return self.__get_json(nbFace, str(nbVertice), None, vertices)
+
+    def __parse_triangle(self, xmldoc):
+        nbIndexFace = 3
+        bitMask = 0
+
+        vertices = self.__get_vertices(xmldoc)
+        nbVertice = self.__count_vertice(vertices)
+
+        facesTab = []
+        for i in range(0, nbVertice, nbIndexFace):
+            facesTab.append(0)
+            facesTab.append(i)
+            facesTab.append(i + 1)
+            facesTab.append(i + 2)
+
+        faces = ','.join(str(f) for f in facesTab)
+        nbFace = nbVertice / nbIndexFace
+        return self.__get_json(str(nbFace), str(nbVertice), faces, vertices)
+
+    def __get_vertices(sef, xmldoc):
         nodeVertice = xmldoc.getElementsByTagName('Coordinate')
         vertices = nodeVertice[0].getAttribute('point')
         vertices = re.sub(' ', ',', vertices)
-        vertices = vertices[:-1]
+        if vertices[-1:] == ',':
+            vertices = vertices[:-1]
+        return vertices
 
+    def __count_vertice(self, vertices):
         verticesTab = vertices.split(',')
-        nbVertice = len(verticesTab) / self.nbPointVertice
-        return self.__get_json(nbFace, str(nbVertice), None, vertices)
+        return len(verticesTab) / self.nbPointVertice
 
     def __get_json(self, nbFaces, nbVertices, faces, vertices):
         self.__define_field(nbFaces, nbVertices)
