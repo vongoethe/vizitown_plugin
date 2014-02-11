@@ -2,6 +2,7 @@ import re
 from xml.dom import minidom
 
 
+## Converts an X3D formats in a json
 class X3DTranslateToThreeJs:
 
     def __init__(self):

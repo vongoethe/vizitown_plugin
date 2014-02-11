@@ -31,6 +31,7 @@ from qgis.gui import *
 import vt_utils_parser
 from vt_as_app import VTAppServer
 from vt_as_providers import ProviderManager, PostgisProvider
+import vt_utils_extent
 
 
 ## Vizitown dialog in QGIS GUI
@@ -71,7 +72,18 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.listWidget_Left.clear()
         self.listWidget_Right.clear()
 
-    ## Return True if the layer is a DEM ?? which come from a database
+    ## Get the geometry of the layer
+    def getGeometry(self, layer):
+        if layer.wkbType() == QGis.WKBPoint:
+            return 'point'
+        if layer.wkbType() == QGis.WKBPolygon:
+            return 'Polygon'
+        if layer.wkbType() == QGis.WKBLineString:
+            return 'LineString'
+        if layer.wkbType() == QGis.WKBMultiPolygon:
+            return 'Multipolygon'
+
+    ## Return True if the layer is a DEM which come from a database
     def isDem(self, layer):
         return (layer.type() == QgsMapLayer.RasterLayer and
                 layer.providerType() == "gdal" and
@@ -110,11 +122,20 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
     ## Set the tab advanced option by default
     def on_but_defaut_released(self):
-        self.Numero_Port.setText("8888")
-        self.cb_tuile.setCurrentIndex(1)
+        #self.Numero_Port.setText("8888")
+        #self.cb_tuile.setCurrentIndex(1)
+        print self.checkIsNumber(self.Numero_Port.text())
+
+    def checkIsNumber(self, port):
+            return int(port) < 65536 and int(port) > 1024
+        #else:
+         #   QMessageBox.information(self, 'Warning',"The port isn't a number",QMessageBox.Ok)
 
     ## Generate and launch the rendering of the 3D scene
     def on_btnGenerate_released(self):
+        sizeTuile = self.cb_tuile.currentText()
+        port = self.Numero_Port.text()
+
         if self.appServerRunning:
             self.btnGenerate.setText("Server is stopping")
             self.appServer.stop()
@@ -125,13 +146,14 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.appServer = VTAppServer(self)
             self.appServer.start()
             self.btnGenerate.setText("Server is running")
-            self.openWebBrowser()
+            self.openWebBrowser(port)
             self.appServerRunning = True
 
-    ## Open the default web browser
-    def openWebBrowser(self):
-        url = 'http://localhost:8888'
-        webbrowser.open(url)
+    ## Open a web browser
+    def openWebBrowser(self, port):
+       # url = 'file:///' + os.path.join(os.path.dirname(os.path.abspath(__file__)), 'index.php') + '?port=' + port
+        url = 'file:///' + os.path.join(os.path.dirname(os.path.abspath(__file__)), 'index.html') 
+        webbrowser.open(url,2)
 
     ## Create all providers with the selected layers in the GUI
     def createProviders(self):

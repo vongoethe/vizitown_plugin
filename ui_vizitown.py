@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_vizitown.ui'
 #
-# Created: Mon Feb 10 16:56:28 2014
+# Created: Tue Feb 11 16:10:36 2014
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -94,6 +94,7 @@ class Ui_Vizitown(object):
         spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_3.addItem(spacerItem1)
         self.Numero_Port = QtGui.QLineEdit(self.groupBox_4)
+        self.Numero_Port.setInputMethodHints(QtCore.Qt.ImhDigitsOnly)
         self.Numero_Port.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.Numero_Port.setObjectName(_fromUtf8("Numero_Port"))
         self.horizontalLayout_3.addWidget(self.Numero_Port)
@@ -167,6 +168,7 @@ class Ui_Vizitown(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Layers), _translate("Vizitown", "Layers", None))
         self.groupBox_4.setTitle(_translate("Vizitown", "Server", None))
         self.label_7.setText(_translate("Vizitown", "Port number", None))
+        self.Numero_Port.setInputMask(_translate("Vizitown", "00000", None))
         self.Numero_Port.setText(_translate("Vizitown", "8888", None))
         self.groupBox_5.setTitle(_translate("Vizitown", "Scene", None))
         self.label_8.setText(_translate("Vizitown", "Tile size", None))
