@@ -1,68 +1,74 @@
 import re
+from xml.dom import minidom
 
 
-def translateX3DToThreeJs(message):
+class X3DTranslateToThreeJs:
 
-    deb = "<IndexedFaceSet  coordIndex='"
-    mid = "'><Coordinate point='"
+    def __init__(self):
+        self.nbFaces = 0
+        self.nbVertices = 0
 
-    tmp = re.sub("<IndexedFaceSet  coordIndex='", "", message)
-    index = re.match("(.*)\'>(.*)", tmp).group(1)
-
-    tmp = re.sub(index + mid, "", tmp)
-    vertices = re.match("(.*)\' />(.*)", tmp).group(1)
-    vertices = re.sub(" ", ",", vertices)
-    verticesT = vertices.split(',')
-
-    indexT = index.split(' ')
-    indexT.insert(0, "-1")
-    for i in range(len(indexT)):
-        if(i % 5 == 0):
-            indexT[i] = -1
-
-    faces = ','.join(str(e) for e in indexT)
-
-    json = """
+        self.__json = """{
+    "metadata" :
     {
-        "metadata" :
-        {
-            "formatVersion" : 3.1,
-            "generatedBy"   : "Vizitown Creation",
-            "vertices"      : {VERTICES},
-            "faces"         : {FACES},
-            "normals"       : 0,
-            "colors"        : 0,
-            "uvs"           : [],
-            "materials"     : 0,
-            "morphTargets"  : 0,
-            "bones"         : 0
-        },
+        "formatVersion" : 3.1,
+        "generatedBy"   : "Vizitown Creation",
+        "vertices"      : {VERTICES},
+        "faces"         : {FACES},
+        "normals"       : 0,
+        "colors"        : 0,
+        "uvs"           : 0,
+        "materials"     : 0,
+        "morphTargets"  : 0,
+        "bones"         : 0
+    },
 
-        "vertices" : [{TAB_VERTICES}],
+    "vertices" : [{TAB_VERTICES}],
 
-        "morphTargets" : [],
+    "morphTargets" : [],
 
-        "normals" : [],
+    "normals" : [],
 
-        "colors" : [],
+    "colors" : [],
 
-        "uvs" : [],
+    "uvs" : [],
 
-        "faces" : [{TAB_FACES}],
+    "faces" : [{TAB_FACES}],
 
-        "bones" : [],
+    "bones" : [],
 
-        "skinIndices" : [],
+    "skinIndices" : [],
 
-        "skinWeights" : [],
+    "skinWeights" : [],
 
-        "animations" : []
-    }
-    """
+    "animations" : []
 
-    json = re.sub("{VERTICES}", str(len(verticesT) / 3), json)
-    json = re.sub("{FACES}", str(len(indexT) / 5), json)
-    json = re.sub("{TAB_VERTICES}", vertices, json)
-    json = re.sub("{TAB_FACES}", faces, json)
+}"""
 
-    return json
+    def parse(self, message, geometry):
+
+        if geometry == 'POINT':
+            return self.__parse_point(message)
+
+    def __parse_point(self, message):
+
+        vertice = re.sub(' ', ',', message)
+        return self.__get_json("0", "1", None, vertice)
+
+    def __get_json(self, nbFaces, nbVertices, faces, vertices):
+        self.__define_field(nbFaces, nbVertices)
+
+        json = self.__json
+
+        json = re.sub("{VERTICES}", nbVertices, json)
+        json = re.sub("{FACES}", nbFaces, json)
+
+        json = re.sub("{TAB_VERTICES}", vertices, json)
+        if faces is not None:
+            json = re.sub("{TAB_FACES}", faces, json)
+
+        return json
+
+    def __define_field(self, nbFaces, nbVertices):
+        self.nbFaces = nbFaces
+        self.nbVertices = nbVertices
