@@ -1,5 +1,6 @@
 from qgis.gui import *
 
+
 class extent(QgsMapTool):
     def __init__(self, canvas):
         QgsMapTool.__init__(self, canvas)

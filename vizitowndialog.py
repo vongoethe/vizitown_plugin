@@ -68,10 +68,14 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.listWidget_Right.clear()
 
     def isDem(self, layer):
-        return (layer.type() == QgsMapLayer.RasterLayer and layer.providerType() == "gdal" and layer.bandCount() == 1) and not layer.source().startswith('dbname')
+        return (layer.type() == QgsMapLayer.RasterLayer and
+                layer.providerType() == "gdal" and
+                layer.bandCount() == 1) and not layer.source().startswith('dbname')
 
     def isRaster(self, layer):
-        return (layer.type() == QgsMapLayer.RasterLayer and layer.providerType() == "gdal" and layer.bandCount() >= 3) and not layer.source().startswith('dbname')
+        return (layer.type() == QgsMapLayer.RasterLayer and
+                layer.providerType() == "gdal" and
+                layer.bandCount() >= 3) and not layer.source().startswith('dbname')
 
     def isVector(self, layer):
         return (layer.type() == QgsMapLayer.VectorLayer) and layer.source().startswith('dbname')
