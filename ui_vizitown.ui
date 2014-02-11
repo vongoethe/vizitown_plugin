@@ -164,34 +164,16 @@
          <property name="title">
           <string>Scene</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_5">
-          <item row="0" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
            <widget class="QLabel" name="label_8">
             <property name="text">
-             <string>Tile width</string>
+             <string>Tile size</string>
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="Haut_Tuile">
-            <property name="text">
-             <string extracomment="Hauteur"/>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="Larg_Tuile">
-            <property name="text">
-             <string comment="Largeur"/>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_9">
-            <property name="text">
-             <string>Tile height</string>
-            </property>
-           </widget>
+          <item>
+           <widget class="QComboBox" name="cb_tuile"/>
           </item>
          </layout>
         </widget>
