@@ -49,7 +49,7 @@ class PostgisProvider:
 
         if self.db.open():
             print "Connection established to database %s -> %s" % (host, dbname)
-            
+
             query = QSqlQuery(self.db)
             getGeometry = "SELECT GeometryType({column_}) FROM {table_} LIMIT 1".format(column_=column, table_=table)
             query.exec_(getGeometry)
@@ -69,15 +69,15 @@ class PostgisProvider:
                    Ymin_=Ymin,
                    Ymax_=Ymax)
 
-        intersect = " WHERE ST_Intersects(geom, ST_GeomFromText('{polygon_}', {srid_}))".format(polygon_ = polygon, srid_ = self.srid)
+        intersect = " WHERE ST_Intersects(geom, ST_GeomFromText('{polygon_}', {srid_}))".format(polygon_=polygon, srid_=self.srid)
 
-        if (self.geometry == 'POINT' or 
-              self.geometry == 'LINESTRING' or
-              self.geometry == 'MULTILINESTRING'):
+        if (self.geometry == 'POINT' or
+                self.geometry == 'LINESTRING' or
+                self.geometry == 'MULTILINESTRING'):
             request = self._request_point_line(polygon)
 
-        elif(self.geometry == 'POLYGONE' or
-              self.geometry == 'POLYHEDRALSURFACE'):
+        elif (self.geometry == 'POLYGONE' or
+                self.geometry == 'POLYHEDRALSURFACE'):
             request = self._request_triangulate(polygon)
 
         else:
@@ -97,13 +97,12 @@ class PostgisProvider:
             # TODO SEND json via websocket to browser
             # Perhaps can add a buffer to send 5 or 10 geometries
 
-
-
     def _request_point_line(self, polygon):
-        return "SELECT ST_AsX3D(ST_Force3D({column_})) FROM {table_}".format(column_ = self.column, table_ = self.table)
+        return "SELECT ST_AsX3D(ST_Force3D({column_})) FROM {table_}".format(column_=self.column, table_=self.table)
 
     def _request_triangulate(self, polygon):
-        return "SELECT ST_AsX3D(ST_Tesselate(ST_Force3D({column_}))) FROM {table_}".format(column_ = self.column, table_ = self.table)
+        return "SELECT ST_AsX3D(ST_Tesselate(ST_Force3D({column_}))) FROM {table_}".format(column_=self.column, table_=self.table)
+
 
 ## Raster provider
 #  Stock the attribute to use a raster resource
