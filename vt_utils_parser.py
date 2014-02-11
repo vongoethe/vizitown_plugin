@@ -1,6 +1,10 @@
 import re
 
-## Parse a string
+## parseVector to recuperate vector information in QGIS
+#  This function give the query to ask the database and 
+#  return vectors informations into QGIS
+#  @param source String information to query the database
+#  @return String with vectors informations
 def parseVector(source):
     m = re.match(r"""
     \s*dbname='(?P<dbname>.*?)'\s*host=(?P<host>\d+.\d+.\d+.\d+)\s*port=(?P<port>\d+)
