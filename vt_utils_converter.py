@@ -61,19 +61,19 @@ class X3DTranslateToThreeJs:
                 return None
 
     def __parse_point(self, message):
-        nbFace = "0"
-        nbPoint = "1"
+        nbFace = 0
+        nbPoint = 1
 
         vertice = re.sub(' ', ',', message)
         return self.__get_json(nbFace, nbPoint, None, vertice)
 
     def __parse_line(self, xmldoc):
-        nbFace = "0"
+        nbFace = 0
 
         vertices = self.__get_vertices(xmldoc)
         nbVertice = self.__count_vertice(vertices)
 
-        return self.__get_json(nbFace, str(nbVertice), None, vertices)
+        return self.__get_json(nbFace, nbVertice, None, vertices)
 
     def __parse_triangle(self, xmldoc):
         nbIndexFace = 3
@@ -91,7 +91,7 @@ class X3DTranslateToThreeJs:
 
         faces = ','.join(str(f) for f in facesTab)
         nbFace = nbVertice / nbIndexFace
-        return self.__get_json(str(nbFace), str(nbVertice), faces, vertices)
+        return self.__get_json(nbFace, nbVertice, faces, vertices)
 
     def __get_vertices(sef, xmldoc):
         nodeVertice = xmldoc.getElementsByTagName('Coordinate')
@@ -110,12 +110,12 @@ class X3DTranslateToThreeJs:
 
         json = self.__json
 
-        json = re.sub("{VERTICES}", nbVertices, json)
-        json = re.sub("{FACES}", nbFaces, json)
+        json = re.sub("{VERTICES}", str(nbVertices), json)
+        json = re.sub("{FACES}", str(nbFaces), json)
 
-        json = re.sub("{TAB_VERTICES}", vertices, json)
+        json = re.sub("{TAB_VERTICES}", str(vertices), json)
         if faces is not None:
-            json = re.sub("{TAB_FACES}", faces, json)
+            json = re.sub("{TAB_FACES}", str(faces), json)
         else:
             json = re.sub("{TAB_FACES}", "", json)
 
