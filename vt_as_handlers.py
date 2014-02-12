@@ -1,3 +1,4 @@
+from vt_utils_converter import X3DTranslateToThreeJs
 import cyclone.websocket
 import vt_as_providers
 
