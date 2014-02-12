@@ -16,11 +16,9 @@ class TestTiler(unittest.TestCase):
         self.srcMnt = os.path.join(self.path, "Mnt_L93.tiff")
         self.extent = ["829889.029", "868878.498", "6495517.459", "6539503.016"]
         self.tileSize = 4096
-        print self.srcImg
 
     def test_nominal_case(self):
         testNominal = TileGenerator(self.srcImg, self.srcMnt, self.path, self.extent, self.tileSize, 2)
-        print testNominal
         testNominal.launch_process()
         self.assertIn("img_GrandLyon2m_L93_RGB", os.listdir(self.path))
         self.assertIn("mnt_Mnt_L93", os.listdir(self.path))

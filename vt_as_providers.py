@@ -63,29 +63,29 @@ class PostgisProvider:
         query = QSqlQuery(self.db)
         request = ""
 
-        polygon = """POLYGON(({Xmin_} {Ymin_}, {Xmax_} {Ymin_}, {Xmax_} {Ymax_}, {Xmin_} {Ymax_}, {Xmin_} {Ymin_}))
+        extent = """POLYGON(({Xmin_} {Ymin_}, {Xmax_} {Ymin_}, {Xmax_} {Ymax_}, {Xmin_} {Ymax_}, {Xmin_} {Ymin_}))
         """.format(Xmin_=Xmin,
                    Xmax_=Xmax,
                    Ymin_=Ymin,
                    Ymax_=Ymax)
 
-        intersect = " WHERE ST_Intersects(geom, ST_GeomFromText('{polygon_}', {srid_}))".format(polygon_=polygon, srid_=self.srid)
+        intersect = " WHERE ST_Intersects({column_}, ST_GeomFromText('{extent_}', {srid_}))".format(extent_=extent, srid_=self.srid, column_=self.column)
 
         if (self.geometry == 'POINT' or
                 self.geometry == 'LINESTRING' or
                 self.geometry == 'MULTILINESTRING'):
-            request = self._request_point_line(polygon)
+            request = self._request_point_line()
 
         elif (self.geometry == 'POLYGONE' or
                 self.geometry == 'POLYHEDRALSURFACE'):
-            request = self._request_triangulate(polygon)
+            request = self._request_triangulate()
 
         else:
             # Multipoint, multipolygon, others...
             raise Exception('Can\'t request this kind of geometry')
 
         request += intersect
-
+        print request
         if not query.exec_(request):
             print query.lastQuery()
             print query.lastError().text()
@@ -93,10 +93,10 @@ class PostgisProvider:
 
         return {'it': query, 'geom': self.geometry}
 
-    def _request_point_line(self, polygon):
+    def _request_point_line(self):
         return "SELECT ST_AsX3D(ST_Force3D({column_})) FROM {table_}".format(column_=self.column, table_=self.table)
 
-    def _request_triangulate(self, polygon):
+    def _request_triangulate(self):
         return "SELECT ST_AsX3D(ST_Tesselate(ST_Force3D({column_}))) FROM {table_}".format(column_=self.column, table_=self.table)
 
 
