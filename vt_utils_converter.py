@@ -61,7 +61,7 @@ class X3DTranslateToThreeJs:
             xmldoc = minidom.parseString(message)
             if geometry == 'LINESTRING' or geometry == 'MULTILINESTRING':
                 return self.__parse_line(xmldoc)
-            elif geometry == 'POLYGON' or geometry == 'MULTIPOLYGON' or geometry == 'POLYHEDRALSURFACE':
+            elif geometry == 'POLYGON' or geometry == 'POLYHEDRALSURFACE':
                 return self.__parse_triangle(xmldoc)
             else:
                 return None
