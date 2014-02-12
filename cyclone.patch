@@ -1,0 +1,4 @@
+130a131,133
+>     
+> def unrun():
+>     reactor.callFromThread(reactor.stop)
