@@ -31,7 +31,7 @@ from qgis.gui import *
 
 import vt_utils_parser
 from vt_as_app import VTAppServer
-from vt_as_providers import ProviderManager, PostgisProvider
+from vt_as_providers import ProviderManager, PostgisProvider, RasterProvider
 
 
 ## Vizitown dialog in QGIS GUI
@@ -106,15 +106,13 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         layerListIems = QgsMapLayerRegistry().instance().mapLayers().items()
         for id, layer in layerListIems:
             if self.isDem(layer):
-               # item = QtGui.QAbstractItemModel(self.cb_MNT)
-               # item.setData(id, layer, QtCore.Qt.UserRole)
-                self.cb_MNT.addItem(layer.name(), id)
+                self.cb_MNT.addItem(layer.name(), layer)
             if self.isVector(layer):
                 name = layer.name() + ' ' + re.search("(\(.*\)+)", layer.source()).group(0)
                 item = QtGui.QListWidgetItem(name, self.listWidget_Left)
                 item.setData(QtCore.Qt.UserRole, layer)
             if self.isRaster(layer):
-                self.cb_Raster.addItem(layer.name(), id)
+                self.cb_Raster.addItem(layer.name(), layer)
 
     ## Add vector layer in a right listView
     def on_but_Add_released(self):
@@ -159,6 +157,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.appServerRunning = False
         else:
             self.createProviders()
+            self.createRasterProviders()
             initParam = self.getInitParam()
             self.appServer = VTAppServer(self, initParam)
             self.appServer.start()
@@ -179,22 +178,28 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             provider = PostgisProvider(d['host'], d['dbname'], d['user'], d['password'], d['srid'], d['table'], d['column'])
             ProviderManager.instance().addVectorProvider(provider)
 
-    #def createRasterProviders(self):
-        #dem = RasterProvider(name, extent, srid, source, httpRessource)
-        #ProviderManager.instance().dem = dem
-        #texture = RasterProvider(name, extent, srid, source, httpRessource)
-        #ProviderManager.instance().raster = texture
+    ## Create all providers for DEM and raster
+    def createRasterProviders(self):
+        if self.cb_MNT.count() > 0:
+            mnt = self.cb_MNT.itemData(self.cb_Raster.currentIndex())
+            dem = RasterProvider(mnt.name(), mnt.extent(), mnt.crs().postgisSrid(), mnt.source(), "http://localhost:" + self.getPort() + "/rasters" + mnt.name())
+            ProviderManager.instance().dem = dem
+        if self.cb_Raster.count() > 0:
+            raster = self.cb_Raster.itemData(self.cb_Raster.currentIndex())
+            texture = RasterProvider(raster.name(), raster.extent(), raster.crs().postgisSrid(), raster.source(), "http://localhost:" + self.getPort() + "/rasters/" + raster.name())
+            ProviderManager.instance().raster = texture
 
+    ##
     def getInitParam(self):
         return {
             'tileSize': self.getSizeTile(),
             'images': ['img_name_1'],
             'rootImgUrl': "http://localhost:" + self.getPort() + "/rasters",
             'extent': {
-                'Xmin': self.Xmin.setText("%.4f" % self.extent.xMinimum()),
-                'Ymin': self.Ymin.setText("%.4f" % self.extent.yMinimum()),
-                'Xmax': self.Xmax.setText("%.4f" % self.extent.xMaximum()),
-                'Ymax': self.Ymax.setText("%.4f" % self.extent.yMaximum()),
+                'Xmin': "%.4f" % self.extent.xMinimum(),
+                'Ymin': "%.4f" % self.extent.yMinimum(),
+                'Xmax': "%.4f" % self.extent.xMaximum(),
+                'Ymax': "%.4f" % self.extent.yMaximum(),
             },
             'port' : self.getPort()
         }
