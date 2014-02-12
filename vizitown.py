@@ -33,6 +33,7 @@ import resources_rc
 # Import the code for the dialog
 import vt_as_app
 from vizitowndialog import VizitownDialog
+from vt_as_sync import SyncManager
 
 
 class Vizitown:
@@ -75,6 +76,13 @@ class Vizitown:
         yMin = self.iface.mapCanvas().extent().yMinimum()
         xMax = self.iface.mapCanvas().extent().xMaximum()
         yMax = self.iface.mapCanvas().extent().yMaximum()
+        extent = {
+            'Xmin': xMin,
+            'Ymin': yMin,
+            'Xmax': xMax,
+            'Ymax': yMax,
+        }
+        SyncManager.instance().notifyExtentChange(extent)
 
     def run(self):
         dialog = self.dlg

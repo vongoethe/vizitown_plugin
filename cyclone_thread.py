@@ -1,4 +1,5 @@
 import sys
+import os
 from PyQt4.QtCore import *
 
 import cyclone.web
@@ -25,10 +26,12 @@ class CycloneThread(QThread):
         self.initParam = initParam
 
     def run(self):
+        rastersPath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "rasters")
         handlers = [
             (r'/init', InitHandler, dict(initParam=self.initParam)),
             (r'/data', DataHandler),
             (r'/sync', SyncHandler),
+            (r'/rasters/(.*)', cyclone.web.StaticFileHandler, {"path": rastersPath}),
         ]
         if self.debug:
             handlers.append((r'/test/echo', EchoHandler))

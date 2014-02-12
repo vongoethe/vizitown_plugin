@@ -49,14 +49,16 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
 #  Use to handle the synchronisation of the view
 #  from QGIS to the web browser
 class SyncHandler(cyclone.websocket.WebSocketHandler):
+    def initialize(self):
+        SyncManager.instance().addListener(self)
+
     ## Method call when the websocket is opened
     def connectionMade(self):
         print "WebSocket sync opened"
-        SyncManager.instance().addListener(self)
 
     ## Method call when a message is received
     def messageReceived(self, message):
-        pass  # TODO
+        pass  # Do nothing, simplex communication
 
     ## Method call when the websocket is closed
     def connectionLost(self, reason):
