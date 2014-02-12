@@ -156,7 +156,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.btnGenerate.setText("Generate")
             self.appServerRunning = False
         else:
-            self.createProviders()
+            self.createVectorProviders()
             self.createRasterProviders()
             initParam = self.getInitParam()
             self.appServer = VTAppServer(self, initParam)
@@ -171,7 +171,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         webbrowser.open(url)
 
     ## Create all providers with the selected layers in the GUI
-    def createProviders(self):
+    def createVectorProviders(self):
         for i in range(self.listWidget_Right.count()):
             vectorLayer = self.listWidget_Right.item(i).data(QtCore.Qt.UserRole)
             d = vt_utils_parser.parseVector(vectorLayer.source())
@@ -182,7 +182,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     def createRasterProviders(self):
         if self.cb_MNT.count() > 0:
             mnt = self.cb_MNT.itemData(self.cb_Raster.currentIndex())
-            dem = RasterProvider(mnt.name(), mnt.extent(), mnt.crs().postgisSrid(), mnt.source(), "http://localhost:" + self.getPort() + "/rasters" + mnt.name())
+            dem = RasterProvider(mnt.name(), mnt.extent(), mnt.crs().postgisSrid(), mnt.source(), "http://localhost:" + self.getPort() + "/rasters/" + mnt.name())
             ProviderManager.instance().dem = dem
         if self.cb_Raster.count() > 0:
             raster = self.cb_Raster.itemData(self.cb_Raster.currentIndex())
