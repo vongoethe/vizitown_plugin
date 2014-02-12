@@ -36,7 +36,7 @@ class CycloneThread(QThread):
         if self.debug:
             handlers.append((r'/test/echo', EchoHandler))
             handlers.append((r'/test/ping', PingHandler))
-        run(host="127.0.0.1", port=8888, more_handlers=handlers)
+        run(host="127.0.0.1", port=int(self.initParam['port']), more_handlers=handlers)
 
     ## Stop the cyclone server
     def stop(self):
