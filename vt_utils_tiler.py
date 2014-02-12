@@ -2,6 +2,7 @@ import os
 import math
 import tempfile
 import shutil
+
 from osgeo import gdal
 import gdal_retile
 import gdal_merge
@@ -37,7 +38,7 @@ class TileGenerator:
         self.tileSize = tileSize
         self.levels = levels
         self.extent = extent
-        self.processChoice = self.__check_data(dataSrcImg, dataSrcMnt)
+        self.processChoice = self._check_data(dataSrcImg, dataSrcMnt)
 
     ##  Getter of the data destination directory
     def __get_data_dst(self):
@@ -94,7 +95,7 @@ class TileGenerator:
         factorX = math.ceil((xMax - xMin) / self.tileSize) * self.tileSize
         factorY = math.ceil((yMax - yMin) / self.tileSize) * self.tileSize
 
-        self.__set_extent([xMin, xMin + factorX, yMax - factorY, yMax])
+        self._set_extent([xMin, xMin + factorX, yMax - factorY, yMax])
 
     ## __process_merge merge the image and mnt data with the new extent
     def __process_merge(self):
@@ -105,11 +106,11 @@ class TileGenerator:
 
         if hasattr(self, 'dataSrcImg'):
             gdal_merge.main(["-init", "0", "-ul_lr", uLX, uLY, lRX, lRY, "-o", self.dataMergeImg, self.dataSrcImg])
-            self.__set_data_src_img(self.dataMergeImg)
+            self._set_data_src_img(self.dataMergeImg)
 
         if hasattr(self, 'dataSrcMnt'):
             gdal_merge.main(["-init", "0", "-separate", "-ul_lr", uLX, uLY, lRX, lRY, "-o", self.dataMergeMnt, self.dataSrcMnt])
-            self.__set_data_src_mnt(self.dataMergeMnt)
+            self._set_data_src_mnt(self.dataMergeMnt)
 
     ##__process_tile_img create tiles and pyramid of this Image
     def __process_tile_img(self):
@@ -149,7 +150,7 @@ class TileGenerator:
             if (os.path.isdir(os.path.join(dataImg, dataRepo))):
                 if not os.path.exists(os.path.join(dataDirMnt, dataRepo)):
                     os.mkdir(os.path.join(dataDirMnt, dataRepo))
-                self.__process_clip_mnt(os.path.join(dataImg, dataRepo), os.path.join(dataDirMnt, dataRepo))
+                self._process_clip_mnt(os.path.join(dataImg, dataRepo), os.path.join(dataDirMnt, dataRepo))
 
         for dataFile in dataSourceListRepo:
             if os.path.splitext(dataFile)[1] is "png":
@@ -177,7 +178,7 @@ class TileGenerator:
             if (os.path.isdir(os.path.join(dataTile, dataRepo))):
                 if not os.path.exists(os.path.join(dataDstDir, dataRepo)):
                     os.mkdir(os.path.join(dataDstDir, dataRepo))
-                self.__process_to_dim_tile(os.path.join(dataTile, dataRepo), os.path.join(dataDstDir, dataRepo))
+                self._process_to_dim_tile(os.path.join(dataTile, dataRepo), os.path.join(dataDstDir, dataRepo))
 
         for dataFile in dataSourceListRepo:
             if os.path.splitext(dataFile)[1] is "png":
@@ -201,24 +202,41 @@ class TileGenerator:
     ## __clean_up clean the temp repository
     def __clean_up(self):
         if hasattr(self, 'dataSrcImg'):
-            shutil.copytree(os.path.join(self.tmpRepo, os.path.basename(self.dataDstImg)), self.dataDst)
+            imgDirName = os.path.basename(os.path.normpath(self.dataDstImg))
+            self._copytree(os.path.join(self.tmpRepo, imgDirName), os.path.join(self.dataDst, imgDirName))
         if hasattr(self, 'dataSrcMnt'):
-            shutil.copytree(os.path.join(self.tmpRepo, os.path.basename(self.dataDstMnt)), self.dataDst)
+            mntDirName = os.path.basename(os.path.normpath(self.dataDstMnt))
+            self._copytree(os.path.join(self.tmpRepo, mntDirName), os.path.join(self.dataDst, mntDirName))
+
+    ## _copytree method copy data with specifics actions
+    #  Our implementation of copytree because standard cannot copy in an existing repository 
+    #  @param src source repository
+    #  @param dst destination repository
+    #  @param symlinks to symbolic file
+    #  @param ignore to ignore data file
+    def _copytree(self, src, dst, symlinks=False, ignore=None):
+        for item in os.listdir(src):
+            s = os.path.join(src, item)
+            d = os.path.join(dst, item)
+            if os.path.isdir(s):
+                self._copytree(s, d, symlinks, ignore)
+            else:
+                shutil.copy2(s, d)
 
     ## launch_process manage the several process to generate data tiles
     def launch_process(self):
-        self.__create_repositories()
-        self.__calculate_extent()
-        self.__process_merge()
+        self._create_repositories()
+        self._calculate_extent()
+        self._process_merge()
         if (self.processChoice == 0):
-            self.__process_tile_img()
-            self.__process_clip_mnt(self.dataDstImg, self.dataDstMnt)
-            self.__process_to_dim_tile(self.dataDst, self.tmpRepo)
-            self.__process_pyramid_mnt()
+            self._process_tile_img()
+            self._process_clip_mnt(self.dataDstImg, self.dataDstMnt)
+            self._process_to_dim_tile(self.dataDst, self.tmpRepo)
+            self._process_pyramid_mnt()
         elif (self.processChoice == 1):
-            self.__process_tile_img()
-            self.__process_to_dim_tile(self.dataDst, self.tmpRepo)
+            self._process_tile_img()
+            self._process_to_dim_tile(self.dataDst, self.tmpRepo)
         elif (self.processChoice == 2):
-            self.__process_tile_mnt()
-            self.__process_to_dim_tile(self.dataDst, self.tmpRepo)
-        self.__clean_up()
+            self._process_tile_mnt()
+            self._process_to_dim_tile(self.dataDst, self.tmpRepo)
+        self._clean_up()
