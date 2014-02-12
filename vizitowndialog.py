@@ -22,6 +22,7 @@
 
 import os
 import webbrowser
+import re
 
 from ui_vizitown import Ui_Vizitown
 from PyQt4 import QtCore, QtGui
@@ -106,7 +107,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             if self.isDem(layer):
                 self.cb_MNT.addItem(layer.name(), id)
             if self.isVector(layer):
-                item = QtGui.QListWidgetItem(layer.name(), self.listWidget_Left)
+                name = layer.name() + ' ' + re.search("(\(.*\)+)",layer.source()).group(0)
+                item = QtGui.QListWidgetItem(name, self.listWidget_Left)
                 item.setData(QtCore.Qt.UserRole, layer)
             if self.isRaster(layer):
                 self.cb_Raster.addItem(layer.name(), id)
@@ -121,19 +123,19 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
     ## Set the tab advanced option by default
     def on_but_defaut_released(self):
-        #self.Numero_Port.setText("8888")
-        #self.cb_tuile.setCurrentIndex(1)
-        print self.checkIsNumber(self.Numero_Port.text())
+        self.Numero_Port.setText("8888")
+        self.cb_tuile.setCurrentIndex(1)
 
     def checkIsNumber(self, port):
-            return int(port) < 65536 and int(port) > 1024
-        #else:
-         #   QMessageBox.information(self, 'Warning',"The port isn't a number",QMessageBox.Ok)
+            return port.isdigit() and int(port) < 65536 and int(port) > 1024
 
     ## Generate and launch the rendering of the 3D scene
     def on_btnGenerate_released(self):
         sizeTuile = self.cb_tuile.currentText()
-        port = self.Numero_Port.text()
+        if self.checkIsNumber(self.Numero_Port.text()):
+            port = self.Numero_Port.text()
+        else:
+            port = 8888
 
         if self.appServerRunning:
             self.btnGenerate.setText("Server is stopping")
@@ -150,9 +152,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
     ## Open a web browser
     def openWebBrowser(self, port):
-       # url = 'file:///' + os.path.join(os.path.dirname(os.path.abspath(__file__)), 'index.php') + '?port=' + port
-        url = 'file:///' + os.path.join(os.path.dirname(os.path.abspath(__file__)), 'index.html') 
-        webbrowser.open(url,2)
+        url = 'http://localhost:' + str(port)
+        webbrowser.open(url)
 
     ## Create all providers with the selected layers in the GUI
     def createProviders(self):
