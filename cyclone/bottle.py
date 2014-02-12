@@ -91,11 +91,10 @@ def create_app(**settings):
     _BaseHandler = settings.pop("base_handler", cyclone.web.RequestHandler)
 
     handlers = {}
-    if _handlers is not None:
-        for (path, method, callback, kwargs) in _handlers:
-            if path not in handlers:
-                handlers[path] = Router()
-            handlers[path].add(method, callback)
+    for (path, method, callback, kwargs) in _handlers:
+        if path not in handlers:
+            handlers[path] = Router()
+        handlers[path].add(method, callback)
 
     _handlers = None
 
