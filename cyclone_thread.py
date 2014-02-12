@@ -5,7 +5,7 @@ import cyclone.web
 from cyclone.bottle import run, route, unrun
 
 from vt_test_handlers import PingHandler, EchoHandler
-from vt_as_handlers import DataHandler, SyncHandler
+from vt_as_handlers import DataHandler, SyncHandler, InitHandler
 
 
 ## CycloneThread
@@ -15,15 +15,18 @@ class CycloneThread(QThread):
 
     ## Constructor
     #  @param parentObject the parent QObject
+    #  @param init a dictionary with the parameters for the browser
     #  @param debug if True add two default handlers,
     #  '/test/echo' a echo server in websocket and
     #  '/test/ping' handle HTTP GET request and return "pong"
-    def __init__(self, parentObject, debug=True):
+    def __init__(self, parentObject, initParam, debug=True):
         QThread.__init__(self, parentObject.thread())
         self.debug = debug
+        self.initParam = initParam
 
     def run(self):
         handlers = [
+            (r'/init', InitHandler, dict(initParam=self.initParam)),
             (r'/data', DataHandler),
             (r'/sync', SyncHandler),
         ]

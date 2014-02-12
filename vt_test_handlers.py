@@ -7,7 +7,7 @@ import cyclone.websocket
 #  Basic HTTP request handler which return "pong"
 #  to a GET HTTP
 class PingHandler(cyclone.web.RequestHandler):
-    ## Method that handle GET HTTP
+    ## Handle GET HTTP
     def get(self):
         self.write("Hello, world")
 

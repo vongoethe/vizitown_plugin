@@ -35,7 +35,6 @@ import vt_as_app
 from vizitowndialog import VizitownDialog
 
 
-
 class Vizitown:
 
     def __init__(self, iface):
@@ -77,7 +76,7 @@ class Vizitown:
         xMax = self.iface.mapCanvas().extent().xMaximum()
         yMax = self.iface.mapCanvas().extent().yMaximum()
 
-    def run(self): 
+    def run(self):
         dialog = self.dlg
         dialog.initExtent(self.iface.mapCanvas().extent())
         dialog.loadLayers()

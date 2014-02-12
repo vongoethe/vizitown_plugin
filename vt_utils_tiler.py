@@ -8,7 +8,9 @@ import gdal_retile
 import gdal_merge
 from PyQt4.QtCore import *
 
-## TileGenerator Class manage Image and MNT to tile and dimension this.
+
+## TileGenerator
+#  Manage Image and MNT to tile and dimension this.
 class TileGenerator:
 
     ## The Constuctor with several parameter
@@ -209,7 +211,7 @@ class TileGenerator:
             self._copytree(os.path.join(self.tmpRepo, mntDirName), os.path.join(self.dataDst, mntDirName))
 
     ## _copytree method copy data with specifics actions
-    #  Our implementation of copytree because standard cannot copy in an existing repository 
+    #  Our implementation of copytree because standard cannot copy in an existing repository
     #  @param src source repository
     #  @param dst destination repository
     #  @param symlinks to symbolic file

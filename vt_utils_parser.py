@@ -1,7 +1,8 @@
 import re
 
+
 ## parseVector to recuperate vector information in QGIS
-#  This function give the query to ask the database and 
+#  This function give the query to ask the database and
 #  return vectors informations into QGIS
 #  @param source String information to query the database
 #  @return String with vectors informations
