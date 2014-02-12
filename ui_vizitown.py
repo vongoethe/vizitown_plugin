@@ -172,7 +172,7 @@ class Ui_Vizitown(object):
         self.Numero_Port.setText(_translate("Vizitown", "8888", None))
         self.groupBox_5.setTitle(_translate("Vizitown", "Scene", None))
         self.label_8.setText(_translate("Vizitown", "Tile size", None))
-        self.but_defaut.setText(_translate("Vizitown", "Par defaut", None))
+        self.but_defaut.setText(_translate("Vizitown", "By default", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Opt), _translate("Vizitown", "Preferences", None))
         self.label_11.setText(_translate("Vizitown", "Xmin", None))
         self.label_13.setText(_translate("Vizitown", "Xmax", None))
