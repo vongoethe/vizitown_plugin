@@ -42,6 +42,8 @@ class VTAppServer(QObject):
         self.rollbackImporter = None
         self.appThread = None
         self.timer = None
+        self.saveStdout = sys.stdout
+        self.saveStderr = sys.stderr
 
     ## Start the application server
     def start(self):
@@ -81,6 +83,8 @@ class VTAppServer(QObject):
             self.rollbackImporter.uninstall()
         if self.timer:
             self.timer.stop()
+        sys.stdout = self.saveStdout
+        sys.stderr = self.saveStderr
 
     ## Yied application server thread to not hang the GUI
     def yieldAppThread(self):
