@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-#########################################################
-# Class to tile Image and define the dimension of this. #
-#########################################################
 import os
 import math
 import tempfile
@@ -12,10 +8,17 @@ import gdal_retile
 import gdal_merge
 from PyQt4.QtCore import *
 
-
+## TileGenerator Class manage Image and MNT to tile and dimension this.
 class TileGenerator:
 
-    # Init method to define specifics informations
+    ## The Constuctor with several parameter
+    #  This constructor check the presence of the data and initialize the fields
+    #  @param dataSrcImg the path of the image source
+    #  @param dataSrcMnt the path of the mnt source
+    #  @param path the path of the data destination
+    #  @param extent the extent of the view
+    #  @param tileSize to dimension and tile the data
+    #  @param levels to define the several levels of zoom
     def __init__(self, dataSrcImg, dataSrcMnt, path, extent, tileSize=2048, levels=2):
         if path is None:
             raise Exception("Invalid path")
@@ -37,24 +40,27 @@ class TileGenerator:
         self.extent = extent
         self.processChoice = self._check_data(dataSrcImg, dataSrcMnt)
 
-    # Getter of the data destination directory
-    def _get_data_dst(self):
+    ##  Getter of the data destination directory
+    def __get_data_dst(self):
         return self.dataDst
 
-    # Setter of the data destination directory Image
-    def _set_data_src_img(self, data):
+    ## Setter of the data destination directory Image
+    #  @param data the new image source
+    def __set_data_src_img(self, data):
         self.dataSrcImg = data
 
-    # Setter of the data destination directory Mnt
-    def _set_data_src_mnt(self, data):
+    ## Setter of the data destination directory Mnt
+    #  @param data the new mnt source
+    def __set_data_src_mnt(self, data):
         self.dataSrcMnt = data
 
-    # Setter of the extent
-    def _set_extent(self, extent):
+    ## Setter of the extent
+    #  @param extent the new extent
+    def __set_extent(self, extent):
         self.extent = extent
 
-    # Method to create the repositories
-    def _create_repositories(self):
+    ## __create_repositories method to create the several repositories
+    def __create_repositories(self):
         if os.path.exists(self.tmpRepo):
             shutil.rmtree(self.tmpRepo)
         os.mkdir(self.tmpRepo)
@@ -63,8 +69,10 @@ class TileGenerator:
         if hasattr(self, 'dataSrcMnt'):
             os.mkdir(self.dataDstMnt)
 
-    # Method to define the process to apply
-    def _check_data(self, dataSrcImg, dataSrcMnt):
+    ## __check_data define the process to apply in function of the data instanciate
+    #  @param dataSrcImg the path of the image source
+    #  @param dataSrcMnt the path of the mnt source
+    def __check_data(self, dataSrcImg, dataSrcMnt):
         if dataSrcImg is not None:
             if dataSrcMnt is not None:
                 return 0
@@ -74,8 +82,8 @@ class TileGenerator:
             if dataSrcMnt is not None:
                 return 2
 
-    # Method to calculate the extent
-    def _calculate_extent(self):
+    ## __calculate_extent calculate the extent and set it
+    def __calculate_extent(self):
         xMin = float(self.extent[0])
         xMax = float(self.extent[1])
         yMin = float(self.extent[2])
@@ -89,8 +97,8 @@ class TileGenerator:
 
         self._set_extent([xMin, xMin + factorX, yMax - factorY, yMax])
 
-    # Method to merge the data and define an equals size
-    def _process_merge(self):
+    ## __process_merge merge the image and mnt data with the new extent
+    def __process_merge(self):
         uLX = str(self.extent[0])
         uLY = str(self.extent[3])
         lRX = str(self.extent[1])
@@ -104,8 +112,8 @@ class TileGenerator:
             gdal_merge.main(["-init", "0", "-separate", "-ul_lr", uLX, uLY, lRX, lRY, "-o", self.dataMergeMnt, self.dataSrcMnt])
             self._set_data_src_mnt(self.dataMergeMnt)
 
-    # Method to create tiles and pyramid of this Image
-    def _process_tile_img(self):
+    ##__process_tile_img create tiles and pyramid of this Image
+    def __process_tile_img(self):
         reload(gdal_retile)
         gdal_retile.main(["-v",
                           "-of", "Png",
@@ -113,8 +121,8 @@ class TileGenerator:
                           "-ps", str(self.tileSize), str(self.tileSize),
                           "-targetDir", self.dataDstImg, self.dataSrcImg])
 
-    # Method to create tiles and pyramid of this Mnt
-    def _process_tile_mnt(self):
+    ##__process_tile_mnt create tiles and pyramid of this Mnt
+    def __process_tile_mnt(self):
         reload(gdal_retile)
         gdal_retile.main(["-v",
                           "-of", "Png",
@@ -122,8 +130,8 @@ class TileGenerator:
                           "-ps", str(self.tileSize), str(self.tileSize),
                           "-targetDir", self.dataDstMnt, self.dataSrcMnt])
 
-    # Method to create pyramid of this Mnt
-    def _process_pyramid_mnt(self):
+    ##__process_pyramid_mnt create pyramid of this Mnt
+    def __process_pyramid_mnt(self):
         reload(gdal_retile)
         gdal_retile.main(["-v",
                           "-of", "Png",
@@ -132,8 +140,11 @@ class TileGenerator:
                           "-ps", str(self.tileSize), str(self.tileSize),
                           "-targetDir", self.dataDstMnt, self.dataSrcMnt])
 
-    # Method to Clip the Mnt and launch the creation of pyramid
-    def _process_clip_mnt(self, dataImg, dataDirMnt):
+    ## __process_clip_mnt clip the mnt data with the image tile size
+    #  and lauch the pyramid process
+    #  @param dataImg the repository to stock the tile image source
+    #  @param dataDirMnt the repository to stock the mnt data
+    def __process_clip_mnt(self, dataImg, dataDirMnt):
         dataSourceListRepo = os.listdir(dataImg)
         for dataRepo in dataSourceListRepo:
             if (os.path.isdir(os.path.join(dataImg, dataRepo))):
@@ -157,8 +168,10 @@ class TileGenerator:
                     processMnt.start(cmdMnt)
                     processMnt.waitForFinished()
 
-    # Method to manage tiles and fix this dimension
-    def _process_to_dim_tile(self, dataTile, dataDstDir):
+    ## __process_to_dim_tile manage mnt and image tiles to fix this dimension
+    #  @param dataTile the repository to find the data source
+    #  @param dataDstDir the repository to stock the final data
+    def __process_to_dim_tile(self, dataTile, dataDstDir):
         dataSourceListRepo = os.listdir(dataTile)
 
         for dataRepo in dataSourceListRepo:
@@ -186,8 +199,8 @@ class TileGenerator:
                         shutil.copy(os.path.join(dataTile, dataFile), os.path.join(dataDstDir, dataFile))
                         shutil.copy(os.path.join(dataTile, dataFile) + ".aux.xml", os.path.join(dataDstDir, dataFile) + ".aux.xml")
 
-    # Method to clean the Repository
-    def _clean_up(self):
+    ## __clean_up clean the temp repository
+    def __clean_up(self):
         if hasattr(self, 'dataSrcImg'):
             imgDirName = os.path.basename(os.path.normpath(self.dataDstImg))
             self._copytree(os.path.join(self.tmpRepo, imgDirName), os.path.join(self.dataDst, imgDirName))
@@ -195,7 +208,12 @@ class TileGenerator:
             mntDirName = os.path.basename(os.path.normpath(self.dataDstMnt))
             self._copytree(os.path.join(self.tmpRepo, mntDirName), os.path.join(self.dataDst, mntDirName))
 
-    ## Our implementation of copytree because standard cannot copy in an existing repository 
+    ## _copytree method copy data with specifics actions
+    #  Our implementation of copytree because standard cannot copy in an existing repository 
+    #  @param src source repository
+    #  @param dst destination repository
+    #  @param symlinks to symbolic file
+    #  @param ignore to ignore data file
     def _copytree(self, src, dst, symlinks=False, ignore=None):
         for item in os.listdir(src):
             s = os.path.join(src, item)
@@ -205,7 +223,7 @@ class TileGenerator:
             else:
                 shutil.copy2(s, d)
 
-    # Method to Manage the process
+    ## launch_process manage the several process to generate data tiles
     def launch_process(self):
         self._create_repositories()
         self._calculate_extent()
