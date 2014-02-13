@@ -1,5 +1,7 @@
 import unittest
 
+from PyQt4 import QtCore
+
 from vt_as_providers import ProviderManager, PostgisProvider, RasterProvider
 
 
@@ -8,7 +10,7 @@ class TestProviderManager(unittest.TestCase):
         self.pm = ProviderManager.instance()
 
     def test_singleton(self):
-        self.pm.providers.append("test")
+        self.pm.vectors.append("test")
         self.assertEqual(ProviderManager.instance(), self.pm, "ProviderManager is not a singleton")
 
 
@@ -49,4 +51,6 @@ class TestRasterProvider(unittest.TestCase):
         self.assertEqual(self.httpRessource, self.p.httpRessource, "RasterProvider init fail")
 
 if __name__ == "__main__":
+    app = QtCore.QCoreApplication([])
     unittest.main()
+    app.exec_()
