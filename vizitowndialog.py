@@ -106,6 +106,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.cb_Raster.clear()
         self.layerSelectionWidget.clear()
         self.layerSelectionWidget.setHorizontalHeaderLabels(('Display','Layer','Field'))
+        self.layerSelectionWidget.setColumnWidth(0,45)
+        self.layerSelectionWidget.setColumnWidth(1,150)
         # set column name of layerSelectionWidget
         self.progressBar.hide()
 
