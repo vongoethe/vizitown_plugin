@@ -49,4 +49,6 @@ class TestRasterProvider(unittest.TestCase):
         self.assertEqual(self.httpRessource, self.p.httpRessource, "RasterProvider init fail")
 
 if __name__ == "__main__":
+    app = QCoreApplication()
     unittest.main()
+    return app.exec_()
