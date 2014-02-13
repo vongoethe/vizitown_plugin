@@ -180,6 +180,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
     def addItemComboBox(self, comboBox, dic):
     #layer = item.data(QtCore.Qt.UserRole)
+        comboBox.addItem("None")
         for nameColumn, type in dic.items():
             comboBox.addItem(nameColumn + ' - ' + type)
 
@@ -210,6 +211,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         if self.Numero_Port.text().isdigit() and int(self.Numero_Port.text()) < 65536 and int(self.Numero_Port.text()) > 1024:
             return self.Numero_Port.text()
         else:
+            # Maybe change for another exotic port
             return 8888
 
     ## Get the size tile
