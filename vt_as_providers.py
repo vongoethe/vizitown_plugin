@@ -115,7 +115,3 @@ class RasterProvider:
         self.srid = srid
         self.source = source
         self.httpRessource = httpRessource
-
-    ## Undefined for raster
-    def requestTile(self, Xmin, Ymin, Xmax, Ymax):
-        pass
