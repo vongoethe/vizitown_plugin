@@ -241,9 +241,6 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     ## Get the intial parameter to give at the app server
     def getInitParam(self):
         return {
-            'tileSize': self.getSizeTile(),
-            'images': ['img_name_1'],
-            'rootImgUrl': "http://localhost:" + self.getPort() + "/rasters",
             'extent': {
                 'Xmin': "%.4f" % self.extent.xMinimum(),
                 'Ymin': "%.4f" % self.extent.yMinimum(),
@@ -251,4 +248,13 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
                 'Ymax': "%.4f" % self.extent.yMaximum(),
             },
             'port': self.getPort()
+        }
+
+    ## Get the tiles info done by the process GDAL
+    def getTilesInfo(self):
+        return {
+            'zoomLevel': int(self.cb_zoom.currentText()),
+            'tileSize': self.getSizeTile(),
+            'dem': ProviderManager.instance().dem.httpRessource,
+            'texture': ProviderManager.instance().raster.httpRessource,
         }
