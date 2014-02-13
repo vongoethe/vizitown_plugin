@@ -2,7 +2,7 @@ import os
 import math
 import tempfile
 import shutil
-
+import re
 from osgeo import gdal
 import gdal_retile
 import gdal_merge
@@ -42,25 +42,6 @@ class TileGenerator:
         self.extent = extent
         self.processChoice = self._check_data(dataSrcImg, dataSrcMnt)
 
-    ##  Getter of the data destination directory
-    def _get_data_dst(self):
-        return self.dataDst
-
-    ## Setter of the data destination directory Image
-    #  @param data the new image source
-    def _set_data_src_img(self, data):
-        self.dataSrcImg = data
-
-    ## Setter of the data destination directory Mnt
-    #  @param data the new mnt source
-    def _set_data_src_mnt(self, data):
-        self.dataSrcMnt = data
-
-    ## Setter of the extent
-    #  @param extent the new extent
-    def _set_extent(self, extent):
-        self.extent = extent
-
     ## _create_repositories method to create the several repositories
     def _create_repositories(self):
         if os.path.exists(self.tmpRepo):
@@ -97,7 +78,7 @@ class TileGenerator:
         factorX = math.ceil((xMax - xMin) / self.tileSize) * self.tileSize
         factorY = math.ceil((yMax - yMin) / self.tileSize) * self.tileSize
 
-        self._set_extent([xMin, xMin + factorX, yMax - factorY, yMax])
+        self.extent = [xMin, xMin + factorX, yMax - factorY, yMax]
 
     ## _process_merge merge the image and mnt data with the new extent
     def _process_merge(self):
@@ -108,11 +89,11 @@ class TileGenerator:
 
         if hasattr(self, 'dataSrcImg'):
             gdal_merge.main(["-init", "0", "-ul_lr", uLX, uLY, lRX, lRY, "-o", self.dataMergeImg, self.dataSrcImg])
-            self._set_data_src_img(self.dataMergeImg)
+            self.dataSrcImg = self.dataMergeImg
 
         if hasattr(self, 'dataSrcMnt'):
             gdal_merge.main(["-init", "0", "-separate", "-ul_lr", uLX, uLY, lRX, lRY, "-o", self.dataMergeMnt, self.dataSrcMnt])
-            self._set_data_src_mnt(self.dataMergeMnt)
+            self.dataSrcMnt = self.dataMergeMnt
 
     ##_process_tile_img create tiles and pyramid of this Image
     def _process_tile_img(self):
@@ -133,17 +114,17 @@ class TileGenerator:
                           "-targetDir", self.dataDstMnt, self.dataSrcMnt])
 
     ##_process_pyramid_mnt create pyramid of this Mnt
-    def _process_pyramid_mnt(self):
+    def _process_pyramid_mnt(self, dataMntDst):
         reload(gdal_retile)
+        mntDirName = os.path.basename(os.path.normpath(self.dataDstMnt))
         gdal_retile.main(["-v",
                           "-of", "Png",
                           "-pyramidOnly",
                           "-levels", str(self.levels),
                           "-ps", str(self.tileSize), str(self.tileSize),
-                          "-targetDir", self.dataDstMnt, self.dataSrcMnt])
+                          "-targetDir", os.path.join(self.tmpRepo, mntDirName), dataMntDst])
 
     ## _process_clip_mnt clip the mnt data with the image tile size
-    #  and lauch the pyramid process
     #  @param dataImg the repository to stock the tile image source
     #  @param dataDirMnt the repository to stock the mnt data
     def _process_clip_mnt(self, dataImg, dataDirMnt):
@@ -155,17 +136,22 @@ class TileGenerator:
                 self._process_clip_mnt(os.path.join(dataImg, dataRepo), os.path.join(dataDirMnt, dataRepo))
 
         for dataFile in dataSourceListRepo:
-            if os.path.splitext(dataFile)[1] is "png":
-                if not len(os.path.splitext(dataFile)) > 2:
+            if re.search("png", dataFile) is not None:
+                if re.search("png.", dataFile) is None:
                     ds = gdal.Open(os.path.join(dataImg, dataFile), gdal.GA_ReadOnly)
                     geoInfo = ds.GetGeoTransform()
+
+                    index = len(os.path.basename(self.dataDstImg))
+                    mntName = (os.path.basename(self.dataDstMnt))+dataFile[index:]
+                    mntDst = os.path.join(dataDirMnt, mntName)
 
                     optionsMnt = []
                     optionsMnt.append("-of Png -projwin %f %f %f %f" % (float(geoInfo[0]), float(geoInfo[3]),
                                       ((float(geoInfo[1]) * float(self.tileSize)) + float(geoInfo[0])),
                                       ((float(geoInfo[5]) * int(self.tileSize)) + float(geoInfo[3]))))
-                    optionsMnt.append("%s %s" % (self.dataSrcMnt, os.path.join(dataDirMnt, "mnt%s" % dataFile[3:])))
+                    optionsMnt.append("%s %s" % (self.dataSrcMnt, mntDst))
                     cmdMnt = "gdal_translate " + " ".join(optionsMnt)
+
                     processMnt = QProcess()
                     processMnt.start(cmdMnt)
                     processMnt.waitForFinished()
@@ -175,7 +161,6 @@ class TileGenerator:
     #  @param dataDstDir the repository to stock the final data
     def _process_to_dim_tile(self, dataTile, dataDstDir):
         dataSourceListRepo = os.listdir(dataTile)
-
         for dataRepo in dataSourceListRepo:
             if (os.path.isdir(os.path.join(dataTile, dataRepo))):
                 if not os.path.exists(os.path.join(dataDstDir, dataRepo)):
@@ -183,8 +168,8 @@ class TileGenerator:
                 self._process_to_dim_tile(os.path.join(dataTile, dataRepo), os.path.join(dataDstDir, dataRepo))
 
         for dataFile in dataSourceListRepo:
-            if os.path.splitext(dataFile)[1] is "png":
-                if not len(os.path.splitext(dataFile)) > 2:
+            if re.search("png", dataFile) is not None:
+                if re.search("png.", dataFile) is None:
                     ds = gdal.Open(os.path.join(dataTile, dataFile), gdal.GA_ReadOnly)
                     geoInfo = ds.GetGeoTransform()
 
@@ -192,14 +177,18 @@ class TileGenerator:
                         options = []
                         options.append("-of png -outsize %d %d" % (int(self.tileSize), int(self.tileSize)))
                         options.append("%s %s " % (os.path.join(dataTile, dataFile), os.path.join(dataDstDir, dataFile)))
-
                         cmd = "gdal_translate " + " ".join(options)
+
                         process = QProcess()
                         process.start(cmd)
                         process.waitForFinished()
                     else:
                         shutil.copy(os.path.join(dataTile, dataFile), os.path.join(dataDstDir, dataFile))
                         shutil.copy(os.path.join(dataTile, dataFile) + ".aux.xml", os.path.join(dataDstDir, dataFile) + ".aux.xml")
+                    
+                    if (self.processChoice == 1):
+                        if re.search("mnt_",dataFile) is not None:
+                            self._process_pyramid_mnt(os.path.join(dataDstDir, dataFile))
 
     ## _clean_up clean the temp repository
     def _clean_up(self):
@@ -234,7 +223,6 @@ class TileGenerator:
             self._process_tile_img()
             self._process_clip_mnt(self.dataDstImg, self.dataDstMnt)
             self._process_to_dim_tile(self.dataDst, self.tmpRepo)
-            self._process_pyramid_mnt()
         elif (self.processChoice == 1):
             self._process_tile_img()
             self._process_to_dim_tile(self.dataDst, self.tmpRepo)
