@@ -105,6 +105,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.cb_MNT.clear()
         self.cb_Raster.clear()
         self.layerSelectionWidget.clear()
+        self.layerSelectionWidget.setHorizontalHeaderLabels(('Display','Layer','Field'))
+        # set column name of layerSelectionWidget
         self.progressBar.hide()
 
     ## Get the geometry of the layer
@@ -256,7 +258,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         else:
             self.progressBar.show()
 #            self.createVectorProviders()
-#            self.createRasterProviders()
+            self.createRasterProviders()
             initParam = self.getInitParam()
             if self.needGenerateRaster():
                 tilesInfo = self.getTilesInfo()
@@ -267,7 +269,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.btn_generate.setText("Server is running")
             self.openWebBrowser(self.getPort())
             self.appServerRunning = True
-
+    
     ## Open a web browser
     def openWebBrowser(self, port):
         url = 'http://localhost:' + str(port)
