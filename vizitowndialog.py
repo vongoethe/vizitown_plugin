@@ -29,6 +29,7 @@ from ui_vizitown import Ui_Vizitown
 from PyQt4 import QtCore, QtGui
 from qgis.core import *
 from qgis.gui import *
+from PyQt4.QtSql import *
 
 import vt_utils_parser
 import vt_utils_tiler
@@ -103,8 +104,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     def clearListWidget(self):
         self.cb_MNT.clear()
         self.cb_Raster.clear()
-        self.listWidget_Left.clear()
-        self.listWidget_Right.clear()
+        self.layerSelectionWidget.clear()
         self.progressBar.hide()
 
     ## Get the geometry of the layer
@@ -139,6 +139,46 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         return self.cb_MNT.count() > 0 or self.cb_Raster.count() > 0
 
     ## Add layer in combobox and listWidget
+    def get_info_table(self, host, dbname, user, password, table):
+        db = QSqlDatabase.addDatabase("QPSQL")
+        db.setHostName(host)
+        db.setDatabaseName(dbname)
+        db.setUserName(user)
+        db.setPassword(password)
+        if db.open():
+            query = QSqlQuery(db)
+            st = table.split('.')
+            st[0] = re.sub('"', '\'', st[0])
+            st[1] = re.sub('"', '\'', st[1])
+            getInfo = """
+                SELECT column_name, udt_name
+                FROM information_schema.columns
+                WHERE table_name = {table_} AND table_schema = {schema_};
+            """.format(table_=st[1], schema_=st[0])
+            query.exec_(getInfo)
+            result = {}
+            while query.next():
+                result[query.value(0)] = query.value(1)
+            return result
+        else:
+            raise Exception('Connection to database cannot be established')
+
+    def addItemTableWidget(self, item, dic):
+        self.layerSelectionWidget.insertRow(0)
+        checkBox = QtGui.QTableWidgetItem()
+        checkBox.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
+        checkBox.setCheckState(QtCore.Qt.Unchecked)
+        comboBox = QtGui.QComboBox()
+        self.addItemComboBox(comboBox, dic)
+        self.layerSelectionWidget.setItem(0, 0, checkBox)
+        self.layerSelectionWidget.setItem(0, 1, item)
+        self.layerSelectionWidget.setCellWidget(0, 2, comboBox)
+
+    def addItemComboBox(self, comboBox, dic):
+    #layer = item.data(QtCore.Qt.UserRole)
+        for nameColumn, type in dic.items():
+            comboBox.addItem(nameColumn + ' - ' + type)
+
     def loadLayers(self):
         self.clearListWidget()
         layerListIems = QgsMapLayerRegistry().instance().mapLayers().items()
@@ -146,19 +186,14 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             if self.isDem(layer):
                 self.cb_MNT.addItem(layer.name(), layer)
             if self.isVector(layer):
+                d = vt_utils_parser.parseVector(layer.source())
+                dic = self.get_info_table(d['host'], d['dbname'], d['user'], d['password'], d['table'])
                 name = layer.name() + ' ' + re.search("(\(.*\)+)", layer.source()).group(0)
-                item = QtGui.QListWidgetItem(name, self.listWidget_Left)
+                item = QtGui.QTableWidgetItem(name)
                 item.setData(QtCore.Qt.UserRole, layer)
+                self.addItemTableWidget(item, dic)
             if self.isRaster(layer):
                 self.cb_Raster.addItem(layer.name(), layer)
-
-    ## Add vector layer in a right listView
-    def on_btn_add_released(self):
-        self.listWidget_Right.addItem(self.listWidget_Left.takeItem(self.listWidget_Left.currentRow()))
-
-    ## Remove vector layer in a right listView
-    def on_btn_supp_released(self):
-        self.listWidget_Left.addItem(self.listWidget_Right.takeItem(self.listWidget_Right.currentRow()))
 
     ## Set the tab advanced option by default
     def on_btn_defaut_released(self):
@@ -220,8 +255,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.killGDALProcess()
         else:
             self.progressBar.show()
-            self.createVectorProviders()
-            self.createRasterProviders()
+#            self.createVectorProviders()
+#            self.createRasterProviders()
             initParam = self.getInitParam()
             if self.needGenerateRaster():
                 tilesInfo = self.getTilesInfo()
@@ -239,12 +274,13 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         webbrowser.open(url)
 
     ## Create all providers with the selected layers in the GUI
-    def createVectorProviders(self):
-        for i in range(self.listWidget_Right.count()):
-            vectorLayer = self.listWidget_Right.item(i).data(QtCore.Qt.UserRole)
-            d = vt_utils_parser.parseVector(vectorLayer.source())
-            provider = PostgisProvider(d['host'], d['dbname'], d['user'], d['password'], d['srid'], d['table'], d['column'])
-            ProviderManager.instance().addVectorProvider(provider)
+#    def createVectorProviders(self):
+#        for i in range(self.listWidget_Right.count()):
+#            vectorLayer = self.listWidget_Right.item(i).data(QtCore.Qt.UserRole)
+#            d = vt_utils_parser.parseVector(vectorLayer.source())
+             # Ajouter column2 et type2column2 (geom, integer....)
+#            provider = PostgisProvider(d['host'], d['dbname'], d['user'], d['password'], d['srid'], d['table'], d['column'])
+#            ProviderManager.instance().addVectorProvider(provider)
 
     ## Create all providers for DEM and raster
     def createRasterProviders(self):

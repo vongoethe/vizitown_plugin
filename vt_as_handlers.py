@@ -55,6 +55,7 @@ class SyncHandler(cyclone.websocket.WebSocketHandler):
     ## Method call when the websocket is opened
     def connectionMade(self):
         print "WebSocket sync opened"
+        SyncManager.instance().isSocketOpen = True
 
     ## Method call when a message is received
     def messageReceived(self, message):
@@ -63,6 +64,7 @@ class SyncHandler(cyclone.websocket.WebSocketHandler):
     ## Method call when the websocket is closed
     def connectionLost(self, reason):
         print "WebSocket sync closed"
+        SyncManager.instance().isSocketOpen = False
 
 
 ## Tiles information handler
