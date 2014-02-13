@@ -88,6 +88,7 @@ class Vizitown:
         dialog = self.dlg
         dialog.initExtent(self.iface.mapCanvas().extent())
         dialog.loadLayers()
+        dialog.initComboBox()
         QObject.connect(self.iface.mapCanvas(), SIGNAL("extentsChanged()"), self.info)
         # show the dialog
         self.dlg.show()
