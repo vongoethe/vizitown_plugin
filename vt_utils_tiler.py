@@ -256,7 +256,6 @@ class TileGenerator:
                 generator._process_tile_mnt()
                 generator._process_to_dim_tile(generator.dataDst, generator.tmpRepo)
             generator._clean_up()
-        print "End"
 
 path = os.path.join("E:\Cours_Esipe\Formation\Last_Project\GitLab", "rasters", "test")
 srcImg = os.path.join(path, "GrandLyon2m_L93_RGB.tif")
