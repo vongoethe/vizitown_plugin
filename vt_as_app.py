@@ -37,7 +37,7 @@ class VTAppServer(QObject):
 
     ## Constructor.
     #  @param parent  the QObject parent
-    def __init__(self, parent, initParam, GDALprocess, tilesInfo):
+    def __init__(self, parent, initParam, GDALprocess=None, tilesInfo=None):
         QObject.__init__(self, parent)
         self.rollbackImporter = None
         self.appThread = None

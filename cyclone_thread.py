@@ -33,9 +33,10 @@ class CycloneThread(QThread):
             (r'/init', InitHandler, dict(initParam=self.initParam)),
             (r'/data', DataHandler),
             (r'/sync', SyncHandler),
-            (r'/tiles_info', TilesInfoHandler, dict(GDALprocess=self.GDALprocess, tilesInfo=self.tilesInfo)),
-            (r'/rasters/(.*)', cyclone.web.StaticFileHandler, {"path": rastersPath}),
         ]
+        if self.GDALprocess and self.tilesInfo:
+            handlers.append((r'/tiles_info', TilesInfoHandler, dict(GDALprocess=self.GDALprocess, tilesInfo=self.tilesInfo)))
+            handlers.append((r'/rasters/(.*)', cyclone.web.StaticFileHandler, {"path": rastersPath}))
         if self.debug:
             handlers.append((r'/test/echo', EchoHandler))
             handlers.append((r'/test/ping', PingHandler))

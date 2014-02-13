@@ -177,7 +177,6 @@ class TileGenerator:
                             self._process_pyramid_mnt(os.path.join(dstDir, currentFile))
 
                     ds = gdal.Open(os.path.join(dataTile, currentFile), gdal.GA_ReadOnly)
-                    geoInfo = ds.GetGeoTransform()
 
                     if(ds.RasterXSize != int(self.tileSize) & ds.RasterYSize != int(self.tileSize)):
                         options = []

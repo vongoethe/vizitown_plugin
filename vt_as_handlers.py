@@ -54,7 +54,6 @@ class SyncHandler(cyclone.websocket.WebSocketHandler):
 
     ## Method call when the websocket is opened
     def connectionMade(self):
-        self.GDALprocess.join()
         print "WebSocket sync opened"
 
     ## Method call when a message is received
@@ -69,7 +68,7 @@ class SyncHandler(cyclone.websocket.WebSocketHandler):
 ## Tiles information handler
 #  Use to give the information related to the tiles generated
 #  when the GDAL tiling is finished
-class TilesInfoHandler(cyclone.websockeet.WebSocketHandler):
+class TilesInfoHandler(cyclone.websocket.WebSocketHandler):
     def initialize(self, GDALprocess, tilesInfo):
         self.GDALprocess = GDALprocess
         self.tilesInfo = tilesInfo

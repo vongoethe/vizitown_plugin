@@ -134,6 +134,10 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     def isVector(self, layer):
         return (layer.type() == QgsMapLayer.VectorLayer) and layer.source().startswith('dbname')
 
+    ## Return true if there is a least one raster to generate
+    def needGenerateRaster(self):
+        return self.cb_MNT.count() > 0 or self.cb_Raster.count() > 0
+
     ## Add layer in combobox and listWidget
     def loadLayers(self):
         self.clearListWidget()
@@ -183,6 +187,28 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         if index == 4:
             return 4096
 
+    ## Get the intial parameter to give at the app server
+    def getInitParam(self):
+        return {
+            'extent': {
+                'Xmin': "%.4f" % self.extent.xMinimum(),
+                'Ymin': "%.4f" % self.extent.yMinimum(),
+                'Xmax': "%.4f" % self.extent.xMaximum(),
+                'Ymax': "%.4f" % self.extent.yMaximum(),
+            },
+            'port': self.getPort(),
+            'hasRaster': self.needGenerateRaster(),
+        }
+
+    ## Get the tiles info done by the process GDAL
+    def getTilesInfo(self):
+        return {
+            'zoomLevel': int(self.cb_zoom.currentText()),
+            'tileSize': self.getSizeTile(),
+            'dem': ProviderManager.instance().dem.httpRessource,
+            'texture': ProviderManager.instance().raster.httpRessource,
+        }
+
     ## Generate and launch the rendering of the 3D scene
     def on_btn_generate_released(self):
         if self.appServerRunning:
@@ -197,8 +223,11 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.createVectorProviders()
             self.createRasterProviders()
             initParam = self.getInitParam()
-            tilesInfo = self.getTilesInfo()
-            self.appServer = VTAppServer(self, initParam, self.GDALprocess, tilesInfo)
+            if self.needGenerateRaster():
+                tilesInfo = self.getTilesInfo()
+                self.appServer = VTAppServer(self, initParam, self.GDALprocess, tilesInfo)
+            else:
+                self.appServer = VTAppServer(self, initParam)
             self.appServer.start()
             self.btn_generate.setText("Server is running")
             self.openWebBrowser(self.getPort())
@@ -224,6 +253,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         extent = [self.extent.xMinimum(), self.extent.xMaximum(), self.extent.yMinimum(), self.extent.yMaximum()]
         tileSize = self.getSizeTile()
         levels = int(self.cb_zoom.currentText())
+
         if self.cb_MNT.count() > 0:
             httpRessource = 'http://localhost:' + self.getPort() + '/rasters/dem_' + mnt.name() + '_' + tileSize + '_' + levels
             mnt = self.cb_MNT.itemData(self.cb_Raster.currentIndex())
@@ -236,26 +266,6 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             texture = RasterProvider(raster.name(), raster.extent(), raster.crs().postgisSrid(), raster.source(), httpRessource)
             ProviderManager.instance().raster = texture
             dataSrcImg = texture.source()
-        self.GDALprocess = Process(target=vt_utils_tiler.launch_process, args=(dataSrcImg, dataSrcMnt, path, extent, tileSize, levels))
-        self.GDALprocess.start()
-
-    ## Get the intial parameter to give at the app server
-    def getInitParam(self):
-        return {
-            'extent': {
-                'Xmin': "%.4f" % self.extent.xMinimum(),
-                'Ymin': "%.4f" % self.extent.yMinimum(),
-                'Xmax': "%.4f" % self.extent.xMaximum(),
-                'Ymax': "%.4f" % self.extent.yMaximum(),
-            },
-            'port': self.getPort()
-        }
-
-    ## Get the tiles info done by the process GDAL
-    def getTilesInfo(self):
-        return {
-            'zoomLevel': int(self.cb_zoom.currentText()),
-            'tileSize': self.getSizeTile(),
-            'dem': ProviderManager.instance().dem.httpRessource,
-            'texture': ProviderManager.instance().raster.httpRessource,
-        }
+        if self.needGenerateRaster():
+            self.GDALprocess = Process(target=vt_utils_tiler.TileGenerator.launch_process, args=(dataSrcImg, dataSrcMnt, path, extent, tileSize, levels))
+            self.GDALprocess.start()
