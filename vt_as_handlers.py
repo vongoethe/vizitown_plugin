@@ -54,6 +54,8 @@ class SyncHandler(cyclone.websocket.WebSocketHandler):
 
     ## Method call when the websocket is opened
     def connectionMade(self):
+        while True:
+            print "yoyo"
         print "WebSocket sync opened"
 
     ## Method call when a message is received

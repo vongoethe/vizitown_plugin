@@ -23,6 +23,7 @@
 import os
 import webbrowser
 import re
+from multiprocessing import Process
 
 from ui_vizitown import Ui_Vizitown
 from PyQt4 import QtCore, QtGui
@@ -30,6 +31,7 @@ from qgis.core import *
 from qgis.gui import *
 
 import vt_utils_parser
+import vt_utils_tiler
 from vt_as_app import VTAppServer
 from vt_as_providers import ProviderManager, PostgisProvider, RasterProvider
 
@@ -43,11 +45,29 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.destroyed.connect(self.closeEvent)
         self.appServer = None
         self.appServerRunning = False
+        self.GDALprocess = None
+
+    ## Kill GDAL process and remove unfinished tiled files
+    def killGDALProcess(self):
+        if self.GDALprocess:
+            self.GDALprocess.terminate()
+
+            self.GDALprocess = None
 
     ## Behavior whit a close event
     def closeEvent(self, QCloseEvent):
         if self.appServer:
             self.appServer.stop()
+        if self.GDALprocess:
+            GDALDialog = QtGui.QMessageBox()
+            GDALDialog.setIcon(QtGui.QMessageBox.Warning)
+            GDALDialog.setText("The tiling process is not complete. Would you like to run the process in background to use te generated tile later ?")
+            GDALDialog.setStandardButtons(QtGui.QMessageBox.Discard | QtGui.QMessageBox.Save)
+            ret = GDALDialog.exec_()
+            if ret == QtGui.QMessageBox.Save:
+                print "GDALprocess continue"
+            if ret == QtGui.QMessageBox.Discard:
+                self.killGDALProcess()
 
     ## Set the default extent
     def initExtent(self, extent):
@@ -144,7 +164,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
     ## Get the port number. If the port isn't good this function return the value by default, 8888
     def getPort(self):
-        if self.Numero_Port.text().isdigit() and int(self.Numero_Port.text()) < 65536 and int(self.Numero_Port.text()) > 1024 :
+        if self.Numero_Port.text().isdigit() and int(self.Numero_Port.text()) < 65536 and int(self.Numero_Port.text()) > 1024:
             return self.Numero_Port.text()
         else:
             return 8888
@@ -171,6 +191,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.appServer.stop()
             self.btn_generate.setText("Generate")
             self.appServerRunning = False
+            self.killGDALProcess()
         else:
             self.progressBar.show()
             self.createVectorProviders()
@@ -197,16 +218,27 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
     ## Create all providers for DEM and raster
     def createRasterProviders(self):
+        dataSrcImg = None
+        dataSrcMnt = None
+        extent = [self.extent.xMinimum(), self.extent.xMaximum(), self.extent.yMinimum(), self.extent.yMaximum()]
+        tileSize = self.getSizeTile()
+        levels = int(self.cb_zoom.currentText())
         if self.cb_MNT.count() > 0:
+            httpRessource = 'http://localhost:' + self.getPort() + '/rasters/dem_' + mnt.name() + '_' + tileSize + '_' + levels
             mnt = self.cb_MNT.itemData(self.cb_Raster.currentIndex())
-            dem = RasterProvider(mnt.name(), mnt.extent(), mnt.crs().postgisSrid(), mnt.source(), "http://localhost:" + self.getPort() + "/rasters/" + mnt.name())
+            dem = RasterProvider(mnt.name(), mnt.extent(), mnt.crs().postgisSrid(), mnt.source(), httpRessource)
             ProviderManager.instance().dem = dem
+            dataSrcMnt = mnt.source()
         if self.cb_Raster.count() > 0:
+            httpRessource = 'http://localhost:' + self.getPort() + '/rasters/img_' + raster.name() + '_' + tileSize + '_' + levels
             raster = self.cb_Raster.itemData(self.cb_Raster.currentIndex())
-            texture = RasterProvider(raster.name(), raster.extent(), raster.crs().postgisSrid(), raster.source(), "http://localhost:" + self.getPort() + "/rasters/" + raster.name())
+            texture = RasterProvider(raster.name(), raster.extent(), raster.crs().postgisSrid(), raster.source(), httpRessource)
             ProviderManager.instance().raster = texture
+            dataSrcImg = texture.source()
+        self.GDALprocess = Process(target=vt_utils_tiler.launch_process, args=(dataSrcImg, dataSrcMnt, path, extent, tileSize, levels))
+        self.GDALprocess.start()
 
-    ##
+    ## Get the intial parameter to give at the app server
     def getInitParam(self):
         return {
             'tileSize': self.getSizeTile(),
@@ -218,5 +250,5 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
                 'Xmax': "%.4f" % self.extent.xMaximum(),
                 'Ymax': "%.4f" % self.extent.yMaximum(),
             },
-            'port' : self.getPort()
+            'port': self.getPort()
         }
