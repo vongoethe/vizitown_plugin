@@ -9,6 +9,7 @@ from vt_utils_singleton import Singleton
 class SyncManager:
     def __init__(self):
         self.websockets = []
+        self.isSocketOpen = False
 
     ## Record a websocket as listener for sync
     def addListener(self, ws):
@@ -16,5 +17,6 @@ class SyncManager:
 
     ## Send new extent with all websockets stored
     def notifyExtentChange(self, extent):
-        for ws in self.websockets:
-            ws.sendMessage(json.dumps(extent, separators=(',', ':')))
+        if self.isSocketOpen:
+            for ws in self.websockets:
+                ws.sendMessage(json.dumps(extent, separators=(',', ':')))
