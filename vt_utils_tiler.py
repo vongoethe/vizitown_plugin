@@ -256,10 +256,3 @@ class TileGenerator:
                 generator._process_tile_mnt()
                 generator._process_to_dim_tile(generator.dataDst, generator.tmpRepo)
             generator._clean_up()
-
-path = os.path.join("E:\Cours_Esipe\Formation\Last_Project\GitLab", "rasters", "test")
-srcImg = os.path.join(path, "GrandLyon2m_L93_RGB.tif")
-srcMnt = os.path.join(path, "Mnt_L93.tiff")
-extent = ["829889.029", "868878.498", "6495517.459", "6539503.016"]
-tileSize = 4096
-TileGenerator.launch_process(srcImg, srcMnt, path, extent, tileSize, 2)
