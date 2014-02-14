@@ -47,6 +47,10 @@ class PostgisProvider:
                        table_=table)
             if query.exec_(getGeometry):
                 query.next()
+                print "colonne 2 geometry"
+                print query
+                print query.value(0)
+                print query.value(1)
                 self.geometry1 = query.value(0)
                 self.geometry2 = query.value(1)
             else:
@@ -60,6 +64,9 @@ class PostgisProvider:
                        table_=table)
             if query.exec_(getGeometry):
                 query.next()
+                print "une seule colonne"
+                print query
+                print query.value(0)
                 self.geometry1 = query.value(0)
             else:
                 print query.lastQuery()
@@ -82,7 +89,7 @@ class PostgisProvider:
                    Ymax_=Ymax)
 
         intersect = """ WHERE {column_} && ST_GeomFromText('{extent_}', {srid_})
-        """.format(column_=column,
+        """.format(column_=self.column,
                    extent_=extent,
                    srid_=self.srid)
 
@@ -123,6 +130,7 @@ class PostgisProvider:
 
         else:
             #Multipoint, others...
+            print self.geometry1
             raise Exception('Can\'t request this kind of geometry')
 
         return request

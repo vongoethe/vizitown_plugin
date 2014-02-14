@@ -1,7 +1,7 @@
 import json
 import cyclone.websocket
 from vt_utils_converter import X3DTranslateToThreeJs
-from vt_as_providers import ProviderManager
+from vt_as_provider_manager import ProviderManager
 from vt_as_sync import SyncManager
 
 
@@ -41,12 +41,14 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
                 print "sendmessage"
                 for i in range(bufferSize):
                     if v['hasH']:
-                        array[i] = [v['it'].value(0), v['it'].value(1)]
+                        array.append([v['it'].value(0), v['it'].value(1)])
                     else:
-                        array[i] = v['it'].value(0)
+                        array.append(v['it'].value(0))
 
-                    v['it'].next()
+                    if not v['it'].next():
+                        break
                 json_ = translator.parse(array, v['geom'], v['hasH'])
+                print json_
                 self.sendMessage(json_)
 
     ## Method call when the websocket is closed
