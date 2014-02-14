@@ -34,7 +34,6 @@ from PyQt4.QtSql import *
 import vt_utils_parser
 import vt_utils_tiler
 from vt_as_app import VTAppServer
-from vt_as_providers import ProviderManager, PostgisProvider, RasterProvider
 
 
 ## Vizitown dialog in QGIS GUI
@@ -157,7 +156,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             getInfo = """
                 SELECT column_name, udt_name
                 FROM information_schema.columns
-                WHERE table_name = {table_} AND table_schema = {schema_};
+                WHERE table_name = {table_} AND table_schema = {schema_}
+                ORDER BY column_name;
             """.format(table_=st[1], schema_=st[0])
             query.exec_(getInfo)
             result = {}
@@ -180,6 +180,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
     def addItemComboBox(self, comboBox, dic):
     #layer = item.data(QtCore.Qt.UserRole)
+        comboBox.addItem("None")
         for nameColumn, type in dic.items():
             comboBox.addItem(nameColumn + ' - ' + type)
 
@@ -210,6 +211,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         if self.Numero_Port.text().isdigit() and int(self.Numero_Port.text()) < 65536 and int(self.Numero_Port.text()) > 1024:
             return self.Numero_Port.text()
         else:
+            # Maybe change for another exotic port
             return 8888
 
     ## Get the size tile
@@ -259,7 +261,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.killGDALProcess()
         else:
             self.progressBar.show()
-#            self.createVectorProviders()
+            self.createVectorProviders()
             self.createRasterProviders()
             initParam = self.getInitParam()
             if self.needGenerateRaster():
@@ -278,13 +280,13 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         webbrowser.open(url)
 
     ## Create all providers with the selected layers in the GUI
-#    def createVectorProviders(self):
-#        for i in range(self.listWidget_Right.count()):
-#            vectorLayer = self.listWidget_Right.item(i).data(QtCore.Qt.UserRole)
-#            d = vt_utils_parser.parseVector(vectorLayer.source())
+    def createVectorProviders(self):
+        #for i in range(self.listWidget_Right.count()):
+            #vectorLayer = self.listWidget_Right.item(i).data(QtCore.Qt.UserRole)
+            #d = vt_utils_parser.parseVector(vectorLayer.source())
              # Ajouter column2 et type2column2 (geom, integer....)
-#            provider = PostgisProvider(d['host'], d['dbname'], d['user'], d['password'], d['srid'], d['table'], d['column'])
-#            ProviderManager.instance().addVectorProvider(provider)
+            #provider = PostgisProvider(d['host'], d['dbname'], d['user'], d['password'], d['srid'], d['table'], d['column'])
+            #ProviderManager.instance().addVectorProvider(provider)
 
     ## Create all providers for DEM and raster
     def createRasterProviders(self):
