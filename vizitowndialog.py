@@ -34,7 +34,7 @@ from PyQt4.QtSql import *
 
 import vt_utils_parser
 from vt_utils_tiler import TileGenerator
-from vt_as_app import VTAppServer
+from vt_as_app import AppServer
 from vt_as_providers import *
 
 
@@ -51,9 +51,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
     ## Kill GDAL process and remove unfinished tiled files
     def killGDALProcess(self):
-        if self.GDALprocess:
+        if self.GDALprocess and self.GDALprocess.is_alive():
             self.GDALprocess.terminate()
-
             self.GDALprocess = None
 
     ## Behavior whit a close event
@@ -271,9 +270,9 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             initParam = self.getInitParam()
             if self.needGenerateRaster():
                 tilesInfo = self.getTilesInfo()
-                self.appServer = VTAppServer(self, initParam, self.GDALprocess, tilesInfo)
+                self.appServer = AppServer(self, initParam, self.GDALprocess, tilesInfo)
             else:
-                self.appServer = VTAppServer(self, initParam)
+                self.appServer = AppServer(self, initParam)
             self.appServer.start()
             self.btn_generate.setText("Server is running")
             self.openWebBrowser(self.getPort())
