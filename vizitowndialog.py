@@ -35,7 +35,7 @@ from PyQt4.QtSql import *
 import vt_utils_parser
 from vt_utils_tiler import TileGenerator
 from vt_as_app import VTAppServer
-from vt_as_providers import ProviderManager, PostgisProvider, RasterProvider
+from vt_as_providers import *
 
 
 ## Vizitown dialog in QGIS GUI
@@ -105,7 +105,11 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     def clearListWidget(self):
         self.cb_MNT.clear()
         self.cb_Raster.clear()
-        self.layerSelectionWidget.clear()
+        self.layerSelectionWidget.clearContents()
+        self.layerSelectionWidget.setHorizontalHeaderLabels(('Display', 'Layer', 'Field'))
+        self.layerSelectionWidget.setColumnWidth(0, 45)
+        self.layerSelectionWidget.setColumnWidth(1, 150)
+        # set column name of layerSelectionWidget
         self.progressBar.hide()
 
     ## Get the geometry of the layer
@@ -154,7 +158,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             getInfo = """
                 SELECT column_name, udt_name
                 FROM information_schema.columns
-                WHERE table_name = {table_} AND table_schema = {schema_};
+                WHERE table_name = {table_} AND table_schema = {schema_}
+                ORDER BY column_name;
             """.format(table_=st[1], schema_=st[0])
             query.exec_(getInfo)
             result = {}
@@ -164,6 +169,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         else:
             raise Exception('Connection to database cannot be established')
 
+    ## Add vector layer in QTableWidget
     def addItemTableWidget(self, item, dic):
         self.layerSelectionWidget.insertRow(0)
         checkBox = QtGui.QTableWidgetItem()
@@ -175,11 +181,13 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.layerSelectionWidget.setItem(0, 1, item)
         self.layerSelectionWidget.setCellWidget(0, 2, comboBox)
 
+    ## Add item in a QComboBox which is in QTableWidget
     def addItemComboBox(self, comboBox, dic):
-    #layer = item.data(QtCore.Qt.UserRole)
+        comboBox.addItem("None")
         for nameColumn, type in dic.items():
             comboBox.addItem(nameColumn + ' - ' + type)
 
+    ## Add layer in QCombobox and QTableWidget
     def loadLayers(self):
         self.clearListWidget()
         layerListIems = QgsMapLayerRegistry().instance().mapLayers().items()
@@ -201,12 +209,14 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.Numero_Port.setText("8888")
         self.cb_tuile.setCurrentIndex(1)
         self.cb_zoom.setCurrentIndex(1)
+        self.layerSelectionWidget.clear()
 
     ## Get the port number. If the port isn't good this function return the value by default, 8888
     def getPort(self):
         if self.Numero_Port.text().isdigit() and int(self.Numero_Port.text()) < 65536 and int(self.Numero_Port.text()) > 1024:
             return self.Numero_Port.text()
         else:
+            # Maybe change for another exotic port
             return 8888
 
     ## Get the size tile
@@ -256,7 +266,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.killGDALProcess()
         else:
             self.progressBar.show()
-#            self.createVectorProviders()
+            self.createVectorProviders()
             self.createRasterProviders()
             initParam = self.getInitParam()
             if self.needGenerateRaster():
@@ -275,13 +285,20 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         webbrowser.open(url)
 
     ## Create all providers with the selected layers in the GUI
-#    def createVectorProviders(self):
-#        for i in range(self.listWidget_Right.count()):
-#            vectorLayer = self.listWidget_Right.item(i).data(QtCore.Qt.UserRole)
-#            d = vt_utils_parser.parseVector(vectorLayer.source())
-             # Ajouter column2 et type2column2 (geom, integer....)
-#            provider = PostgisProvider(d['host'], d['dbname'], d['user'], d['password'], d['srid'], d['table'], d['column'])
-#            ProviderManager.instance().addVectorProvider(provider)
+    def createVectorProviders(self):
+        for i in range(self.layerSelectionWidget.rowCount()):
+            # if the layer is checked
+            if self.layerSelectionWidget.item(i, 0).checkState() == 2:
+                vectorLayer = self.layerSelectionWidget.item(i, 1).data(QtCore.Qt.UserRole)
+                column2 = self.layerSelectionWidget.cellWidget(i, 2).currentText()
+                column2Name = "None"
+                column2Type = "None"
+                if not column2 == "None":
+                    column2Name = column2.split(" - ")[0]
+                    column2Type = column2.split(" - ")[1]
+                d = vt_utils_parser.parseVector(vectorLayer.source())
+                provider = PostgisProvider(d['host'], d['dbname'], d['user'], d['password'], d['srid'], d['table'], d['column'], column2Name, column2Type)
+                ProviderManager.instance().addVectorProvider(provider)
 
     ## Create all providers for DEM and raster
     def createRasterProviders(self):
@@ -292,7 +309,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         tileSize = self.getSizeTile()
         levels = int(self.cb_zoom.currentText())
         if self.cb_MNT.count() > 0:
-            mnt = self.cb_MNT.itemData(self.cb_Raster.currentIndex())
+            mnt = self.cb_MNT.itemData(self.cb_MNT.currentIndex())
             httpRessource = 'http://localhost:' + self.getPort() + '/rasters/' + '_'.join(['dem', mnt.name(), str(tileSize), str(levels)])
             dem = RasterProvider(mnt.name(), mnt.extent(), mnt.crs().postgisSrid(), mnt.source(), httpRessource)
             ProviderManager.instance().dem = dem
@@ -307,10 +324,9 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             if os.name is 'nt':
                 pythonPath = os.path.abspath(os.path.join(sys.exec_prefix, '../../bin/pythonw.exe'))
                 mp.set_executable(pythonPath)
-                sys.argv = [ None ]
+                sys.argv = [None]
             self.GDALprocess = mp.Process(target=launch_process, args=(dataSrcImg, dataSrcMnt, path, extent, tileSize, levels))
             self.GDALprocess.start()
-
 
 
 ## launch_process manage the several process to generate data tiles
