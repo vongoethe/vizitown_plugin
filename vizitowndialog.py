@@ -256,7 +256,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         else:
             self.progressBar.show()
 #            self.createVectorProviders()
-#            self.createRasterProviders()
+            self.createRasterProviders()
             initParam = self.getInitParam()
             if self.needGenerateRaster():
                 tilesInfo = self.getTilesInfo()
@@ -286,22 +286,22 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     def createRasterProviders(self):
         dataSrcImg = None
         dataSrcMnt = None
+        path = os.path.join(os.path.dirname(__file__), "rasters")
         extent = [self.extent.xMinimum(), self.extent.xMaximum(), self.extent.yMinimum(), self.extent.yMaximum()]
         tileSize = self.getSizeTile()
         levels = int(self.cb_zoom.currentText())
-
         if self.cb_MNT.count() > 0:
-            httpRessource = 'http://localhost:' + self.getPort() + '/rasters/dem_' + mnt.name() + '_' + tileSize + '_' + levels
             mnt = self.cb_MNT.itemData(self.cb_Raster.currentIndex())
+            httpRessource = 'http://localhost:' + self.getPort() + '/rasters/' + '_'.join(['dem', mnt.name(), str(tileSize), str(levels)])
             dem = RasterProvider(mnt.name(), mnt.extent(), mnt.crs().postgisSrid(), mnt.source(), httpRessource)
             ProviderManager.instance().dem = dem
-            dataSrcMnt = mnt.source()
+            dataSrcMnt = dem.source
         if self.cb_Raster.count() > 0:
-            httpRessource = 'http://localhost:' + self.getPort() + '/rasters/img_' + raster.name() + '_' + tileSize + '_' + levels
             raster = self.cb_Raster.itemData(self.cb_Raster.currentIndex())
+            httpRessource = 'http://localhost:' + self.getPort() + '/rasters/' + '_'.join(['img', raster.name(), str(tileSize), str(levels)])
             texture = RasterProvider(raster.name(), raster.extent(), raster.crs().postgisSrid(), raster.source(), httpRessource)
             ProviderManager.instance().raster = texture
-            dataSrcImg = texture.source()
+            dataSrcImg = texture.source
         if self.needGenerateRaster():
             self.GDALprocess = Process(target=vt_utils_tiler.TileGenerator.launch_process, args=(dataSrcImg, dataSrcMnt, path, extent, tileSize, levels))
             self.GDALprocess.start()
