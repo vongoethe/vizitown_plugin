@@ -240,7 +240,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
                 mp.set_executable(pythonPath)
                 sys.argv = [None]
             self.GDALprocess = mp.Process(target=launch_gdal_process, args=(dataSrcImg, dataSrcMnt, path, extent, tileSize, int(zoomLevel)))
-            #self.GDALprocess.start()
+            self.GDALprocess.start()
 
     ## Behavior whit a close event
     #  @override QtGui.QDialog
