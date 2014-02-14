@@ -1,7 +1,10 @@
-from vt_utils_singleton import Singleton
-from vt_utils_converter import X3DTranslateToThreeJs
+import re
+
 from PyQt4.QtCore import *
 from PyQt4.QtSql import *
+
+from vt_utils_singleton import Singleton
+from vt_utils_converter import X3DTranslateToThreeJs
 
 
 ## Provider manager
@@ -13,9 +16,21 @@ class ProviderManager:
         self.dem = None
         self.texture = None
 
-    ## Add a provider to the manager
+    ## Add a vector provider to the manager
     #  @param p the provider to add
     def add_vector_provider(self, p):
+        self.vectors.append(p)
+
+    ## Add a DEM raster provider to the manager
+    #  @param p the provider to add
+    def create_raster_provider(self, raster, port, tileSize, zoomLevel):
+        raster = self.cb_texture.itemData(self.cb_texture.currentIndex())
+        httpResource = 'http://localhost:' + self.get_port() + '/rasters/' + '_'.join(['img', raster.name(), str(tileSize), str(zoomLevel)])
+        return  RasterProvider(raster.name(), raster.extent(), raster.crs().postgisSrid(), raster.source(), httpResource)
+
+    ## Add a texture raster provider to the manager
+    #  @param p the provider to add
+    def add_texture_provider(self, p):
         self.vectors.append(p)
 
     ## Request a tile for all his providers
@@ -38,7 +53,7 @@ class PostgisProvider:
     #  @param table of the resource
     #  @param column of the resource
     #  @param column2 representing a height of column or another geometry (TinZ)
-    def __init__(self, host, dbname, user, password, srid, table, column, column2, column2Type):
+    def __init__(self, host, dbname, user, password, srid, table, column, column2=None, column2Type=None):
         self.db = QSqlDatabase.addDatabase("QPSQL")
         self.db.setHostName(host)
         self.db.setDatabaseName(dbname)
@@ -196,6 +211,32 @@ class PostgisProvider:
         """.format(column_=col,
                    table_=self.table)
 
+    ## Return columns and types of a specific table
+    @staticmethod
+    def get_columns_info_table(host, dbname, user, password, table):
+        db = QSqlDatabase.addDatabase("QPSQL")
+        db.setHostName(host)
+        db.setDatabaseName(dbname)
+        db.setUserName(user)
+        db.setPassword(password)
+        if db.open():
+            query = QSqlQuery(db)
+            st = table.split('.')
+            st[0] = re.sub('"', '\'', st[0])
+            st[1] = re.sub('"', '\'', st[1])
+            getInfo = """
+                SELECT column_name, udt_name
+                FROM information_schema.columns
+                WHERE table_name = {table_} AND table_schema = {schema_}
+                ORDER BY column_name;
+            """.format(table_=st[1], schema_=st[0])
+            query.exec_(getInfo)
+            result = {}
+            while query.next():
+                result[query.value(0)] = query.value(1)
+            return result
+        else:
+            raise Exception('Connection to database cannot be established')
 
 
 ## Raster provider
@@ -207,9 +248,9 @@ class RasterProvider:
     #  @param srid of the raster
     #  @param source local path of the raster
     #  @param httpRessource URL location
-    def __init__(self, name, extent, srid, source, httpRessource):
+    def __init__(self, name, extent, srid, source, httpResource):
         self.name = name
         self.extent = extent
         self.srid = srid
         self.source = source
-        self.httpRessource = httpRessource
+        self.httpResource = httpResource
