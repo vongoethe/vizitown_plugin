@@ -28,16 +28,25 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
     #  @param message in JSON format like:
     #  '{"Xmin": 0, "Ymin": 0, "Xmax": 50, "Ymax": 50}'
     def messageReceived(self, message):
+        bufferSize = 100
         print message
         d = json.loads(message)
         vectors = ProviderManager.instance().request_tile(d['Xmin'], d['Ymin'], d['Xmax'], d['Ymax'])
         translator = X3DTranslateToThreeJs()
         for v in vectors:
             ## TODO: Maybe make a buffer
+            array = []
             while v['it'].next():
+                # seconde boucle
                 print "sendmessage"
-                result = str(v['it'].value(0).toString())
-                json_ = translator.parse(result, v['geom'])
+                for i in range(bufferSize):
+                    if v['hasH']:
+                        array[i] = [v['it'].value(0), v['it'].value(1)]
+                    else:
+                        array[i] = v['it'].value(0)
+
+                    v['it'].next()
+                json_ = translator.parse(array, v['geom'], v['hasH'])
                 self.sendMessage(json_)
 
     ## Method call when the websocket is closed
