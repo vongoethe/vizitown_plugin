@@ -9,7 +9,13 @@ from PyQt4.QtSql import *
 @Singleton
 class ProviderManager:
     def __init__(self):
+<<<<<<< HEAD
         self.providers = []
+=======
+        self.vectors = []
+        self.dem = None
+        self.texture = None
+>>>>>>> camille/new_ui
 
     ## Add a provider to the manager
     #  @param p the provider to add
@@ -61,7 +67,11 @@ class PostgisProvider:
 
             if self.column2Type == 'geometry':
                 getGeometry = """SELECT GeometryType({column_}), GeometryType({column2_}) FROM {table_} LIMIT 1
+<<<<<<< HEAD
                 """.format(column_=column,
+=======
+                """.format(column_=column, 
+>>>>>>> camille/new_ui
                            column2_=column2,
                            table_=table)
                 if query.exec_(getGeometry):
@@ -75,7 +85,11 @@ class PostgisProvider:
 
             else:
                 getGeometry = """SELECT GeometryType({column_}) FROM {table_} LIMIT 1
+<<<<<<< HEAD
                 """.format(column_=column,
+=======
+                """.format(column_=column, 
+>>>>>>> camille/new_ui
                            table_=table)
                 if query.exec_(getGeometry):
                     query.next()
@@ -93,11 +107,19 @@ class PostgisProvider:
         query = QSqlQuery(self.db)
         request = ""
 
+<<<<<<< HEAD
         extent = """POLYGON(({Xmin_} {Ymin_},
                              {Xmax_} {Ymin_},
                              {Xmax_} {Ymax_},
                              {Xmin_} {Ymax_},
                              {Xmin_} {Ymin_}))
+=======
+        extent = """POLYGON(({Xmin_} {Ymin_}, 
+                             {Xmax_} {Ymin_}, 
+                             {Xmax_} {Ymax_}, 
+                             {Xmin_} {Ymax_}, 
+                             {Xmin_} {Ymin_}))  
+>>>>>>> camille/new_ui
         """.format(Xmin_=Xmin,
                    Xmax_=Xmax,
                    Ymin_=Ymin,
@@ -110,7 +132,11 @@ class PostgisProvider:
 
         request = self._get_request()
         request += intersect
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> camille/new_ui
         ## LOG DEBUG
         print request
 
@@ -154,6 +180,7 @@ class PostgisProvider:
             return """SELECT ST_AsX3D(ST_Force3D({column_})) FROM {table_}
             """.format(column_=self.column,
                        table_=self.table)
+<<<<<<< HEAD
 
         else:
             self.hasH = True
@@ -193,6 +220,48 @@ class PostgisProvider:
         return """SELECT ST_AsX3D(ST_Force3D({column_})) FROM {table_}
         """.format(column_=col,
                    table_=self.table)
+=======
+
+        else:
+            self.hasH = True
+            return """SELECT ST_AsX3D(ST_Force3D({column_})), {hcolumn_} FROM {table_}
+            """.format(column_=self.column,
+                       hcolumn_=column2,
+                       table_=self.table)
+
+    def _request_polygon(self):
+        if self.column2 is None or self.column2Type == 'geometry':
+            return """SELECT ST_AsX3D(ST_Force3D({column_})) FROM {table_}
+            """.format(column_=self.column,
+                       table_=self.table)
+
+        else:
+            self.hasH = True
+            return """SELECT ST_AsX3D(ST_Force3D({column_})), {hcolumn_} FROM {table_}
+            """.format(column_=self.column,
+                       hcolumn_=column2,
+                       table_=self.table)     
+
+    def _request_polyh(self):
+        # SHOULD BE PATIENT
+        if self.geometry1 == 'POLYHEDRALSURFACE':
+            col = self.column
+        else:
+            col = self.column2
+        return """SELECT ST_AsX3D(ST_Tesselate(ST_Force3D({column_}))) FROM {table_}
+        """.format(column_=col, 
+                   table_=self.table)
+
+    def _request_tin(self):
+        if self.geometry1 == 'TIN':
+            col = self.column
+        else:
+            col = self.column2
+        return """SELECT ST_AsX3D(ST_Force3D({column_})) FROM {table_}
+        """.format(column_=col,
+                   table_=self.table)
+
+>>>>>>> camille/new_ui
 
 
 ## Raster provider
@@ -210,7 +279,10 @@ class RasterProvider:
         self.srid = srid
         self.source = source
         self.httpRessource = httpRessource
+<<<<<<< HEAD
 
     ## Undefined for raster
     def requestTile(self, Xmin, Ymin, Xmax, Ymax):
         pass
+=======
+>>>>>>> camille/new_ui

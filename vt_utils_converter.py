@@ -53,7 +53,7 @@ class X3DTranslateToThreeJs:
     #  use the appropriate process in function of the data
     #  @param message to stock the data
     #  @param geometry to check the type of geometry
-    def parse(self, message, geometry):
+    def parse(self, array, geometry, hasH):
 
         if geometry == 'POINT':
             return self.__parse_point(message)
