@@ -23,7 +23,8 @@
 import os
 import webbrowser
 import re
-from multiprocessing import Process
+import sys
+import multiprocessing as mp
 
 from ui_vizitown import Ui_Vizitown
 from PyQt4 import QtCore, QtGui
@@ -32,7 +33,7 @@ from qgis.gui import *
 from PyQt4.QtSql import *
 
 import vt_utils_parser
-import vt_utils_tiler
+from vt_utils_tiler import TileGenerator
 from vt_as_app import VTAppServer
 
 
@@ -292,22 +293,47 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     def createRasterProviders(self):
         dataSrcImg = None
         dataSrcMnt = None
+        path = os.path.join(os.path.dirname(__file__), "rasters")
         extent = [self.extent.xMinimum(), self.extent.xMaximum(), self.extent.yMinimum(), self.extent.yMaximum()]
         tileSize = self.getSizeTile()
         levels = int(self.cb_zoom.currentText())
-
         if self.cb_MNT.count() > 0:
-            httpRessource = 'http://localhost:' + self.getPort() + '/rasters/dem_' + mnt.name() + '_' + tileSize + '_' + levels
             mnt = self.cb_MNT.itemData(self.cb_Raster.currentIndex())
+            httpRessource = 'http://localhost:' + self.getPort() + '/rasters/' + '_'.join(['dem', mnt.name(), str(tileSize), str(levels)])
             dem = RasterProvider(mnt.name(), mnt.extent(), mnt.crs().postgisSrid(), mnt.source(), httpRessource)
             ProviderManager.instance().dem = dem
-            dataSrcMnt = mnt.source()
+            dataSrcMnt = dem.source
         if self.cb_Raster.count() > 0:
-            httpRessource = 'http://localhost:' + self.getPort() + '/rasters/img_' + raster.name() + '_' + tileSize + '_' + levels
             raster = self.cb_Raster.itemData(self.cb_Raster.currentIndex())
+            httpRessource = 'http://localhost:' + self.getPort() + '/rasters/' + '_'.join(['img', raster.name(), str(tileSize), str(levels)])
             texture = RasterProvider(raster.name(), raster.extent(), raster.crs().postgisSrid(), raster.source(), httpRessource)
             ProviderManager.instance().raster = texture
-            dataSrcImg = texture.source()
+            dataSrcImg = texture.source
         if self.needGenerateRaster():
-            self.GDALprocess = Process(target=vt_utils_tiler.TileGenerator.launch_process, args=(dataSrcImg, dataSrcMnt, path, extent, tileSize, levels))
+            if os.name is 'nt':
+                pythonPath = os.path.abspath(os.path.join(sys.exec_prefix, '../../bin/pythonw.exe'))
+                mp.set_executable(pythonPath)
+                sys.argv = [ None ]
+            self.GDALprocess = mp.Process(target=launch_process, args=(dataSrcImg, dataSrcMnt, path, extent, tileSize, levels))
             self.GDALprocess.start()
+
+
+
+## launch_process manage the several process to generate data tiles
+def launch_process(dataSrcImg, dataSrcMnt, path, extent, tileSize=512, levels=2):
+    if (TileGenerator._check_existing_dir(dataSrcImg, dataSrcMnt, path, tileSize, levels) != 0):
+        generator = TileGenerator(dataSrcImg, dataSrcMnt, path, extent, tileSize, levels)
+        generator._create_repositories()
+        generator._calculate_extent()
+        generator._process_merge()
+        if (generator.processChoice == 0):
+            generator._process_tile_img()
+            generator._process_clip_mnt(generator.dataDstImg, generator.dataDstMnt)
+            generator._process_to_dim_tile(generator.dataDst, generator.tmpRepo)
+        elif (generator.processChoice == 1):
+            generator._process_tile_img()
+            generator._process_to_dim_tile(generator.dataDst, generator.tmpRepo)
+        elif (generator.processChoice == 2):
+            generator._process_tile_mnt()
+            generator._process_to_dim_tile(generator.dataDst, generator.tmpRepo)
+        generator._clean_up()

@@ -10,7 +10,7 @@ class ProviderManager:
     def __init__(self):
         self.vectors = []
         self.dem = None
-        self.raster = None
+        self.texture = None
 
     ## Add a provider to the manager
     #  @param p the provider to add
