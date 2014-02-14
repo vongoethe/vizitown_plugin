@@ -61,7 +61,7 @@ class PostgisProvider:
 
             if self.column2Type == 'geometry':
                 getGeometry = """SELECT GeometryType({column_}), GeometryType({column2_}) FROM {table_} LIMIT 1
-                """.format(column_=column, 
+                """.format(column_=column,
                            column2_=column2,
                            table_=table)
                 if query.exec_(getGeometry):
@@ -75,7 +75,7 @@ class PostgisProvider:
 
             else:
                 getGeometry = """SELECT GeometryType({column_}) FROM {table_} LIMIT 1
-                """.format(column_=column, 
+                """.format(column_=column,
                            table_=table)
                 if query.exec_(getGeometry):
                     query.next()
@@ -93,11 +93,11 @@ class PostgisProvider:
         query = QSqlQuery(self.db)
         request = ""
 
-        extent = """POLYGON(({Xmin_} {Ymin_}, 
-                             {Xmax_} {Ymin_}, 
-                             {Xmax_} {Ymax_}, 
-                             {Xmin_} {Ymax_}, 
-                             {Xmin_} {Ymin_}))  
+        extent = """POLYGON(({Xmin_} {Ymin_},
+                             {Xmax_} {Ymin_},
+                             {Xmax_} {Ymax_},
+                             {Xmin_} {Ymax_},
+                             {Xmin_} {Ymin_}))
         """.format(Xmin_=Xmin,
                    Xmax_=Xmax,
                    Ymin_=Ymin,
@@ -110,7 +110,7 @@ class PostgisProvider:
 
         request = self._get_request()
         request += intersect
-        
+
         ## LOG DEBUG
         print request
 
@@ -119,7 +119,7 @@ class PostgisProvider:
             print query.lastError().text()
             raise Exception('DB request failed')
 
-        return {'it': query, 'geom': self.retGeometry, 'hasH': }
+        return {'it': query, 'geom': self.retGeometry, 'hasH': self.hasH}
 
     def _get_request(self):
         if (self.geometry1 == 'TIN' or
@@ -173,7 +173,7 @@ class PostgisProvider:
             return """SELECT ST_AsX3D(ST_Force3D({column_})), {hcolumn_} FROM {table_}
             """.format(column_=self.column,
                        hcolumn_=column2,
-                       table_=self.table)     
+                       table_=self.table)
 
     def _request_polyh(self):
         # SHOULD BE PATIENT
@@ -182,7 +182,7 @@ class PostgisProvider:
         else:
             col = self.column2
         return """SELECT ST_AsX3D(ST_Tesselate(ST_Force3D({column_}))) FROM {table_}
-        """.format(column_=col, 
+        """.format(column_=col,
                    table_=self.table)
 
     def _request_tin(self):
@@ -193,7 +193,6 @@ class PostgisProvider:
         return """SELECT ST_AsX3D(ST_Force3D({column_})) FROM {table_}
         """.format(column_=col,
                    table_=self.table)
-
 
 
 ## Raster provider
