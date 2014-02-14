@@ -106,9 +106,9 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.cb_MNT.clear()
         self.cb_Raster.clear()
         self.layerSelectionWidget.clearContents()
-        self.layerSelectionWidget.setHorizontalHeaderLabels(('Display','Layer','Field'))
-        self.layerSelectionWidget.setColumnWidth(0,45)
-        self.layerSelectionWidget.setColumnWidth(1,150)
+        self.layerSelectionWidget.setHorizontalHeaderLabels(('Display', 'Layer', 'Field'))
+        self.layerSelectionWidget.setColumnWidth(0, 45)
+        self.layerSelectionWidget.setColumnWidth(1, 150)
         # set column name of layerSelectionWidget
         self.progressBar.hide()
 
@@ -169,6 +169,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         else:
             raise Exception('Connection to database cannot be established')
 
+    ## Add vector layer in QTableWidget
     def addItemTableWidget(self, item, dic):
         self.layerSelectionWidget.insertRow(0)
         checkBox = QtGui.QTableWidgetItem()
@@ -180,11 +181,13 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.layerSelectionWidget.setItem(0, 1, item)
         self.layerSelectionWidget.setCellWidget(0, 2, comboBox)
 
+    ## Add item in a QComboBox which is in QTableWidget
     def addItemComboBox(self, comboBox, dic):
         comboBox.addItem("None")
         for nameColumn, type in dic.items():
             comboBox.addItem(nameColumn + ' - ' + type)
 
+    ## Add layer in QCombobox and QTableWidget
     def loadLayers(self):
         self.clearListWidget()
         layerListIems = QgsMapLayerRegistry().instance().mapLayers().items()
@@ -207,7 +210,6 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.cb_tuile.setCurrentIndex(1)
         self.cb_zoom.setCurrentIndex(1)
         self.layerSelectionWidget.clear()
-
 
     ## Get the port number. If the port isn't good this function return the value by default, 8888
     def getPort(self):
@@ -258,24 +260,24 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         if self.appServerRunning:
             self.progressBar.hide()
             self.btn_generate.setText("Server is stopping")
-#            self.appServer.stop()
+            self.appServer.stop()
             self.btn_generate.setText("Generate")
-#            self.appServerRunning = False
-#            self.killGDALProcess()
+            self.appServerRunning = False
+            self.killGDALProcess()
         else:
             self.progressBar.show()
             self.createVectorProviders()
             self.createRasterProviders()
-#            initParam = self.getInitParam()
-#            if self.needGenerateRaster():
-#                tilesInfo = self.getTilesInfo()
-#                self.appServer = VTAppServer(self, initParam, self.GDALprocess, tilesInfo)
-#            else:
-#                self.appServer = VTAppServer(self, initParam)
-#            self.appServer.start()
-#            self.btn_generate.setText("Server is running")
-#            self.openWebBrowser(self.getPort())
-#            self.appServerRunning = True
+            initParam = self.getInitParam()
+            if self.needGenerateRaster():
+                tilesInfo = self.getTilesInfo()
+                self.appServer = VTAppServer(self, initParam, self.GDALprocess, tilesInfo)
+            else:
+                self.appServer = VTAppServer(self, initParam)
+            self.appServer.start()
+            self.btn_generate.setText("Server is running")
+            self.openWebBrowser(self.getPort())
+            self.appServerRunning = True
 
     ## Open a web browser
     def openWebBrowser(self, port):
@@ -284,21 +286,19 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
     ## Create all providers with the selected layers in the GUI
     def createVectorProviders(self):
-        #for i in range(self.listWidget_Right.count()):
-            #vectorLayer = self.listWidget_Right.item(i).data(QtCore.Qt.UserRole)
-            #d = vt_utils_parser.parseVector(vectorLayer.source())
-             # Ajouter column2 et type2column2 (geom, integer....)
-            #provider = PostgisProvider(d['host'], d['dbname'], d['user'], d['password'], d['srid'], d['table'], d['column'])
-            #ProviderManager.instance().addVectorProvider(provider)
         for i in range(self.layerSelectionWidget.rowCount()):
             # if the layer is checked
-            if self.layerSelectionWidget.item(i,0).checkState() == 2:
-                vectorLayer = self.layerSelectionWidget.item(i,1).data(QtCore.Qt.UserRole)
-#                print vectorLayer.name()
-#                print self.layerSelectionWidget.item(i,2).type()
-
-#        layer = item.data(QtCore.Qt.UserRole)
-
+            if self.layerSelectionWidget.item(i, 0).checkState() == 2:
+                vectorLayer = self.layerSelectionWidget.item(i, 1).data(QtCore.Qt.UserRole)
+                column2 = self.layerSelectionWidget.cellWidget(i, 2).currentText()
+                column2Name = "None"
+                column2Type = "None"
+                if not column2 == "None":
+                    column2Name = column2.split(" - ")[0]
+                    column2Type = column2.split(" - ")[1]
+                d = vt_utils_parser.parseVector(vectorLayer.source())
+                provider = PostgisProvider(d['host'], d['dbname'], d['user'], d['password'], d['srid'], d['table'], d['column'], column2Name, column2Type)
+                ProviderManager.instance().addVectorProvider(provider)
 
     ## Create all providers for DEM and raster
     def createRasterProviders(self):
@@ -324,10 +324,9 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             if os.name is 'nt':
                 pythonPath = os.path.abspath(os.path.join(sys.exec_prefix, '../../bin/pythonw.exe'))
                 mp.set_executable(pythonPath)
-                sys.argv = [ None ]
+                sys.argv = [None]
             self.GDALprocess = mp.Process(target=launch_process, args=(dataSrcImg, dataSrcMnt, path, extent, tileSize, levels))
             self.GDALprocess.start()
-
 
 
 ## launch_process manage the several process to generate data tiles
