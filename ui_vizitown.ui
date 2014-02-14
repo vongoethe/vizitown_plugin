@@ -64,7 +64,7 @@
           <item row="0" column="2" colspan="2">
            <layout class="QVBoxLayout" name="verticalLayout">
             <item>
-             <widget class="QTableWidget" name="layerSelectionWidget">
+             <widget class="QTableWidget" name="tw_layers">
               <property name="alternatingRowColors">
                <bool>true</bool>
               </property>
@@ -109,7 +109,7 @@
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <widget class="QComboBox" name="cb_MNT"/>
+           <widget class="QComboBox" name="cb_dem"/>
           </item>
          </layout>
         </widget>
@@ -121,7 +121,7 @@
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <widget class="QComboBox" name="cb_Raster"/>
+           <widget class="QComboBox" name="cb_texture"/>
           </item>
          </layout>
         </widget>
@@ -160,7 +160,7 @@
            </spacer>
           </item>
           <item>
-           <widget class="QLineEdit" name="Numero_Port">
+           <widget class="QLineEdit" name="le_port">
             <property name="inputMask">
              <string>0000</string>
             </property>
@@ -189,7 +189,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QComboBox" name="cb_tuile"/>
+           <widget class="QComboBox" name="cb_tile"/>
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_9">
@@ -205,7 +205,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="btn_defaut">
+        <widget class="QPushButton" name="btn_default">
          <property name="text">
           <string>By default</string>
          </property>
@@ -221,33 +221,33 @@
        <item row="2" column="2">
         <widget class="QLabel" name="label_11">
          <property name="text">
-          <string>Xmin</string>
+          <string>le_xmin</string>
          </property>
         </widget>
        </item>
        <item row="2" column="5">
         <widget class="QLabel" name="label_13">
          <property name="text">
-          <string>Xmax</string>
+          <string>le_xmax</string>
          </property>
         </widget>
        </item>
        <item row="4" column="3">
         <widget class="QLabel" name="label_12">
          <property name="text">
-          <string>Ymin</string>
+          <string>le_ymin</string>
          </property>
         </widget>
        </item>
        <item row="1" column="3">
-        <widget class="QLineEdit" name="Ymax">
+        <widget class="QLineEdit" name="le_ymax">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
        <item row="3" column="5">
-        <widget class="QLineEdit" name="Xmax">
+        <widget class="QLineEdit" name="le_xmax">
          <property name="text">
           <string/>
          </property>
@@ -256,19 +256,19 @@
        <item row="0" column="3">
         <widget class="QLabel" name="label_14">
          <property name="text">
-          <string>Ymax</string>
+          <string>le_ymax</string>
          </property>
         </widget>
        </item>
        <item row="5" column="3">
-        <widget class="QLineEdit" name="Ymin">
+        <widget class="QLineEdit" name="le_ymin">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
        <item row="3" column="2">
-        <widget class="QLineEdit" name="Xmin">
+        <widget class="QLineEdit" name="le_xmin">
          <property name="text">
           <string/>
          </property>
@@ -292,7 +292,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QProgressBar" name="progressBar">
+    <widget class="QProgressBar" name="pb_loading">
      <property name="maximum">
       <number>0</number>
      </property>

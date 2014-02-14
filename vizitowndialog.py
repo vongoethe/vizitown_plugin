@@ -50,7 +50,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.GDALprocess = None
 
     ## Kill GDAL process and remove unfinished tiled files
-    def killGDALProcess(self):
+    def kill_gdal_process(self):
         if self.GDALprocess and self.GDALprocess.is_alive():
             self.GDALprocess.terminate()
             self.GDALprocess = None
@@ -68,28 +68,28 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             if ret == QtGui.QMessageBox.Save:
                 print "GDALprocess continue"
             if ret == QtGui.QMessageBox.Discard:
-                self.killGDALProcess()
+                self.kill_gdal_process()
 
     ## Set the default extent
-    def initExtent(self, extent):
+    def init_extent(self, extent):
         self.extent = extent
-        self.Xmin.setText("%.4f" % extent.xMinimum())
-        self.Ymin.setText("%.4f" % extent.yMinimum())
-        self.Xmax.setText("%.4f" % extent.xMaximum())
-        self.Ymax.setText("%.4f" % extent.yMaximum())
+        self.le_xmin.setText("%.4f" % extent.xMinimum())
+        self.le_ymin.setText("%.4f" % extent.yMinimum())
+        self.le_xmax.setText("%.4f" % extent.xMaximum())
+        self.le_ymax.setText("%.4f" % extent.yMaximum())
 
     ## Set the the of the combobox
-    def initComboBox(self):
+    def init_combo_box(self):
         ## Set the values of the taile by default
-        self.cb_tuile.clear()
-        self.cb_tuile.addItem('256 x 256')
-        self.cb_tuile.addItem('512 x 512')
-        self.cb_tuile.addItem('1024 x 1024')
-        self.cb_tuile.addItem('2048 x 2048')
-        self.cb_tuile.addItem('4096 x 4096')
-        self.cb_tuile.setCurrentIndex(1)
+        self.cb_tile.clear()
+        self.cb_tile.addItem('256 x 256')
+        self.cb_tile.addItem('512 x 512')
+        self.cb_tile.addItem('1024 x 1024')
+        self.cb_tile.addItem('2048 x 2048')
+        self.cb_tile.addItem('4096 x 4096')
+        self.cb_tile.setCurrentIndex(1)
 
-        self.Numero_Port.setText("8888")
+        self.le_port.setText("8888")
 
         ## Set the value of the zoom level
         self.cb_zoom.clear()
@@ -101,18 +101,18 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.cb_zoom.setCurrentIndex(1)
 
     ## Reset all widgets
-    def clearListWidget(self):
-        self.cb_MNT.clear()
-        self.cb_Raster.clear()
-        self.layerSelectionWidget.clearContents()
-        self.layerSelectionWidget.setHorizontalHeaderLabels(('Display', 'Layer', 'Field'))
-        self.layerSelectionWidget.setColumnWidth(0, 45)
-        self.layerSelectionWidget.setColumnWidth(1, 150)
-        # set column name of layerSelectionWidget
-        self.progressBar.hide()
+    def clear_list_widget(self):
+        self.cb_dem.clear()
+        self.cb_texture.clear()
+        self.tw_layers.setRowCount(0)
+        self.tw_layers.setHorizontalHeaderLabels(('Display', 'Layer', 'Field'))
+        self.tw_layers.setColumnWidth(0, 45)
+        self.tw_layers.setColumnWidth(1, 150)
+        # set column name of tw_layers
+        self.pb_loading.hide()
 
     ## Get the geometry of the layer
-    def getGeometry(self, layer):
+    def get_geometry(self, layer):
         if layer.wkbType() == QGis.WKBPoint:
             return 'Point'
         if layer.wkbType() == QGis.WKBPolygon:
@@ -123,24 +123,24 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             return 'Multipolygon'
 
     ## Return True if the layer is a Data Elevation Model which come from a database
-    def isDem(self, layer):
+    def is_dem(self, layer):
         return (layer.type() == QgsMapLayer.RasterLayer and
                 layer.providerType() == "gdal" and
                 layer.bandCount() == 1) and not layer.source().startswith('dbname')
 
     ## Return True if the layer is a Raster which come from a database
-    def isRaster(self, layer):
+    def is_raster(self, layer):
         return (layer.type() == QgsMapLayer.RasterLayer and
                 layer.providerType() == "gdal" and
                 layer.bandCount() >= 3) and not layer.source().startswith('dbname')
 
     ## Return True if the layer is a Vector which come from a database
-    def isVector(self, layer):
+    def is_vector(self, layer):
         return (layer.type() == QgsMapLayer.VectorLayer) and layer.source().startswith('dbname')
 
     ## Return true if there is a least one raster to generate
-    def needGenerateRaster(self):
-        return self.cb_MNT.count() > 0 or self.cb_Raster.count() > 0
+    def need_generate_raster(self):
+        return self.cb_dem.count() > 0 or self.cb_texture.count() > 0
 
     ## Add layer in combobox and listWidget
     def get_info_table(self, host, dbname, user, password, table):
@@ -169,58 +169,58 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             raise Exception('Connection to database cannot be established')
 
     ## Add vector layer in QTableWidget
-    def addItemTableWidget(self, item, dic):
-        self.layerSelectionWidget.insertRow(0)
+    def add_item_table_widget(self, item, dic):
+        self.tw_layers.insertRow(0)
         checkBox = QtGui.QTableWidgetItem()
         checkBox.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
         checkBox.setCheckState(QtCore.Qt.Unchecked)
         comboBox = QtGui.QComboBox()
-        self.addItemComboBox(comboBox, dic)
-        self.layerSelectionWidget.setItem(0, 0, checkBox)
-        self.layerSelectionWidget.setItem(0, 1, item)
-        self.layerSelectionWidget.setCellWidget(0, 2, comboBox)
+        self.add_item_combo_box(comboBox, dic)
+        self.tw_layers.setItem(0, 0, checkBox)
+        self.tw_layers.setItem(0, 1, item)
+        self.tw_layers.setCellWidget(0, 2, comboBox)
 
     ## Add item in a QComboBox which is in QTableWidget
-    def addItemComboBox(self, comboBox, dic):
+    def add_item_combo_box(self, comboBox, dic):
         comboBox.addItem("None")
         for nameColumn, type in dic.items():
             comboBox.addItem(nameColumn + ' - ' + type)
 
     ## Add layer in QCombobox and QTableWidget
-    def loadLayers(self):
-        self.clearListWidget()
+    def load_layers(self):
+        self.clear_list_widget()
         layerListIems = QgsMapLayerRegistry().instance().mapLayers().items()
         for id, layer in layerListIems:
-            if self.isDem(layer):
-                self.cb_MNT.addItem(layer.name(), layer)
-            if self.isVector(layer):
+            if self.is_dem(layer):
+                self.cb_dem.addItem(layer.name(), layer)
+            if self.is_vector(layer):
                 d = vt_utils_parser.parseVector(layer.source())
                 dic = self.get_info_table(d['host'], d['dbname'], d['user'], d['password'], d['table'])
                 name = layer.name() + ' ' + re.search("(\(.*\)+)", layer.source()).group(0)
                 item = QtGui.QTableWidgetItem(name)
                 item.setData(QtCore.Qt.UserRole, layer)
-                self.addItemTableWidget(item, dic)
-            if self.isRaster(layer):
-                self.cb_Raster.addItem(layer.name(), layer)
+                self.add_item_table_widget(item, dic)
+            if self.is_raster(layer):
+                self.cb_texture.addItem(layer.name(), layer)
 
     ## Set the tab advanced option by default
-    def on_btn_defaut_released(self):
-        self.Numero_Port.setText("8888")
-        self.cb_tuile.setCurrentIndex(1)
+    def on_btn_default_released(self):
+        self.le_port.setText("8888")
+        self.cb_tile.setCurrentIndex(1)
         self.cb_zoom.setCurrentIndex(1)
-        self.layerSelectionWidget.clear()
+        self.tw_layers.clear()
 
     ## Get the port number. If the port isn't good this function return the value by default, 8888
-    def getPort(self):
-        if self.Numero_Port.text().isdigit() and int(self.Numero_Port.text()) < 65536 and int(self.Numero_Port.text()) > 1024:
-            return self.Numero_Port.text()
+    def get_port(self):
+        if self.le_port.text().isdigit() and int(self.le_port.text()) < 65536 and int(self.le_port.text()) > 1024:
+            return self.le_port.text()
         else:
             # Maybe change for another exotic port
             return 8888
 
     ## Get the size tile
-    def getSizeTile(self):
-        index = self.cb_tuile.currentIndex()
+    def get_size_tile(self):
+        index = self.cb_tile.currentIndex()
         if index == 0:
             return 256
         if index == 1:
@@ -233,23 +233,23 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             return 4096
 
     ## Get the intial parameter to give at the app server
-    def getInitParam(self):
+    def get_init_param(self):
         return {
             'extent': {
-                'Xmin': "%.4f" % self.extent.xMinimum(),
-                'Ymin': "%.4f" % self.extent.yMinimum(),
-                'Xmax': "%.4f" % self.extent.xMaximum(),
-                'Ymax': "%.4f" % self.extent.yMaximum(),
+                'le_xmin': "%.4f" % self.extent.xMinimum(),
+                'le_ymin': "%.4f" % self.extent.yMinimum(),
+                'le_xmax': "%.4f" % self.extent.xMaximum(),
+                'le_ymax': "%.4f" % self.extent.yMaximum(),
             },
-            'port': self.getPort(),
-            'hasRaster': self.needGenerateRaster(),
+            'port': self.get_port(),
+            'hasRaster': self.need_generate_raster(),
         }
 
     ## Get the tiles info done by the process GDAL
-    def getTilesInfo(self):
+    def get_tiles_info(self):
         return {
             'zoomLevel': int(self.cb_zoom.currentText()),
-            'tileSize': self.getSizeTile(),
+            'tileSize': self.get_size_tile(),
             'dem': ProviderManager.instance().dem.httpRessource,
             'texture': ProviderManager.instance().raster.httpRessource,
         }
@@ -257,39 +257,39 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     ## Generate and launch the rendering of the 3D scene
     def on_btn_generate_released(self):
         if self.appServerRunning:
-            self.progressBar.hide()
+            self.pb_loading.hide()
             self.btn_generate.setText("Server is stopping")
             self.appServer.stop()
             self.btn_generate.setText("Generate")
             self.appServerRunning = False
-            self.killGDALProcess()
+            self.kill_gdal_process()
         else:
-            self.progressBar.show()
-            self.createVectorProviders()
-            self.createRasterProviders()
-            initParam = self.getInitParam()
-            if self.needGenerateRaster():
-                tilesInfo = self.getTilesInfo()
+            self.pb_loading.show()
+            self.create_vector_providers()
+            self.create_raster_providers()
+            initParam = self.get_init_param()
+            if self.need_generate_raster():
+                tilesInfo = self.get_tiles_info()
                 self.appServer = AppServer(self, initParam, self.GDALprocess, tilesInfo)
             else:
                 self.appServer = AppServer(self, initParam)
             self.appServer.start()
             self.btn_generate.setText("Server is running")
-            self.openWebBrowser(self.getPort())
+            self.open_web_browser(self.get_port())
             self.appServerRunning = True
 
     ## Open a web browser
-    def openWebBrowser(self, port):
+    def open_web_browser(self, port):
         url = 'http://localhost:' + str(port)
         webbrowser.open(url)
 
     ## Create all providers with the selected layers in the GUI
-    def createVectorProviders(self):
-        for i in range(self.layerSelectionWidget.rowCount()):
+    def create_vector_providers(self):
+        for i in range(self.tw_layers.rowCount()):
             # if the layer is checked
-            if self.layerSelectionWidget.item(i, 0).checkState() == 2:
-                vectorLayer = self.layerSelectionWidget.item(i, 1).data(QtCore.Qt.UserRole)
-                column2 = self.layerSelectionWidget.cellWidget(i, 2).currentText()
+            if self.tw_layers.item(i, 0).checkState() == 2:
+                vectorLayer = self.tw_layers.item(i, 1).data(QtCore.Qt.UserRole)
+                column2 = self.tw_layers.cellWidget(i, 2).currentText()
                 column2Name = "None"
                 column2Type = "None"
                 if not column2 == "None":
@@ -300,26 +300,26 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
                 ProviderManager.instance().addVectorProvider(provider)
 
     ## Create all providers for DEM and raster
-    def createRasterProviders(self):
+    def create_raster_providers(self):
         dataSrcImg = None
         dataSrcMnt = None
         path = os.path.join(os.path.dirname(__file__), "rasters")
         extent = [self.extent.xMinimum(), self.extent.xMaximum(), self.extent.yMinimum(), self.extent.yMaximum()]
-        tileSize = self.getSizeTile()
+        tileSize = self.get_size_tile()
         levels = int(self.cb_zoom.currentText())
-        if self.cb_MNT.count() > 0:
-            mnt = self.cb_MNT.itemData(self.cb_MNT.currentIndex())
-            httpRessource = 'http://localhost:' + self.getPort() + '/rasters/' + '_'.join(['dem', mnt.name(), str(tileSize), str(levels)])
+        if self.cb_dem.count() > 0:
+            mnt = self.cb_dem.itemData(self.cb_dem.currentIndex())
+            httpRessource = 'http://localhost:' + self.get_port() + '/rasters/' + '_'.join(['dem', mnt.name(), str(tileSize), str(levels)])
             dem = RasterProvider(mnt.name(), mnt.extent(), mnt.crs().postgisSrid(), mnt.source(), httpRessource)
             ProviderManager.instance().dem = dem
             dataSrcMnt = dem.source
-        if self.cb_Raster.count() > 0:
-            raster = self.cb_Raster.itemData(self.cb_Raster.currentIndex())
-            httpRessource = 'http://localhost:' + self.getPort() + '/rasters/' + '_'.join(['img', raster.name(), str(tileSize), str(levels)])
+        if self.cb_texture.count() > 0:
+            raster = self.cb_texture.itemData(self.cb_texture.currentIndex())
+            httpRessource = 'http://localhost:' + self.get_port() + '/rasters/' + '_'.join(['img', raster.name(), str(tileSize), str(levels)])
             texture = RasterProvider(raster.name(), raster.extent(), raster.crs().postgisSrid(), raster.source(), httpRessource)
             ProviderManager.instance().raster = texture
             dataSrcImg = texture.source
-        if self.needGenerateRaster():
+        if self.need_generate_raster():
             if os.name is 'nt':
                 pythonPath = os.path.abspath(os.path.join(sys.exec_prefix, '../../bin/pythonw.exe'))
                 mp.set_executable(pythonPath)
