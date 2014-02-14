@@ -31,7 +31,6 @@ class PostgisProvider:
         self.geometry2 = None
         self.retGeometry = None
         self.hasH = False
-        print "Instantiate PostgisProvider"
 
         if not self.db.open():
             raise Exception('Connection to database cannot be established')
@@ -47,10 +46,6 @@ class PostgisProvider:
                        table_=table)
             if query.exec_(getGeometry):
                 query.next()
-                print "colonne 2 geometry"
-                print query
-                print query.value(0)
-                print query.value(1)
                 self.geometry1 = query.value(0)
                 self.geometry2 = query.value(1)
             else:
@@ -64,9 +59,6 @@ class PostgisProvider:
                        table_=table)
             if query.exec_(getGeometry):
                 query.next()
-                print "une seule colonne"
-                print query
-                print query.value(0)
                 self.geometry1 = query.value(0)
             else:
                 print query.lastQuery()
@@ -145,7 +137,7 @@ class PostgisProvider:
             self.hasH = True
             return """SELECT ST_AsX3D(ST_Force3D({column_})), {hcolumn_} FROM {table_}
             """.format(column_=self.column,
-                       hcolumn_=column2,
+                       hcolumn_=self.column2,
                        table_=self.table)
 
     def _request_polygon(self):

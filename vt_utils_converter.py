@@ -84,7 +84,7 @@ class X3DTranslateToThreeJs:
             # geometry has height
             if hasH:
                 if geometry == 'POINT':
-                    geometries += self._parse_point(str(g[0]), g[1]) + ','
+                    geometries += self._parse_point(str(g[0]), str(g[1])) + ','
             else:
                 if geometry == 'POINT':
                     geometries += self._parse_point(str(g), noHeight) + ','
