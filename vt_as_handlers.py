@@ -31,7 +31,7 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
         bufferSize = 100
         print message
         d = json.loads(message)
-        vectors = ProviderManager.instance().requestTile(d['Xmin'], d['Ymin'], d['Xmax'], d['Ymax'])
+        vectors = ProviderManager.instance().request_tile(d['Xmin'], d['Ymin'], d['Xmax'], d['Ymax'])
         translator = X3DTranslateToThreeJs()
         for v in vectors:
             ## TODO: Maybe make a buffer
@@ -59,7 +59,7 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
 #  from QGIS to the web browser
 class SyncHandler(cyclone.websocket.WebSocketHandler):
     def initialize(self):
-        SyncManager.instance().addListener(self)
+        SyncManager.instance().add_listener(self)
 
     ## Method call when the websocket is opened
     def connectionMade(self):

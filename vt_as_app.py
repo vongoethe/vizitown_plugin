@@ -2,7 +2,6 @@ import sys
 import os
 
 from PyQt4.QtCore import *
-from pprint import pprint
 
 
 ## RollbackImporter.
@@ -33,7 +32,7 @@ class RollbackImporter(object):
 
 ## ViziTown Application Server
 #  Use a cyclone server as backend
-class VTAppServer(QObject):
+class AppServer(QObject):
 
     ## Constructor.
     #  @param parent  the QObject parent
@@ -70,7 +69,7 @@ class VTAppServer(QObject):
 
         self.timer = QTimer()
         QObject.connect(self.timer, SIGNAL("timeout()"),
-                        self.yieldAppThread)
+                        self.yield_thread)
         self.timer.start(10)
 
     ## Stop the application server
@@ -90,6 +89,6 @@ class VTAppServer(QObject):
         sys.stderr = self.saveStderr
 
     ## Yied application server thread to not hang the GUI
-    def yieldAppThread(self):
+    def yield_thread(self):
         if self.appThread:
             self.appThread.msleep(1)

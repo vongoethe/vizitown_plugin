@@ -1,7 +1,10 @@
-from vt_utils_singleton import Singleton
-from vt_utils_converter import X3DTranslateToThreeJs
+import re
+
 from PyQt4.QtCore import *
 from PyQt4.QtSql import *
+
+from vt_utils_singleton import Singleton
+from vt_utils_converter import X3DTranslateToThreeJs
 
 
 ## Provider manager
@@ -9,18 +12,26 @@ from PyQt4.QtSql import *
 @Singleton
 class ProviderManager:
     def __init__(self):
-        self.providers = []
+        self.vectors = []
+        self.dem = None
+        self.texture = None
 
-    ## Add a provider to the manager
+    ## Add a vector provider to the manager
     #  @param p the provider to add
-    def addProvider(self, p):
-        self.providers.append(p)
+    def add_vector_provider(self, p):
+        self.vectors.append(p)
+
+    ## Add a DEM raster provider to the manager
+    #  @param p the provider to add
+    def create_raster_provider(self, raster, port, tileSize, zoomLevel):
+        httpResource = 'http://localhost:' + port + '/rasters/' + '_'.join(['img', raster.name(), tileSize, zoomLevel])
+        return RasterProvider(raster.name(), raster.extent(), raster.crs().postgisSrid(), raster.source(), httpResource)
 
     ## Request a tile for all his providers
-    def requestTile(self, Xmin, Ymin, Xmax, Ymax):
+    def request_tile(self, Xmin, Ymin, Xmax, Ymax):
         result = []
         for p in self.providers:
-            result.append(p.requestTile(Xmin, Ymin, Xmax, Ymax))
+            result.append(p.request_tile(Xmin, Ymin, Xmax, Ymax))
         return result
 
 
@@ -36,7 +47,7 @@ class PostgisProvider:
     #  @param table of the resource
     #  @param column of the resource
     #  @param column2 representing a height of column or another geometry (TinZ)
-    def __init__(self, host, dbname, user, password, srid, table, column, column2, column2Type):
+    def __init__(self, host, dbname, user, password, srid, table, column, column2=None, column2Type=None):
         self.db = QSqlDatabase.addDatabase("QPSQL")
         self.db.setHostName(host)
         self.db.setDatabaseName(dbname)
@@ -81,14 +92,14 @@ class PostgisProvider:
                        table_=table)
             if query.exec_(getGeometry):
                 query.next()
-                self.geometry1 = query.value(0).toString()
+                self.geometry1 = query.value(0)
             else:
                 print query.lastQuery()
                 print query.lastError().text()
-                raise Exception('DB request failed')            
+                raise Exception('DB request failed')
 
     ## Return all the result contains in the extent in param
-    def requestTile(self, Xmin, Ymin, Xmax, Ymax):
+    def request_tile(self, Xmin, Ymin, Xmax, Ymax):
         query = QSqlQuery(self.db)
         request = ""
 
@@ -193,23 +204,47 @@ class PostgisProvider:
         """.format(column_=col,
                    table_=self.table)
 
+    ## Return columns and types of a specific table
+    @staticmethod
+    def get_columns_info_table(host, dbname, user, password, table):
+        db = QSqlDatabase.addDatabase("QPSQL")
+        db.setHostName(host)
+        db.setDatabaseName(dbname)
+        db.setUserName(user)
+        db.setPassword(password)
+        if db.open():
+            query = QSqlQuery(db)
+            st = table.split('.')
+            st[0] = re.sub('"', '\'', st[0])
+            st[1] = re.sub('"', '\'', st[1])
+            getInfo = """
+                SELECT column_name, udt_name
+                FROM information_schema.columns
+                WHERE table_name = {table_} AND table_schema = {schema_}
+                ORDER BY column_name;
+            """.format(table_=st[1], schema_=st[0])
+            query.exec_(getInfo)
+            result = {}
+            while query.next():
+                result[query.value(0)] = query.value(1)
+            return result
+        else:
+            raise Exception('Connection to database cannot be established')
+
 
 ## Raster provider
 #  Stock the attribute to use a raster resource
 class RasterProvider:
+
     ## Constructor
     #  @param name of the raster
     #  @param extent of the raster
     #  @param srid of the raster
     #  @param source local path of the raster
-    #  @param httpRessource URL location
-    def __init__(self, name, extent, srid, source, httpRessource):
+    #  @param httpResource URL location
+    def __init__(self, name, extent, srid, source, httpResource):
         self.name = name
         self.extent = extent
         self.srid = srid
         self.source = source
-        self.httpRessource = httpRessource
-
-    ## Undefined for raster
-    def requestTile(self, Xmin, Ymin, Xmax, Ymax):
-        pass
+        self.httpResource = httpResource

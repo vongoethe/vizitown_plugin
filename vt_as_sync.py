@@ -12,11 +12,11 @@ class SyncManager:
         self.isSocketOpen = False
 
     ## Record a websocket as listener for sync
-    def addListener(self, ws):
+    def add_listener(self, ws):
         self.websockets.append(ws)
 
     ## Send new extent with all websockets stored
-    def notifyExtentChange(self, extent):
+    def notify_extent_change(self, extent):
         if self.isSocketOpen:
             for ws in self.websockets:
                 ws.sendMessage(json.dumps(extent, separators=(',', ':')))

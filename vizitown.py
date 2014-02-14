@@ -52,7 +52,8 @@ class Vizitown:
             if qVersion() > '4.3.3':
                 QCoreApplication.installTranslator(self.translator)
         # Create the dialog (after translation) and keep reference
-        self.dlg = VizitownDialog()
+        self.dlg = VizitownDialog(iface.mapCanvas().extent())
+        QObject.connect(iface.mapCanvas(), SIGNAL("extentsChanged()"), self.info)
 
     def initGui(self):
         # Create action that will start plugin configuration
@@ -82,13 +83,13 @@ class Vizitown:
             'Xmax': xMax,
             'Ymax': yMax,
         }
-        SyncManager.instance().notifyExtentChange(extent)
+        SyncManager.instance().notify_extent_change(extent)
 
     def run(self):
-        dialog = self.dlg
-        dialog.initExtent(self.iface.mapCanvas().extent())
-        dialog.loadLayers()
-        dialog.initComboBox()
-        QObject.connect(self.iface.mapCanvas(), SIGNAL("extentsChanged()"), self.info)
+        self.dlg.init_extent(self.iface.mapCanvas().extent())
+        self.dlg.init_tile_size()
+        self.dlg.init_zoom_level()
+        self.dlg.init_layers()
+        self.dlg.le_port.setText("8888")
         # show the dialog
         self.dlg.show()
