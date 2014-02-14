@@ -15,14 +15,14 @@ class ProviderManager:
 
     ## Add a provider to the manager
     #  @param p the provider to add
-    def addVectorProvider(self, p):
+    def add_vector_provider(self, p):
         self.vectors.append(p)
 
     ## Request a tile for all his providers
-    def requestTile(self, Xmin, Ymin, Xmax, Ymax):
+    def request_tile(self, Xmin, Ymin, Xmax, Ymax):
         result = []
         for p in self.providers:
-            result.append(p.requestTile(Xmin, Ymin, Xmax, Ymax))
+            result.append(p.request_tile(Xmin, Ymin, Xmax, Ymax))
         return result
 
 
@@ -91,7 +91,7 @@ class PostgisProvider:
             raise Exception('Connection to database cannot be established')
 
     ## Return all the result contains in the extent in param
-    def requestTile(self, Xmin, Ymin, Xmax, Ymax):
+    def request_tile(self, Xmin, Ymin, Xmax, Ymax):
         query = QSqlQuery(self.db)
         request = ""
 
