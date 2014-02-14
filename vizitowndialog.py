@@ -35,6 +35,7 @@ from PyQt4.QtSql import *
 import vt_utils_parser
 from vt_utils_tiler import TileGenerator
 from vt_as_app import VTAppServer
+from vt_as_providers import *
 
 
 ## Vizitown dialog in QGIS GUI
@@ -104,7 +105,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     def clearListWidget(self):
         self.cb_MNT.clear()
         self.cb_Raster.clear()
-        self.layerSelectionWidget.clear()
+        self.layerSelectionWidget.clearContents()
         self.layerSelectionWidget.setHorizontalHeaderLabels(('Display','Layer','Field'))
         self.layerSelectionWidget.setColumnWidth(0,45)
         self.layerSelectionWidget.setColumnWidth(1,150)
@@ -180,7 +181,6 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.layerSelectionWidget.setCellWidget(0, 2, comboBox)
 
     def addItemComboBox(self, comboBox, dic):
-    #layer = item.data(QtCore.Qt.UserRole)
         comboBox.addItem("None")
         for nameColumn, type in dic.items():
             comboBox.addItem(nameColumn + ' - ' + type)
@@ -206,6 +206,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.Numero_Port.setText("8888")
         self.cb_tuile.setCurrentIndex(1)
         self.cb_zoom.setCurrentIndex(1)
+        self.layerSelectionWidget.clear()
+
 
     ## Get the port number. If the port isn't good this function return the value by default, 8888
     def getPort(self):
@@ -256,25 +258,25 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         if self.appServerRunning:
             self.progressBar.hide()
             self.btn_generate.setText("Server is stopping")
-            self.appServer.stop()
+#            self.appServer.stop()
             self.btn_generate.setText("Generate")
-            self.appServerRunning = False
-            self.killGDALProcess()
+#            self.appServerRunning = False
+#            self.killGDALProcess()
         else:
             self.progressBar.show()
             self.createVectorProviders()
             self.createRasterProviders()
-            initParam = self.getInitParam()
-            if self.needGenerateRaster():
-                tilesInfo = self.getTilesInfo()
-                self.appServer = VTAppServer(self, initParam, self.GDALprocess, tilesInfo)
-            else:
-                self.appServer = VTAppServer(self, initParam)
-            self.appServer.start()
-            self.btn_generate.setText("Server is running")
-            self.openWebBrowser(self.getPort())
-            self.appServerRunning = True
-    
+#            initParam = self.getInitParam()
+#            if self.needGenerateRaster():
+#                tilesInfo = self.getTilesInfo()
+#                self.appServer = VTAppServer(self, initParam, self.GDALprocess, tilesInfo)
+#            else:
+#                self.appServer = VTAppServer(self, initParam)
+#            self.appServer.start()
+#            self.btn_generate.setText("Server is running")
+#            self.openWebBrowser(self.getPort())
+#            self.appServerRunning = True
+
     ## Open a web browser
     def openWebBrowser(self, port):
         url = 'http://localhost:' + str(port)
@@ -288,6 +290,15 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
              # Ajouter column2 et type2column2 (geom, integer....)
             #provider = PostgisProvider(d['host'], d['dbname'], d['user'], d['password'], d['srid'], d['table'], d['column'])
             #ProviderManager.instance().addVectorProvider(provider)
+        for i in range(self.layerSelectionWidget.rowCount()):
+            # if the layer is checked
+            if self.layerSelectionWidget.item(i,0).checkState() == 2:
+                vectorLayer = self.layerSelectionWidget.item(i,1).data(QtCore.Qt.UserRole)
+#                print vectorLayer.name()
+#                print self.layerSelectionWidget.item(i,2).type()
+
+#        layer = item.data(QtCore.Qt.UserRole)
+
 
     ## Create all providers for DEM and raster
     def createRasterProviders(self):
@@ -298,7 +309,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         tileSize = self.getSizeTile()
         levels = int(self.cb_zoom.currentText())
         if self.cb_MNT.count() > 0:
-            mnt = self.cb_MNT.itemData(self.cb_Raster.currentIndex())
+            mnt = self.cb_MNT.itemData(self.cb_MNT.currentIndex())
             httpRessource = 'http://localhost:' + self.getPort() + '/rasters/' + '_'.join(['dem', mnt.name(), str(tileSize), str(levels)])
             dem = RasterProvider(mnt.name(), mnt.extent(), mnt.crs().postgisSrid(), mnt.source(), httpRessource)
             ProviderManager.instance().dem = dem
