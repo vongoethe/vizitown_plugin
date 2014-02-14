@@ -3,37 +3,6 @@ import re
 from PyQt4.QtCore import *
 from PyQt4.QtSql import *
 
-from vt_utils_singleton import Singleton
-from vt_utils_converter import X3DTranslateToThreeJs
-
-
-## Provider manager
-#  Singleton which contains several provider
-@Singleton
-class ProviderManager:
-    def __init__(self):
-        self.vectors = []
-        self.dem = None
-        self.texture = None
-
-    ## Add a vector provider to the manager
-    #  @param p the provider to add
-    def add_vector_provider(self, p):
-        self.vectors.append(p)
-
-    ## Add a DEM raster provider to the manager
-    #  @param p the provider to add
-    def create_raster_provider(self, raster, port, tileSize, zoomLevel):
-        httpResource = 'http://localhost:' + port + '/rasters/' + '_'.join(['img', raster.name(), tileSize, zoomLevel])
-        return RasterProvider(raster.name(), raster.extent(), raster.crs().postgisSrid(), raster.source(), httpResource)
-
-    ## Request a tile for all his providers
-    def request_tile(self, Xmin, Ymin, Xmax, Ymax):
-        result = []
-        for p in self.providers:
-            result.append(p.request_tile(Xmin, Ymin, Xmax, Ymax))
-        return result
-
 
 ## Postgis provider
 #  Stock the attribute to use a postgis resource
@@ -62,7 +31,6 @@ class PostgisProvider:
         self.geometry2 = None
         self.retGeometry = None
         self.hasH = False
-        self.translator = X3DTranslateToThreeJs()
         print "Instantiate PostgisProvider"
 
         if not self.db.open():
@@ -230,21 +198,3 @@ class PostgisProvider:
             return result
         else:
             raise Exception('Connection to database cannot be established')
-
-
-## Raster provider
-#  Stock the attribute to use a raster resource
-class RasterProvider:
-
-    ## Constructor
-    #  @param name of the raster
-    #  @param extent of the raster
-    #  @param srid of the raster
-    #  @param source local path of the raster
-    #  @param httpResource URL location
-    def __init__(self, name, extent, srid, source, httpResource):
-        self.name = name
-        self.extent = extent
-        self.srid = srid
-        self.source = source
-        self.httpResource = httpResource

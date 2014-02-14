@@ -31,7 +31,9 @@ from qgis.core import *
 from qgis.gui import *
 
 from vt_as_app import AppServer
-from vt_as_providers import *
+from vt_as_provider_manager import ProviderManager
+from vt_as_provider_postgis import PostgisProvider
+from vt_as_provider_raster import RasterProvider
 
 import vt_utils_parser
 from vt_utils_tiler import TileGenerator
