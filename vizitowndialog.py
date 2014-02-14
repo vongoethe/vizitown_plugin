@@ -31,7 +31,9 @@ from qgis.core import *
 from qgis.gui import *
 
 from vt_as_app import AppServer
-from vt_as_providers import *
+from vt_as_provider_manager import ProviderManager
+from vt_as_provider_postgis import PostgisProvider
+from vt_as_provider_raster import RasterProvider
 
 import vt_utils_parser
 from vt_utils_tiler import TileGenerator
@@ -189,9 +191,9 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.create_raster_providers()
             viewerParam = build_viewer_param(self.get_gui_extent(), self.get_port(), self.has_raster())
             if self.has_raster():
-                demRessource = ProviderManager.instance().dem.httpResource
-                textureResource = ProviderManager.instance().texture.httpResource
-                tilingParam = build_tiling_param(int(self.cb_zoom.currentText()), self.get_size_tile(), )
+                demResource = ProviderManager.instance().dem.httpResource
+                textureResource = ProviderManager.instance().dem.httpResource
+                tilingParam = build_tiling_param(int(self.cb_zoom.currentText()), self.get_size_tile(), demResource, textureResource)
                 self.appServer = AppServer(self, viewerParam, self.GDALprocess, tilingParam)
             else:
                 self.appServer = AppServer(self, viewerParam)
@@ -214,7 +216,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
                     provider = PostgisProvider(d['host'], d['dbname'], d['user'], d['password'], d['srid'], d['table'], d['column'], column2Name, column2Type)
                 else:
                     provider = PostgisProvider(d['host'], d['dbname'], d['user'], d['password'], d['srid'], d['table'], d['column'])
-                ProviderManager.instance().addVectorProvider(provider)
+                ProviderManager.instance().add_vector_provider(provider)
 
     ## Create all providers for DEM and raster
     def create_raster_providers(self):
@@ -226,7 +228,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         zoomLevel = self.cb_zoom.currentText()
         if self.has_dem():
             dem = self.cb_dem.itemData(self.cb_dem.currentIndex())
-            demProvider = ProviderManager.instance().create_raster_provider(texture, self.get_port(), str(tileSize), zoomLevel)
+            demProvider = ProviderManager.instance().create_raster_provider(dem, self.get_port(), str(tileSize), zoomLevel)
             ProviderManager.instance().dem = demProvider
             dataSrcMnt = demProvider.source
         if self.has_texture():

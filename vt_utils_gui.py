@@ -39,12 +39,12 @@ def build_viewer_param(extent, port, hasRaster):
 
 
 ## Get the tiles info done by the process GDAL
-def build_tiling_param(self):
+def build_tiling_param(zoomLevel, tileSize, dem, texture):
     return {
-        'zoomLevel': int(self.cb_zoom.currentText()),
-        'tileSize': self.get_size_tile(),
-        'dem': ProviderManager.instance().dem.httpRessource,
-        'texture': ProviderManager.instance().raster.httpRessource,
+        'zoomLevel': zoomLevel,
+        'tileSize': tileSize,
+        'dem': dem,
+        'texture': texture
     }
 
 

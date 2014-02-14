@@ -3,43 +3,6 @@ import re
 from PyQt4.QtCore import *
 from PyQt4.QtSql import *
 
-from vt_utils_singleton import Singleton
-from vt_utils_converter import X3DTranslateToThreeJs
-
-
-## Provider manager
-#  Singleton which contains several provider
-@Singleton
-class ProviderManager:
-    def __init__(self):
-        self.vectors = []
-        self.dem = None
-        self.texture = None
-
-    ## Add a vector provider to the manager
-    #  @param p the provider to add
-    def add_vector_provider(self, p):
-        self.vectors.append(p)
-
-    ## Add a DEM raster provider to the manager
-    #  @param p the provider to add
-    def create_raster_provider(self, raster, port, tileSize, zoomLevel):
-        raster = self.cb_texture.itemData(self.cb_texture.currentIndex())
-        httpResource = 'http://localhost:' + self.get_port() + '/rasters/' + '_'.join(['img', raster.name(), str(tileSize), str(zoomLevel)])
-        return RasterProvider(raster.name(), raster.extent(), raster.crs().postgisSrid(), raster.source(), httpResource)
-
-    ## Add a texture raster provider to the manager
-    #  @param p the provider to add
-    def add_texture_provider(self, p):
-        self.vectors.append(p)
-
-    ## Request a tile for all his providers
-    def request_tile(self, Xmin, Ymin, Xmax, Ymax):
-        result = []
-        for p in self.providers:
-            result.append(p.request_tile(Xmin, Ymin, Xmax, Ymax))
-        return result
-
 
 ## Postgis provider
 #  Stock the attribute to use a postgis resource
@@ -68,53 +31,51 @@ class PostgisProvider:
         self.geometry2 = None
         self.retGeometry = None
         self.hasH = False
-        self.translator = X3DTranslateToThreeJs()
         print "Instantiate PostgisProvider"
 
-        if self.db.open():
-            print "Connection established to database %s -> %s" % (host, dbname)
+        if not self.db.open():
+            raise Exception('Connection to database cannot be established')
 
-            query = QSqlQuery(self.db)
+        print "Connection established to database %s -> %s" % (host, dbname)
 
-            if self.column2Type == 'geometry':
-                getGeometry = """SELECT GeometryType({column_}), GeometryType({column2_}) FROM {table_} LIMIT 1
-                """.format(column_=column, 
-                           column2_=column2,
-                           table_=table)
-                if query.exec_(getGeometry):
-                    query.next()
-                    self.geometry1 = query.value(0).toString()
-                    self.geometry2 = query.value(1).toString()
-                else:
-                    print query.lastQuery()
-                    print query.lastError().text()
-                    raise Exception('DB request failed')
+        query = QSqlQuery(self.db)
 
+        if self.column2Type == 'geometry':
+            getGeometry = """SELECT GeometryType({column_}), GeometryType({column2_}) FROM {table_} LIMIT 1
+            """.format(column_=column,
+                       column2_=column2,
+                       table_=table)
+            if query.exec_(getGeometry):
+                query.next()
+                self.geometry1 = query.value(0)
+                self.geometry2 = query.value(1)
             else:
-                getGeometry = """SELECT GeometryType({column_}) FROM {table_} LIMIT 1
-                """.format(column_=column, 
-                           table_=table)
-                if query.exec_(getGeometry):
-                    query.next()
-                    self.geometry1 = query.value(0).toString()
-                else:
-                    print query.lastQuery()
-                    print query.lastError().text()
-                    raise Exception('DB request failed')
+                print query.lastQuery()
+                print query.lastError().text()
+                raise Exception('DB request failed')
 
         else:
-            raise Exception('Connection to database cannot be established')
+            getGeometry = """SELECT GeometryType({column_}) FROM {table_} LIMIT 1
+            """.format(column_=column,
+                       table_=table)
+            if query.exec_(getGeometry):
+                query.next()
+                self.geometry1 = query.value(0)
+            else:
+                print query.lastQuery()
+                print query.lastError().text()
+                raise Exception('DB request failed')
 
     ## Return all the result contains in the extent in param
     def request_tile(self, Xmin, Ymin, Xmax, Ymax):
         query = QSqlQuery(self.db)
         request = ""
 
-        extent = """POLYGON(({Xmin_} {Ymin_}, 
-                             {Xmax_} {Ymin_}, 
-                             {Xmax_} {Ymax_}, 
-                             {Xmin_} {Ymax_}, 
-                             {Xmin_} {Ymin_}))  
+        extent = """POLYGON(({Xmin_} {Ymin_},
+                             {Xmax_} {Ymin_},
+                             {Xmax_} {Ymax_},
+                             {Xmin_} {Ymax_},
+                             {Xmin_} {Ymin_}))
         """.format(Xmin_=Xmin,
                    Xmax_=Xmax,
                    Ymin_=Ymin,
@@ -127,7 +88,7 @@ class PostgisProvider:
 
         request = self._get_request()
         request += intersect
-        
+
         ## LOG DEBUG
         print request
 
@@ -190,7 +151,7 @@ class PostgisProvider:
             return """SELECT ST_AsX3D(ST_Force3D({column_})), {hcolumn_} FROM {table_}
             """.format(column_=self.column,
                        hcolumn_=column2,
-                       table_=self.table)     
+                       table_=self.table)
 
     def _request_polyh(self):
         # SHOULD BE PATIENT
@@ -199,7 +160,7 @@ class PostgisProvider:
         else:
             col = self.column2
         return """SELECT ST_AsX3D(ST_Tesselate(ST_Force3D({column_}))) FROM {table_}
-        """.format(column_=col, 
+        """.format(column_=col,
                    table_=self.table)
 
     def _request_tin(self):
@@ -237,20 +198,3 @@ class PostgisProvider:
             return result
         else:
             raise Exception('Connection to database cannot be established')
-
-
-## Raster provider
-#  Stock the attribute to use a raster resource
-class RasterProvider:
-    ## Constructor
-    #  @param name of the raster
-    #  @param extent of the raster
-    #  @param srid of the raster
-    #  @param source local path of the raster
-    #  @param httpRessource URL location
-    def __init__(self, name, extent, srid, source, httpResource):
-        self.name = name
-        self.extent = extent
-        self.srid = srid
-        self.source = source
-        self.httpResource = httpResource
