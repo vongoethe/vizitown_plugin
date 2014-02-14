@@ -73,7 +73,6 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.cb_tile.addItem('4096 x 4096')
         self.cb_tile.setCurrentIndex(1)
 
-
     ## Set the the of the combobox
     def init_zoom_level(self):
         ## Set the value of the zoom level

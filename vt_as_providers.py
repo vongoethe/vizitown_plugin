@@ -26,7 +26,7 @@ class ProviderManager:
     def create_raster_provider(self, raster, port, tileSize, zoomLevel):
         raster = self.cb_texture.itemData(self.cb_texture.currentIndex())
         httpResource = 'http://localhost:' + self.get_port() + '/rasters/' + '_'.join(['img', raster.name(), str(tileSize), str(zoomLevel)])
-        return  RasterProvider(raster.name(), raster.extent(), raster.crs().postgisSrid(), raster.source(), httpResource)
+        return RasterProvider(raster.name(), raster.extent(), raster.crs().postgisSrid(), raster.source(), httpResource)
 
     ## Add a texture raster provider to the manager
     #  @param p the provider to add
