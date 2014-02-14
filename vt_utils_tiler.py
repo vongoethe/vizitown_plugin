@@ -8,8 +8,6 @@ import gdal_retile
 import gdal_merge
 from PyQt4.QtCore import *
 
-import datetime
-
 
 ## TileGenerator
 #  Manage Image and MNT to tile and dimension this.
@@ -233,25 +231,3 @@ class TileGenerator:
                 dirMnt = os.path.join(path, "dem_%s_%d_%d" % (os.path.splitext(os.path.basename(dataSrcMnt))[0], tileSize, levels))
                 if os.path.exists(dirMnt):
                     return 0
-
-    ## launch_process manage the several process to generate data tiles
-    @staticmethod
-    def launch_process(dataSrcImg, dataSrcMnt, path, extent, tileSize=512, levels=2):
-        if (TileGenerator._check_existing_dir(dataSrcImg, dataSrcMnt, path, tileSize, levels) != 0):
-            generator = TileGenerator(dataSrcImg, dataSrcMnt, path, extent, tileSize, levels)
-            generator._create_repositories()
-            generator._calculate_extent()
-            generator._process_merge()
-            if (generator.processChoice == 0):
-                print datetime.datetime.now()
-                generator._process_tile_img()
-                generator._process_clip_mnt(generator.dataDstImg, generator.dataDstMnt)
-                generator._process_to_dim_tile(generator.dataDst, generator.tmpRepo)
-                print datetime.datetime.now()
-            elif (generator.processChoice == 1):
-                generator._process_tile_img()
-                generator._process_to_dim_tile(generator.dataDst, generator.tmpRepo)
-            elif (generator.processChoice == 2):
-                generator._process_tile_mnt()
-                generator._process_to_dim_tile(generator.dataDst, generator.tmpRepo)
-            generator._clean_up()

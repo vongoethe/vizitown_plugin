@@ -321,11 +321,9 @@ def launch_process(dataSrcImg, dataSrcMnt, path, extent, tileSize=512, levels=2)
         generator._calculate_extent()
         generator._process_merge()
         if (generator.processChoice == 0):
-            print datetime.datetime.now()
             generator._process_tile_img()
             generator._process_clip_mnt(generator.dataDstImg, generator.dataDstMnt)
             generator._process_to_dim_tile(generator.dataDst, generator.tmpRepo)
-            print datetime.datetime.now()
         elif (generator.processChoice == 1):
             generator._process_tile_img()
             generator._process_to_dim_tile(generator.dataDst, generator.tmpRepo)
