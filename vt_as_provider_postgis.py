@@ -121,9 +121,10 @@ class PostgisProvider:
             request = self._request_polygon()
 
         else:
+            pass
             #Multipoint, others...
-            print self.geometry1
-            raise Exception('Can\'t request this kind of geometry')
+            #print self.geometry1
+            #raise Exception('Can\'t request this kind of geometry')
 
         return request
 

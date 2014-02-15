@@ -85,9 +85,18 @@ class X3DTranslateToThreeJs:
             if hasH:
                 if geometry == 'POINT':
                     geometries += self._parse_point(str(g[0]), str(g[1])) + ','
+
+                elif (geometry == 'LINESTRING' or
+                        geometry == 'MULTILINESTRING'):
+                    geometries += self._parse_line(str(g[0]), str(g[1])) + ','
+
             else:
                 if geometry == 'POINT':
                     geometries += self._parse_point(str(g), noHeight) + ','
+
+                elif (geometry == 'LINESTRING' or
+                        geometry == 'MULTILINESTRING'):
+                    geometries += self._parse_line(str(g), noHeight) + ','
 
         if geometries[-1:] == ',':
             geometries = geometries[:-1]
@@ -130,13 +139,14 @@ class X3DTranslateToThreeJs:
     ## _parse_line method to parse a line data
     #  @param xmldoc to stock the data
     #  @return a json file
-    def _parse_line(self, xmldoc):
-        nbFace = 0
-
+    def _parse_line(self, message, height):
+        nbPointVertice = 3
+        xmldoc = minidom.parseString(message)
         vertices = self._get_vertices(xmldoc)
-        nbVertice = self._count_vertice(vertices)
-
-        return self._get_json(nbFace, nbVertice, None, vertices)
+        vertices = vertices.split(',')
+        for i in range(len(vertices) - 1, 0, -nbPointVertice):
+            vertices.pop(i)
+        return self._get_json_geom(vertices, height)
 
     ## _parse_triangle method to parse a triangle data
     #  @param xmldoc to stock the data
