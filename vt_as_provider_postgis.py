@@ -31,7 +31,6 @@ class PostgisProvider:
         self.geometry2 = None
         self.retGeometry = None
         self.hasH = False
-        print "Instantiate PostgisProvider"
 
         if not self.db.open():
             raise Exception('Connection to database cannot be established')
@@ -82,7 +81,7 @@ class PostgisProvider:
                    Ymax_=Ymax)
 
         intersect = """ WHERE {column_} && ST_GeomFromText('{extent_}', {srid_})
-        """.format(column_=column,
+        """.format(column_=self.column,
                    extent_=extent,
                    srid_=self.srid)
 
@@ -122,8 +121,10 @@ class PostgisProvider:
             request = self._request_polygon()
 
         else:
+            pass
             #Multipoint, others...
-            raise Exception('Can\'t request this kind of geometry')
+            #print self.geometry1
+            #raise Exception('Can\'t request this kind of geometry')
 
         return request
 
@@ -137,7 +138,7 @@ class PostgisProvider:
             self.hasH = True
             return """SELECT ST_AsX3D(ST_Force3D({column_})), {hcolumn_} FROM {table_}
             """.format(column_=self.column,
-                       hcolumn_=column2,
+                       hcolumn_=self.column2,
                        table_=self.table)
 
     def _request_polygon(self):

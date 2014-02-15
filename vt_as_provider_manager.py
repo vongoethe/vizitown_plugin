@@ -28,6 +28,6 @@ class ProviderManager:
     ## Request a tile for all his providers
     def request_tile(self, Xmin, Ymin, Xmax, Ymax):
         result = []
-        for p in self.providers:
+        for p in self.vectors:
             result.append(p.request_tile(Xmin, Ymin, Xmax, Ymax))
         return result

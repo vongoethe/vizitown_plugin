@@ -91,7 +91,6 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.reset_all_fields()
         layerListIems = QgsMapLayerRegistry().instance().mapLayers().items()
         for id, layer in layerListIems:
-            print "layer"
             if is_dem(layer):
                 self.cb_dem.addItem(layer.name(), layer)
             if is_vector(layer):
