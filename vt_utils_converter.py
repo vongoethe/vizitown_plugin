@@ -92,6 +92,10 @@ class X3DTranslateToThreeJs:
                         geometry == 'MULTIPOLYGON'):
                     geometries += self._parse_polygon(str(g[0]), str(g[1])) + ','
 
+                elif (geometry == 'POLYHEDRALSURFACE' or
+                        geometry == 'TIN'):
+                    geometries += self._parse_triangle(str(g[0]))
+
             else:
                 if geometry == 'POINT':
                     geometries += self._parse_point(str(g), noHeight) + ','
@@ -104,7 +108,11 @@ class X3DTranslateToThreeJs:
                         geometry == 'MULTIPOLYGON'):
                     geometries += self._parse_polygon(str(g), noHeight) + ','
 
-        geometries = remove_comma(geometries)
+                elif (geometry == 'POLYHEDRALSURFACE' or
+                        geometry == 'TIN'):
+                    geometries += self._parse_triangle(str(g))
+
+        geometries = X3DTranslateToThreeJs.remove_comma(geometries)
         exchange = re.sub('{JSON_GEOM}', geometries, exchange)
         return exchange
 
@@ -154,10 +162,10 @@ class X3DTranslateToThreeJs:
     ## _parse_triangle method to parse a triangle data
     #  @param xmldoc to stock the data
     #  @return a json file
-    def _parse_triangle(self, xmldoc):
+    def _parse_triangle(self, string):
         nbIndexFace = 3
         bitMask = 0
-
+        xmldoc = minidom.parseString(string)
         vertices = self._get_vertices(xmldoc)
         nbVertice = self._count_vertice(vertices)
 
@@ -170,7 +178,7 @@ class X3DTranslateToThreeJs:
 
         faces = ','.join(str(f) for f in facesTab)
         nbFace = nbVertice / nbIndexFace
-        return self._get_json(nbFace, nbVertice, faces, vertices)
+        return self._get_json_threejs(nbFace, nbVertice, faces, vertices)
 
     ## _get_vertices Getter of vertex data
     #  @param xmldoc to stock the data
@@ -179,7 +187,7 @@ class X3DTranslateToThreeJs:
         nodeVertice = xmldoc.getElementsByTagName('Coordinate')
         vertices = nodeVertice[0].getAttribute('point')
         vertices = re.sub(' ', ',', vertices)
-        return remove_comma(vertices)
+        return X3DTranslateToThreeJs.remove_comma(vertices)
 
     ## _count_vertice method to count the number of vertex
     #  @param vertices stock a vertex number
@@ -194,7 +202,7 @@ class X3DTranslateToThreeJs:
         for i in range(len(pointArray) - 1):
             coord += str(pointArray[i]) + ',' + str(pointArray[i + 1]) + ','
             i += 1
-        coord = remove_comma(coord)
+        coord = X3DTranslateToThreeJs.remove_comma(coord)
 
         gjson = re.sub('{COORDINATES}', coord, gjson)
         gjson = re.sub('{HEIGHT}', height, gjson)
@@ -207,18 +215,18 @@ class X3DTranslateToThreeJs:
     #  @param vertices stock a vertex values
     #  @return a json file
     def _get_json_threejs(self, nbFaces, nbVertices, faces, vertices):
-        json = self._json
+        js = self._jsonThreejs
 
-        json = re.sub("{VERTICES}", str(nbVertices), json)
-        json = re.sub("{FACES}", str(nbFaces), json)
+        js = re.sub("{VERTICES}", str(nbVertices), js)
+        js = re.sub("{FACES}", str(nbFaces), js)
 
-        json = re.sub("{TAB_VERTICES}", str(vertices), json)
+        js = re.sub("{TAB_VERTICES}", str(vertices), js)
         if faces is not None:
-            json = re.sub("{TAB_FACES}", str(faces), json)
+            js = re.sub("{TAB_FACES}", str(faces), js)
         else:
-            json = re.sub("{TAB_FACES}", "", json)
+            json = re.sub("{TAB_FACES}", "", js)
 
-        return json
+        return js
 
     @staticmethod
     def remove_comma(string):

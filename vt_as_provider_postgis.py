@@ -169,7 +169,7 @@ class PostgisProvider:
             col = self.column
         else:
             col = self.column2
-        return """SELECT ST_AsX3D(ST_Force3D({column_})) FROM {table_}
+        return """SELECT ST_AsX3D({column_}) FROM {table_}
         """.format(column_=col,
                    table_=self.table)
 
