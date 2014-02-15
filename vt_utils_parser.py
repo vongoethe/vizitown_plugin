@@ -14,7 +14,7 @@ def parse_vector(source):
     return {
         'dbname': m.group('dbname'),
         'host': m.group('host'),
-        'port': m.group('port'),
+        'port': int(m.group('port')),
         'user': m.group('user'),
         'password': m.group('password'),
         'srid': m.group('srid'),

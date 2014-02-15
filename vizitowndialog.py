@@ -207,14 +207,14 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             # if the layer is checked
             if self.tw_layers.item(row_index, 0).checkState() == QtCore.Qt.Checked:
                 vectorLayer = self.tw_layers.item(row_index, 1).data(QtCore.Qt.UserRole)
-                d = vt_utils_parser.parse_vector(vectorLayer.source())
+                connection_info = vt_utils_parser.parse_vector(vectorLayer.source())
                 column2 = self.tw_layers.cellWidget(row_index, 2).currentText()
-                if not column2 == "None":
-                    column2Name = column2.split(" - ")[0]
-                    column2Type = column2.split(" - ")[1]
-                    provider = PostgisProvider(d['host'], d['dbname'], d['user'], d['password'], d['srid'], d['table'], d['column'], column2Name, column2Type)
+                if column2 == "None":
+                    provider = PostgisProvider(**connection_info)
                 else:
-                    provider = PostgisProvider(d['host'], d['dbname'], d['user'], d['password'], d['srid'], d['table'], d['column'])
+                    connection_info['column2'] = column2.split(" - ")[0]
+                    connection_info['column2Type'] = column2.split(" - ")[1]
+                    provider = PostgisProvider(**connection_info)
                 ProviderManager.instance().add_vector_provider(provider)
 
     ## Create all providers for DEM and raster
