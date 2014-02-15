@@ -21,8 +21,8 @@ class ProviderManager:
 
     ## Add a DEM raster provider to the manager
     #  @param p the provider to add
-    def create_raster_provider(self, raster, port, tileSize, zoomLevel):
-        httpResource = 'http://localhost:' + port + '/rasters/' + '_'.join(['img', raster.name(), tileSize, zoomLevel])
+    def create_raster_provider(self, raster, port, prefix, tileSize, zoomLevel):
+        httpResource = 'http://localhost:' + port + '/rasters/' + '_'.join([prefix, raster.name(), tileSize, zoomLevel])
         return RasterProvider(raster.name(), raster.extent(), raster.crs().postgisSrid(), raster.source(), httpResource)
 
     ## Request a tile for all his providers

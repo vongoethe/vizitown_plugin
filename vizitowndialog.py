@@ -24,6 +24,7 @@ import os
 import re
 import sys
 import multiprocessing as mp
+import shutil
 
 from ui_vizitown import Ui_Vizitown
 from PyQt4 import QtCore, QtGui
@@ -178,12 +179,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     ## Generate and launch the rendering of the 3D scene
     def on_btn_generate_released(self):
         if self.appServerRunning:
-            self.pb_loading.hide()
-            self.btn_generate.setText("Server is stopping")
-            self.appServer.stop()
-            self.btn_generate.setText("Generate")
-            self.appServerRunning = False
-            self.kill_gdal_process()
+            self.closeEvent(None)
         else:
             self.pb_loading.show()
             self.create_vector_providers()
@@ -227,12 +223,12 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         zoomLevel = self.cb_zoom.currentText()
         if self.has_dem():
             dem = self.cb_dem.itemData(self.cb_dem.currentIndex())
-            demProvider = ProviderManager.instance().create_raster_provider(dem, self.get_port(), str(tileSize), zoomLevel)
+            demProvider = ProviderManager.instance().create_raster_provider(dem, self.get_port(), 'dem', str(tileSize), zoomLevel)
             ProviderManager.instance().dem = demProvider
             dataSrcMnt = demProvider.source
         if self.has_texture():
             texture = self.cb_texture.itemData(self.cb_texture.currentIndex())
-            textureProvider = ProviderManager.instance().create_raster_provider(texture, self.get_port(), str(tileSize), zoomLevel)
+            textureProvider = ProviderManager.instance().create_raster_provider(texture, self.get_port(), 'img', str(tileSize), zoomLevel)
             ProviderManager.instance().texture = textureProvider
             dataSrcImg = textureProvider.source
         if self.has_raster():
@@ -247,11 +243,15 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     #  @override QtGui.QDialog
     def closeEvent(self, QCloseEvent):
         if self.appServer:
+            self.pb_loading.hide()
+            self.btn_generate.setText("Server is stopping")
             self.appServer.stop()
+            self.btn_generate.setText("Generate")
+            self.appServerRunning = False
         if self.GDALprocess:
             GDALDialog = QtGui.QMessageBox()
             GDALDialog.setIcon(QtGui.QMessageBox.Warning)
-            GDALDialog.setText("The tiling process is not complete. Would you like to run the process in background to use te generated tile later ?")
+            GDALDialog.setText("The tiling process is not complete. Would you like to run the process in background to use the generated tile later ?")
             GDALDialog.setStandardButtons(QtGui.QMessageBox.Discard | QtGui.QMessageBox.Save)
             ret = GDALDialog.exec_()
             if ret == QtGui.QMessageBox.Save:
@@ -264,3 +264,14 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         if self.GDALprocess and self.GDALprocess.is_alive():
             self.GDALprocess.terminate()
             self.GDALprocess = None
+            mergeSuffix = '_merge.tif'
+            demLocation = os.path.join(os.path.dirname(__file__), 'rasters', os.path.basename(ProviderManager.instance().dem.httpResource))
+            textureLocation = os.path.join(os.path.dirname(__file__), 'rasters', os.path.basename(ProviderManager.instance().texture.httpResource))
+            print demLocation
+            shutil.rmtree(demLocation, True)
+            shutil.rmtree(textureLocation, True)
+            try:
+                os.remove(textureLocation + mergeSuffix)
+                os.remove(demLocation + mergeSuffix)
+            except OSError:
+                pass
