@@ -143,7 +143,7 @@ class PostgisProvider:
 
     def _request_polygon(self):
         if self.column2 is None or self.column2Type == 'geometry':
-            return """SELECT ST_AsX3D(ST_Force3D({column_})) FROM {table_}
+            return """SELECT ST_AsGeoJSON(ST_Force3D({column_})) FROM {table_}
             """.format(column_=self.column,
                        table_=self.table)
 
@@ -151,7 +151,7 @@ class PostgisProvider:
             self.hasH = True
             return """SELECT ST_AsX3D(ST_Force3D({column_})), {hcolumn_} FROM {table_}
             """.format(column_=self.column,
-                       hcolumn_=column2,
+                       hcolumn_=self.column2,
                        table_=self.table)
 
     def _request_polyh(self):
@@ -160,7 +160,7 @@ class PostgisProvider:
             col = self.column
         else:
             col = self.column2
-        return """SELECT ST_AsX3D(ST_Tesselate(ST_Force3D({column_}))) FROM {table_}
+        return """SELECT ST_AsX3D(ST_Tesselate({column_})) FROM {table_}
         """.format(column_=col,
                    table_=self.table)
 
@@ -169,7 +169,7 @@ class PostgisProvider:
             col = self.column
         else:
             col = self.column2
-        return """SELECT ST_AsX3D(ST_Force3D({column_})) FROM {table_}
+        return """SELECT ST_AsX3D({column_}) FROM {table_}
         """.format(column_=col,
                    table_=self.table)
 
