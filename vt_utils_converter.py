@@ -65,70 +65,88 @@ class X3DTranslateToThreeJs:
     #  @param geometry to check the type of geometry
     def parse(self, array, geometry, hasH):
 
-        exchange = self.jsonExchange
+        exchange = self._jsonExchange
         # geometry in 3 dimensions
         if (geometry == 'POLYHEDRALSURFACE' or
                 geometry == 'TIN'):
-            exchange = re.sub('{TYPE}', 3, exchange)
+            exchange = re.sub('{TYPE}', "3", exchange)
         else:
             # geometry in 2.5 dimensions (geometry with height)
             if hasH:
-                exchange = re.sub('{TYPE}', 2.5, exchange)
+                exchange = re.sub('{TYPE}', "2.5", exchange)
             # geometry in 2 dimensions
             else:
-                exchange = re.sub('{TYPE}', 2, exchange)
+                exchange = re.sub('{TYPE}', "2", exchange)
 
-        noHeight = 0
+        noHeight = "0"
         geometries = ""
-        for geometry in array:
+        for g in array:
             # geometry has height
             if hasH:
                 if geometry == 'POINT':
-                    geometries += self._parse_point(geometry[0], geometry[1])
-                else:
-                    xmldoc = minidom.parseString(geometry[0])
-                    if (geometry == 'LINESTRING' or
-                            geometry == 'MULTILINESTRING'):
-                        geometries += self._parse_line(xmldoc, geometry[1]) + ','
+                    geometries += self._parse_point(str(g[0]), str(g[1])) + ','
+
+                elif (geometry == 'LINESTRING' or
+                        geometry == 'MULTILINESTRING'):
+                    geometries += self._parse_line(str(g[0]), str(g[1])) + ','
 
             else:
                 if geometry == 'POINT':
-                    geometries += self._parse_point(geometry, noHeight)
-                else:
-                    xmldoc = minidom.parseString(geometry)
-                    if (geometry == 'TIN' or
-                            geometry == 'POLYHEDRALSURFACE'):
-                        geometries += self._parse_triangle(xmldoc) + ','
+                    geometries += self._parse_point(str(g), noHeight) + ','
 
-        if geometry == 'POINT':
-            return self._parse_point(message)
-        else:
-            xmldoc = minidom.parseString(message)
-            if geometry == 'LINESTRING' or geometry == 'MULTILINESTRING':
-                return self._parse_line(xmldoc)
-            elif geometry == 'POLYGON' or geometry == 'POLYHEDRALSURFACE':
-                return self._parse_triangle(xmldoc)
-            else:
-                return None
+                elif (geometry == 'LINESTRING' or
+                        geometry == 'MULTILINESTRING'):
+                    geometries += self._parse_line(str(g), noHeight) + ','
+
+        if geometries[-1:] == ',':
+            geometries = geometries[:-1]
+        exchange = re.sub('{JSON_GEOM}', geometries, exchange)
+        return exchange
+        #        else:
+        #            xmldoc = minidom.parseString(g[0])
+        #            if (geometry == 'LINESTRING' or
+        #                    geometry == 'MULTILINESTRING'):
+        #                geometries += self._parse_line(xmldoc, g[1]) + ','
+
+        #    else:
+        #        if geometry == 'POINT':
+        #            geometries += self._parse_point(g, noHeight)
+        #        else:
+        #            xmldoc = minidom.parseString(g)
+        #            if (geometry == 'TIN' or
+        #                    geometry == 'POLYHEDRALSURFACE'):
+        #                geometries += self._parse_triangle(xmldoc) + ','
+
+        #if geometry == 'POINT':
+        #    return self._parse_point(message)
+        #else:
+        #    xmldoc = minidom.parseString(message)
+        #    if geometry == 'LINESTRING' or geometry == 'MULTILINESTRING':
+        #        return self._parse_line(xmldoc)
+        #    elif geometry == 'POLYGON' or geometry == 'POLYHEDRALSURFACE':
+        #        return self._parse_triangle(xmldoc)
+        #    else:
+        #        return None
 
     ## _parse_point method to parse a point data
     #  @param message to stock the data
     #  @return a json file
     def _parse_point(self, message, height):
-        vertice = re.sub(' ', ',', message)
+        vertice = message.split(' ')
         vertice.pop()
         return self._get_json_geom(vertice, height)
 
     ## _parse_line method to parse a line data
     #  @param xmldoc to stock the data
     #  @return a json file
-    def _parse_line(self, xmldoc):
-        nbFace = 0
-
+    def _parse_line(self, message, height):
+        nbPointVertice = 3
+        xmldoc = minidom.parseString(message)
         vertices = self._get_vertices(xmldoc)
-        nbVertice = self._count_vertice(vertices)
-
-        return self._get_json(nbFace, nbVertice, None, vertices)
+        vertices = vertices.split(',')
+        for i in range(len(vertices) - 1, 0, -nbPointVertice):
+            vertices.pop(i)
+        return self._get_json_geom(vertices, height)
 
     ## _parse_triangle method to parse a triangle data
     #  @param xmldoc to stock the data
@@ -172,10 +190,11 @@ class X3DTranslateToThreeJs:
     def _get_json_geom(self, pointArray, height):
         gjson = self._jsonGeom
         coord = ''
-        for i in range(len(x)):
-            coord += X[i] + ',' + Y[i] + ','
+        for i in range(len(pointArray) - 1):
+            coord += pointArray[i] + ',' + pointArray[i + 1] + ','
+            i += 1
         if coord[-1:] == ',':
-            coord == coord[:-1]
+            coord = coord[:-1]
 
         gjson = re.sub('{COORDINATES}', coord, gjson)
         gjson = re.sub('{HEIGHT}', height, gjson)
