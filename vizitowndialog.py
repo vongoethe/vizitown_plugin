@@ -207,7 +207,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             # if the layer is checked
             if self.tw_layers.item(row_index, 0).checkState() == QtCore.Qt.Checked:
                 vectorLayer = self.tw_layers.item(row_index, 1).data(QtCore.Qt.UserRole)
-                srid = layer.crs().postgisSrid()
+                srid = VectorLayer.crs().postgisSrid()
                 connection_info = vt_utils_parser.parse_vector(vectorLayer.source(), srid)
 
                 column2 = self.tw_layers.cellWidget(row_index, 2).currentText()
