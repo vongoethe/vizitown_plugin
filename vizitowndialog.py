@@ -91,6 +91,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     def init_layers(self):
         self.reset_all_fields()
         layerListIems = QgsMapLayerRegistry().instance().mapLayers().items()
+        self.cb_dem.addItem("None")
+        self.cb_texture.addItem("None")
         for id, layer in layerListIems:
             if is_dem(layer):
                 self.cb_dem.addItem(layer.name(), layer)
@@ -119,11 +121,11 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
     ## Return true if there is a DEM to generate
     def has_dem(self):
-        return self.cb_dem.count() > 0
+        return self.cb_dem.count() > 0 and self.cb_dem.currentText()!="None"
 
     ## Return true if there is a texture to generate
     def has_texture(self):
-        return self.cb_texture.count() > 0
+        return self.cb_texture.count() > 0 and self.cb_texture.currentText()!="None"
 
     ## Return true if there is a least one raster to generate
     def has_raster(self):
@@ -240,7 +242,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
                 mp.set_executable(pythonPath)
                 sys.argv = [None]
             self.GDALprocess = mp.Process(target=launch_gdal_process, args=(dataSrcImg, dataSrcMnt, path, extent, tileSize, int(zoomLevel)))
-            #self.GDALprocess.start()
+            self.GDALprocess.start()
 
     ## Behavior whit a close event
     #  @override QtGui.QDialog
