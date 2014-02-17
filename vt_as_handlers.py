@@ -1,4 +1,6 @@
 import json
+import os
+import gdal
 import cyclone.websocket
 from vt_utils_converter import X3DTranslateToThreeJs
 from vt_as_provider_manager import ProviderManager
@@ -7,6 +9,7 @@ from vt_as_sync import SyncManager
 
 ## A handler give initial parameters to the browser
 class InitHandler(cyclone.web.RequestHandler):
+    ## Method to initialize the handler
     def initialize(self, initParam):
         self.initParam = initParam
 
@@ -52,6 +55,7 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
                 self.sendMessage(json_)
 
     ## Method call when the websocket is closed
+    #  @param reason to indicate the reason of the closed instance
     def connectionLost(self, reason):
         print "WebSocket data closed"
 
@@ -60,6 +64,7 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
 #  Use to handle the synchronisation of the view
 #  from QGIS to the web browser
 class SyncHandler(cyclone.websocket.WebSocketHandler):
+    ## Method to initialize the handler
     def initialize(self):
         SyncManager.instance().add_listener(self)
 
@@ -69,10 +74,12 @@ class SyncHandler(cyclone.websocket.WebSocketHandler):
         SyncManager.instance().isSocketOpen = True
 
     ## Method call when a message is received
+    #  @param message received
     def messageReceived(self, message):
         pass  # Do nothing, simplex communication
 
     ## Method call when the websocket is closed
+    #  @param reason to indicate the reason of the closed instance
     def connectionLost(self, reason):
         print "WebSocket sync closed"
         SyncManager.instance().isSocketOpen = False
@@ -82,6 +89,10 @@ class SyncHandler(cyclone.websocket.WebSocketHandler):
 #  Use to give the information related to the tiles generated
 #  when the GDAL tiling is finished
 class TilesInfoHandler(cyclone.websocket.WebSocketHandler):
+
+    ## Method to initialize the handler
+    #  @param GDALprocess the process gdal 
+    #  @param tilesInfo the dictionnary with the information about the data
     def initialize(self, GDALprocess, tilesInfo):
         self.GDALprocess = GDALprocess
         self.tilesInfo = tilesInfo
@@ -91,4 +102,37 @@ class TilesInfoHandler(cyclone.websocket.WebSocketHandler):
         print "Wait GDAL tiling ..."
         self.GDALprocess.join()
         print "Send tiles info ..."
+
+        demPixelSize = {}
+        demLocation = os.path.join(os.path.dirname(__file__), 'rasters', os.path.basename(ProviderManager.instance().dem.httpResource))
+        demPixelSize = self._list_pixel_size(0, demPixelSize, demLocation)
+        self.tilesInfo['demPixelSize'] = demPixelSize
+
+        texturePixelSize = {}
+        textureLocation = os.path.join(os.path.dirname(__file__), 'rasters', os.path.basename(ProviderManager.instance().texture.httpResource))
+        texturePixelSize = self._list_pixel_size(0, texturePixelSize, textureLocation)
+        self.tilesInfo['texturePixelSize'] = texturePixelSize
+
         self.sendMessage(json.dumps(self.tilesInfo, separators=(',', ':')))
+
+    ## Method to add the level and the pixel size of image in function of the zoom levels
+    #  @param index to indicate the zoom levels
+    #  @param pixelSize the dictionnary initial
+    #  @param path to indicate the data location
+    #  @result the dictionnary with the several zoom levels and the pixel size
+    def _list_pixel_size(self, index, pixelSize, path):
+        listDir = os.listdir(path)
+
+        for currentElem in listDir:
+            if os.path.isdir(os.path.join(path, currentElem)):
+                self._list_pixel_size(currentElem, pixelSize, os.path.join(path, currentElem))
+            else:
+                pixelSize[index] = self._get_pixel_size(os.path.join(path, currentElem))
+                return pixelSize
+
+    ## Method to get the pixel size in the image
+    #  @param img to get the information
+    #  @return the pixel size
+    def _get_pixel_size(self, img):
+        ds = gdal.Open(img, gdal.GA_ReadOnly)
+        return ds.GetGeoTransform()[1]

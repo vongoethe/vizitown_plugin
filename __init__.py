@@ -25,7 +25,8 @@ import sys
 import os
 sys.path.append(os.path.dirname(__file__))
 
+
+## classFactory load Vizitown class from file Vizitown
 def classFactory(iface):
-    # load Vizitown class from file Vizitown
     from vizitown import Vizitown
     return Vizitown(iface)

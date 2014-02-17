@@ -61,6 +61,8 @@ class X3DTranslateToThreeJs:
     #  use the appropriate process in function of the data
     #  @param message to stock the data
     #  @param geometry to check the type of geometry
+    #  @param hasH to define the representation of data
+    #  @return a json
     def parse(self, array, geometry, hasH):
 
         exchange = self._jsonExchange
@@ -118,6 +120,7 @@ class X3DTranslateToThreeJs:
 
     ## _parse_point method to parse a point data
     #  @param message to stock the data
+    #  @param height to add an information of elevation
     #  @return a json file
     def _parse_point(self, message, height):
         vertice = message.split(' ')
@@ -125,7 +128,8 @@ class X3DTranslateToThreeJs:
         return self._get_json_geom(vertice, height)
 
     ## _parse_line method to parse a line data
-    #  @param xmldoc to stock the data
+    #  @param message to stock the data
+    #  @param height to add an information of elevation
     #  @return a json file
     def _parse_line(self, message, height):
         xmldoc = minidom.parseString(message)
@@ -135,6 +139,10 @@ class X3DTranslateToThreeJs:
             vertices.pop(i)
         return self._get_json_geom(vertices, height)
 
+    ## _parse_polygon method to parse a polygon or multipolygon data
+    #  @param message to stock the data
+    #  @param height to add an information of elevation
+    #  @return a json file
     def _parse_polygon(self, message, height):
         js = json.loads(message)
         print js['type']
@@ -149,6 +157,9 @@ class X3DTranslateToThreeJs:
         else:
             return ""
 
+    ## _get_polygon_point method to select a points with a polygon
+    #  @polygon to define a polygon
+    #  @return an array with the vertices of the polygon
     def _get_polygon_point(self, polygon):
         X = 0
         Y = 1
@@ -160,7 +171,7 @@ class X3DTranslateToThreeJs:
         return array
 
     ## _parse_triangle method to parse a triangle data
-    #  @param xmldoc to stock the data
+    #  @param string to stock the data
     #  @return a json file
     def _parse_triangle(self, string):
         nbIndexFace = 3
@@ -196,6 +207,10 @@ class X3DTranslateToThreeJs:
         verticesTab = vertices.split(',')
         return len(verticesTab) / self.nbPointVertice
 
+    ## _get_json_geom Getter of a geo json data
+    #  @param pointArray with the several point with coordinates
+    #  @param height to add an information of elevation
+    #  @return a geojson file
     def _get_json_geom(self, pointArray, height):
         gjson = self._jsonGeom
         coord = ''
@@ -208,12 +223,12 @@ class X3DTranslateToThreeJs:
         gjson = re.sub('{HEIGHT}', height, gjson)
         return gjson
 
-    ## _get_json Getter of json data
+    ## _get_json_threejs Getter a threejs json data
     #  @param nbFaces to define the number of faces
     #  @param nbVertices to define the number of vertex
     #  @param faces stock a faces values
     #  @param vertices stock a vertex values
-    #  @return a json file
+    #  @return a threejs json file
     def _get_json_threejs(self, nbFaces, nbVertices, faces, vertices):
         js = self._jsonThreejs
 
@@ -228,6 +243,9 @@ class X3DTranslateToThreeJs:
 
         return js
 
+    ## remove_comma to delete the comma in a string
+    #  @string the string to transform
+    #  @return the string after the process
     @staticmethod
     def remove_comma(string):
         if string[-1:] == ',':
