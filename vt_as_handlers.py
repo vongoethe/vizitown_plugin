@@ -10,6 +10,11 @@ class InitHandler(cyclone.web.RequestHandler):
     def initialize(self, initParam):
         self.initParam = initParam
 
+    def set_default_headers(self):
+        self.set_header('Access-Control-Allow-Origin', '*')
+        self.set_header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        self.set_header('Access-Control-Allow-Headers', 'X-Requested-With')
+
     ## Handle GET HTTP
     def get(self):
         self.write(json.dumps(self.initParam, separators=(',', ':')))
@@ -31,14 +36,11 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
         bufferSize = 100
         print message
         d = json.loads(message)
-        vectors = ProviderManager.instance().request_tile(d['Xmin'], d['Ymin'], d['Xmax'], d['Ymax'])
+        vectors = ProviderManager.instance().request_tile(**d)
         translator = X3DTranslateToThreeJs()
         for v in vectors:
-            ## TODO: Maybe make a buffer
             array = []
             while v['it'].next():
-                # seconde boucle
-                print "sendmessage"
                 for i in range(bufferSize):
                     if v['hasH']:
                         array.append([v['it'].value(0), v['it'].value(1)])
@@ -66,7 +68,6 @@ class SyncHandler(cyclone.websocket.WebSocketHandler):
     ## Method call when the websocket is opened
     def connectionMade(self):
         print "WebSocket sync opened"
-        SyncManager.instance().isSocketOpen = True
 
     ## Method call when a message is received
     def messageReceived(self, message):
@@ -75,7 +76,10 @@ class SyncHandler(cyclone.websocket.WebSocketHandler):
     ## Method call when the websocket is closed
     def connectionLost(self, reason):
         print "WebSocket sync closed"
-        SyncManager.instance().isSocketOpen = False
+
+    def on_finish(self):
+        print "WebSocket finished"
+        SyncManager.instance().remove_listener(self)
 
 
 ## Tiles information handler
