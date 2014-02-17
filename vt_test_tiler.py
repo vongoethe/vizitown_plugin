@@ -18,25 +18,21 @@ class TestTiler(unittest.TestCase):
         self.tileSize = 4096
 
     def test_nominal_case(self):
-        testNominal = TileGenerator(self.srcImg, self.srcMnt, self.path, self.extent, self.tileSize, 2)
-        testNominal.launch_process()
+        TileGenerator.launch_process(self.srcImg, self.srcMnt, self.path, self.extent, self.tileSize, 2)
         self.assertIn("img_GrandLyon2m_L93_RGB", os.listdir(self.path))
         self.assertIn("mnt_Mnt_L93", os.listdir(self.path))
 
     def test_mnt_only(self):
-        testNominal = TileGenerator(None, self.srcMnt, self.path, self.extent, self.tileSize, 2)
-        testNominal.launch_process()
+        TileGenerator.launch_process(None, self.srcMnt, self.path, self.extent, self.tileSize, 2)
         self.assertIn("mnt_Mnt_L93", os.listdir(self.path))
 
     def test_img_only(self):
-        testNominal = TileGenerator(self.srcImg, None, self.path, self.extent, self.tileSize, 2)
-        testNominal.launch_process()
+        TileGenerator.launch_process(self.srcImg, None, self.path, self.extent, self.tileSize, 2)
         self.assertIn("img_GrandLyon2m_L93_RGB", os.listdir(self.path))
 
     def test_unknown_path(self):
         try:
-            testNominal = TileGenerator(self.srcImg, self.srcMnt, None, self.extent, self.tileSize, 2)
-            testNominal.launch_process()
+            TileGenerator.launch_process(self.srcImg, self.srcMnt, None, self.extent, self.tileSize, 2)
             self.assertFalse(False, "Should raise an exception")
         except Exception:
             self.assertTrue(True)

@@ -20,12 +20,13 @@ class TestPostgisProvider(unittest.TestCase):
     def setUp(self):
         self.host = "37.58.147.68"
         self.dbname = "data"
+        self.port = 5432
         self.user = "lecture"
         self.password = "viziRead"
         self.srid = "2154"
         self.table = "test"
         self.column = "geom"
-        self.p = PostgisProvider(self.host, self.dbname, self.user, self.password, self.srid, self.table, self.column)
+        self.p = PostgisProvider(self.host, self.dbname, self.port, self.user, self.password, self.srid, self.table, self.column)
 
     def test_connection(self):
         assert self.p.db.open()
@@ -42,17 +43,15 @@ class TestRasterProvider(unittest.TestCase):
         self.extent = ""
         self.srid = "2154"
         self.source = "/sample/file"
-        self.httpRessource = "http://localhost/raster/file"
-        self.p = RasterProvider(self.name, self.extent, self.srid, self.source, self.httpRessource)
+        self.httpResource = "http://localhost/raster/file"
+        self.p = RasterProvider(self.name, self.extent, self.srid, self.source, self.httpResource)
 
     def test_init(self):
         self.assertEqual(self.name, self.p.name, "RasterProvider init fail")
         self.assertEqual(self.extent, self.p.extent, "RasterProvider init fail")
         self.assertEqual(self.srid, self.p.srid, "RasterProvider init fail")
         self.assertEqual(self.source, self.p.source, "RasterProvider init fail")
-        self.assertEqual(self.httpRessource, self.p.httpRessource, "RasterProvider init fail")
+        self.assertEqual(self.httpResource, self.p.httpResource, "RasterProvider init fail")
 
 if __name__ == "__main__":
-    app = QtCore.QCoreApplication([])
     unittest.main()
-    app.exec_()
