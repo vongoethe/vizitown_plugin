@@ -1,6 +1,6 @@
 import json
 import cyclone.websocket
-from vt_utils_converter import X3DTranslateToThreeJs
+from vt_utils_converter import PostgisToJSON
 from vt_as_provider_manager import ProviderManager
 from vt_as_sync import SyncManager
 
@@ -34,10 +34,13 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
     #  '{"Xmin": 0, "Ymin": 0, "Xmax": 50, "Ymax": 50}'
     def messageReceived(self, message):
         bufferSize = 100
-        print message
         d = json.loads(message)
         vectors = ProviderManager.instance().request_tile(**d)
-        translator = X3DTranslateToThreeJs()
+        if not vectors:
+            self.sendMessage("{}")
+            return
+
+        translator = PostgisToJSON()
         for v in vectors:
             array = []
             while v['it'].next():
@@ -50,7 +53,6 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
                     if not v['it'].next():
                         break
                 json_ = translator.parse(array, v['geom'], v['hasH'])
-                print json_
                 self.sendMessage(json_)
 
     ## Method call when the websocket is closed
