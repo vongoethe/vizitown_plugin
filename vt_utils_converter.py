@@ -155,7 +155,7 @@ class PostgisToJSON:
             geometries = ""
             for i in range(len(js['coordinates'])):
                 geometries += self._get_json_geom(self._get_polygon_point(js['coordinates'][i][0]), height) + ','
-            return geometries
+            return PostgisToJSON.remove_comma(geometries)
         else:
             return ""
 
@@ -208,9 +208,9 @@ class PostgisToJSON:
     def _get_json_geom(self, pointArray, height):
         gjson = self._jsonGeom
         coord = ''
-        for i in range(len(pointArray) - 1):
+        for i in range(0, len(pointArray) - 1, 2):
+            print i
             coord += str(pointArray[i]) + ',' + str(pointArray[i + 1]) + ','
-            i += 1
         coord = PostgisToJSON.remove_comma(coord)
 
         gjson = re.sub('{COORDINATES}', coord, gjson)
