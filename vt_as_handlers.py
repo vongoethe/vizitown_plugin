@@ -28,7 +28,6 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
     #  @param message in JSON format like:
     #  '{"Xmin": 0, "Ymin": 0, "Xmax": 50, "Ymax": 50}'
     def messageReceived(self, message):
-        bufferSize = 100
         d = json.loads(message)
         vectors = ProviderManager.instance().request_tile(d['Xmin'], d['Ymin'], d['Xmax'], d['Ymax'])
         if not vectors:
