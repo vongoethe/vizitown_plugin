@@ -49,7 +49,7 @@ class PostgisToJSON:
     }"""
 
         self._jsonExchange = """{
-    "type"          : {TYPE},
+    "type"          : "{TYPE}",
     "geometries"    : [{JSON_GEOM}]
 }"""
 
@@ -153,8 +153,8 @@ class PostgisToJSON:
 
         elif js['type'] == 'MultiPolygon':
             geometries = ""
-            for i in range(len(js['coordinates'][0])):
-                geometries += self._get_json_geom(self._get_polygon_point(js['coordinates'][0][i]), height) + ','
+            for i in range(len(js['coordinates'])):
+                geometries += self._get_json_geom(self._get_polygon_point(js['coordinates'][i][0]), height) + ','
             return geometries
         else:
             return ""
