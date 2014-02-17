@@ -33,27 +33,26 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
     #  @param message in JSON format like:
     #  '{"Xmin": 0, "Ymin": 0, "Xmax": 50, "Ymax": 50}'
     def messageReceived(self, message):
-        bufferSize = 100
         d = json.loads(message)
         vectors = ProviderManager.instance().request_tile(**d)
         if not vectors:
             self.sendMessage("{}")
             return
-
         translator = PostgisToJSON()
         for v in vectors:
             array = []
             while v['it'].next():
-                for i in range(bufferSize):
-                    if v['hasH']:
-                        array.append([v['it'].value(0), v['it'].value(1)])
-                    else:
-                        array.append(v['it'].value(0))
+                if v['hasH']:
+                    array.append([v['it'].value(0), v['it'].value(1)])
+                else:
+                    array.append(v['it'].value(0))
 
-                    if not v['it'].next():
-                        break
-                json_ = translator.parse(array, v['geom'], v['hasH'])
-                self.sendMessage(json_)
+                if not v['it'].next():
+                    break
+
+            json_ = translator.parse(array, v['geom'], v['hasH'])
+            array = []
+            self.sendMessage(json_)
 
     ## Method call when the websocket is closed
     def connectionLost(self, reason):

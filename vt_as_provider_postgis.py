@@ -89,9 +89,6 @@ class PostgisProvider:
         request = self._get_request()
         request += intersect
 
-        ## LOG DEBUG
-        print request
-
         if not query.exec_(request):
             print query.lastQuery()
             print query.lastError().text()
@@ -150,7 +147,7 @@ class PostgisProvider:
 
         else:
             self.hasH = True
-            return """SELECT ST_AsX3D(ST_Force3D({column_})), {hcolumn_} FROM {table_}
+            return """SELECT ST_AsGeoJSON(ST_Force3D({column_})), {hcolumn_} FROM {table_}
             """.format(column_=self.column,
                        hcolumn_=self.column2,
                        table_=self.table)
