@@ -23,7 +23,7 @@
 import os
 import re
 import sys
-import multiprocessing as mp
+import multiprocessing as mpre
 import shutil
 
 from ui_vizitown import Ui_Vizitown
@@ -92,11 +92,14 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     def init_layers(self):
         self.reset_all_fields()
         layerListIems = QgsMapLayerRegistry().instance().mapLayers().items()
+        self.cb_dem.addItem("None")
+        self.cb_texture.addItem("None")
         for id, layer in layerListIems:
             if is_dem(layer):
                 self.cb_dem.addItem(layer.name(), layer)
             if is_vector(layer):
-                d = vt_utils_parser.parse_vector(layer.source())
+                srid = layer.crs().postgisSrid()
+                d = vt_utils_parser.parse_vector(layer.source(), srid)
                 dic = PostgisProvider.get_columns_info_table(d['host'], d['dbname'], d['user'], d['password'], d['table'])
                 name = layer.name() + ' ' + re.search("(\(.*\)+)", layer.source()).group(0)
                 item = QtGui.QTableWidgetItem(name)
@@ -119,11 +122,11 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
     ## Return true if there is a DEM to generate
     def has_dem(self):
-        return self.cb_dem.count() > 0
+        return self.cb_dem.count() > 0 and self.cb_dem.currentText() != "None"
 
     ## Return true if there is a texture to generate
     def has_texture(self):
-        return self.cb_texture.count() > 0
+        return self.cb_texture.count() > 0 and self.cb_texture.currentText() != "None"
 
     ## Return true if there is a least one raster to generate
     def has_raster(self):
@@ -204,7 +207,9 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             # if the layer is checked
             if self.tw_layers.item(row_index, 0).checkState() == QtCore.Qt.Checked:
                 vectorLayer = self.tw_layers.item(row_index, 1).data(QtCore.Qt.UserRole)
-                connection_info = vt_utils_parser.parse_vector(vectorLayer.source())
+                srid = layer.crs().postgisSrid()
+                connection_info = vt_utils_parser.parse_vector(vectorLayer.source(), srid)
+
                 column2 = self.tw_layers.cellWidget(row_index, 2).currentText()
                 if column2 == "None":
                     provider = PostgisProvider(**connection_info)
