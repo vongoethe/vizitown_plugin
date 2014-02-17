@@ -121,11 +121,11 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
     ## Return true if there is a DEM to generate
     def has_dem(self):
-        return self.cb_dem.count() > 0 and self.cb_dem.currentText()!="None"
+        return self.cb_dem.count() > 0 and self.cb_dem.currentText() != "None"
 
     ## Return true if there is a texture to generate
     def has_texture(self):
-        return self.cb_texture.count() > 0 and self.cb_texture.currentText()!="None"
+        return self.cb_texture.count() > 0 and self.cb_texture.currentText() != "None"
 
     ## Return true if there is a least one raster to generate
     def has_raster(self):
