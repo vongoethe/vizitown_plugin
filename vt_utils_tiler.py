@@ -3,12 +3,10 @@ import math
 import tempfile
 import shutil
 import re
+import subprocess
 from osgeo import gdal
 import gdal_retile
 import gdal_merge
-from PyQt4.QtCore import *
-
-import datetime
 
 
 ## TileGenerator
@@ -70,8 +68,8 @@ class TileGenerator:
     ## _calculate_extent calculate the extent and set it
     def _calculate_extent(self):
         xMin = float(self.extent[0])
-        xMax = float(self.extent[1])
-        yMin = float(self.extent[2])
+        yMin = float(self.extent[1])
+        xMax = float(self.extent[2])
         yMax = float(self.extent[3])
 
         distX = xMax - xMin
@@ -153,10 +151,8 @@ class TileGenerator:
                                       ((float(geoInfo[5]) * int(self.tileSize)) + float(geoInfo[3]))))
                     optionsMnt.append("%s %s" % (self.dataSrcMnt, mntDst))
                     cmdMnt = "gdal_translate " + " ".join(optionsMnt)
-
-                    processMnt = QProcess()
-                    processMnt.start(cmdMnt)
-                    processMnt.waitForFinished()
+                    proc = subprocess.Popen(cmdMnt)
+                    proc.wait()
 
     ## _process_to_dim_tile manage mnt and image tiles to fix this dimension
     #  @param dataTile the repository to find the data source
@@ -178,15 +174,14 @@ class TileGenerator:
 
                     ds = gdal.Open(os.path.join(dataTile, currentFile), gdal.GA_ReadOnly)
 
-                    if(ds.RasterXSize != int(self.tileSize) & ds.RasterYSize != int(self.tileSize)):
+                    if(ds.RasterXSize != int(self.tileSize) or ds.RasterYSize != int(self.tileSize)):
                         options = []
                         options.append("-of png -outsize %d %d" % (int(self.tileSize), int(self.tileSize)))
                         options.append("%s %s " % (os.path.join(dataTile, currentFile), os.path.join(dstDir, currentFile)))
                         cmd = "gdal_translate " + " ".join(options)
 
-                        process = QProcess()
-                        process.start(cmd)
-                        process.waitForFinished()
+                        proc = subprocess.Popen(cmd)
+                        proc.wait()
                     else:
                         shutil.copy(os.path.join(dataTile, currentFile), os.path.join(dstDir, currentFile))
                         shutil.copy(os.path.join(dataTile, currentFile) + ".aux.xml", os.path.join(dstDir, currentFile) + ".aux.xml")
@@ -243,11 +238,9 @@ class TileGenerator:
             generator._calculate_extent()
             generator._process_merge()
             if (generator.processChoice == 0):
-                print datetime.datetime.now()
                 generator._process_tile_img()
                 generator._process_clip_mnt(generator.dataDstImg, generator.dataDstMnt)
                 generator._process_to_dim_tile(generator.dataDst, generator.tmpRepo)
-                print datetime.datetime.now()
             elif (generator.processChoice == 1):
                 generator._process_tile_img()
                 generator._process_to_dim_tile(generator.dataDst, generator.tmpRepo)

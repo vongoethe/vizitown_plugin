@@ -1,7 +1,7 @@
 import json
 import cyclone.websocket
 from vt_utils_converter import X3DTranslateToThreeJs
-from vt_as_providers import ProviderManager
+from vt_as_provider_manager import ProviderManager
 from vt_as_sync import SyncManager
 
 
@@ -28,16 +28,27 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
     #  @param message in JSON format like:
     #  '{"Xmin": 0, "Ymin": 0, "Xmax": 50, "Ymax": 50}'
     def messageReceived(self, message):
+        bufferSize = 100
         print message
         d = json.loads(message)
-        vectors = ProviderManager.instance().requestTile(d['Xmin'], d['Ymin'], d['Xmax'], d['Ymax'])
+        vectors = ProviderManager.instance().request_tile(d['Xmin'], d['Ymin'], d['Xmax'], d['Ymax'])
         translator = X3DTranslateToThreeJs()
         for v in vectors:
             ## TODO: Maybe make a buffer
+            array = []
             while v['it'].next():
+                # seconde boucle
                 print "sendmessage"
-                result = str(v['it'].value(0).toString())
-                json_ = translator.parse(result, v['geom'])
+                for i in range(bufferSize):
+                    if v['hasH']:
+                        array.append([v['it'].value(0), v['it'].value(1)])
+                    else:
+                        array.append(v['it'].value(0))
+
+                    if not v['it'].next():
+                        break
+                json_ = translator.parse(array, v['geom'], v['hasH'])
+                print json_
                 self.sendMessage(json_)
 
     ## Method call when the websocket is closed
@@ -50,11 +61,12 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
 #  from QGIS to the web browser
 class SyncHandler(cyclone.websocket.WebSocketHandler):
     def initialize(self):
-        SyncManager.instance().addListener(self)
+        SyncManager.instance().add_listener(self)
 
     ## Method call when the websocket is opened
     def connectionMade(self):
         print "WebSocket sync opened"
+        SyncManager.instance().isSocketOpen = True
 
     ## Method call when a message is received
     def messageReceived(self, message):
@@ -63,6 +75,7 @@ class SyncHandler(cyclone.websocket.WebSocketHandler):
     ## Method call when the websocket is closed
     def connectionLost(self, reason):
         print "WebSocket sync closed"
+        SyncManager.instance().isSocketOpen = False
 
 
 ## Tiles information handler

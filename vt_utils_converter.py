@@ -1,5 +1,6 @@
 import re
 from xml.dom import minidom
+import json
 
 
 ## X3DTranslateToThreeJs class to converts an X3D formats in a json
@@ -7,12 +8,9 @@ class X3DTranslateToThreeJs:
 
     ## The Constructor
     def __init__(self):
-        self.nbFaces = 0
-        self.nbVertices = 0
-
         self.nbPointVertice = 3
 
-        self.__json = """{
+        self._jsonThreejs = """{
     "metadata" :
     {
         "formatVersion" : 3.1,
@@ -49,53 +47,127 @@ class X3DTranslateToThreeJs:
 
 }"""
 
+        self._jsonExchange = """{
+    "type"          : {TYPE},
+    "geometries"    : [{JSON_GEOM}]
+}"""
+
+        self._jsonGeom = """{
+    "height"        : {HEIGHT},
+    "coordinates"   : [{COORDINATES}]
+}"""
+
     ## parse method to manage the process in the class and
     #  use the appropriate process in function of the data
     #  @param message to stock the data
     #  @param geometry to check the type of geometry
-    def parse(self, message, geometry):
+    def parse(self, array, geometry, hasH):
 
-        if geometry == 'POINT':
-            return self.__parse_point(message)
+        exchange = self._jsonExchange
+        # geometry in 3 dimensions
+        if (geometry == 'POLYHEDRALSURFACE' or
+                geometry == 'TIN'):
+            exchange = re.sub('{TYPE}', "3", exchange)
         else:
-            xmldoc = minidom.parseString(message)
-            if geometry == 'LINESTRING' or geometry == 'MULTILINESTRING':
-                return self.__parse_line(xmldoc)
-            elif geometry == 'POLYGON' or geometry == 'POLYHEDRALSURFACE':
-                return self.__parse_triangle(xmldoc)
+            # geometry in 2.5 dimensions (geometry with height)
+            if hasH:
+                exchange = re.sub('{TYPE}', "2.5", exchange)
+            # geometry in 2 dimensions
             else:
-                return None
+                exchange = re.sub('{TYPE}', "2", exchange)
 
-    ## __parse_point method to parse a point data
+        noHeight = "0"
+        geometries = ""
+        for g in array:
+            # geometry has height
+            if hasH:
+                if geometry == 'POINT':
+                    geometries += self._parse_point(str(g[0]), str(g[1])) + ','
+
+                elif (geometry == 'LINESTRING' or
+                        geometry == 'MULTILINESTRING'):
+                    geometries += self._parse_line(str(g[0]), str(g[1])) + ','
+
+                elif (geometry == 'POLYGON' or
+                        geometry == 'MULTIPOLYGON'):
+                    geometries += self._parse_polygon(str(g[0]), str(g[1])) + ','
+
+                elif (geometry == 'POLYHEDRALSURFACE' or
+                        geometry == 'TIN'):
+                    geometries += self._parse_triangle(str(g[0]))
+
+            else:
+                if geometry == 'POINT':
+                    geometries += self._parse_point(str(g), noHeight) + ','
+
+                elif (geometry == 'LINESTRING' or
+                        geometry == 'MULTILINESTRING'):
+                    geometries += self._parse_line(str(g), noHeight) + ','
+
+                elif (geometry == 'POLYGON' or
+                        geometry == 'MULTIPOLYGON'):
+                    geometries += self._parse_polygon(str(g), noHeight) + ','
+
+                elif (geometry == 'POLYHEDRALSURFACE' or
+                        geometry == 'TIN'):
+                    geometries += self._parse_triangle(str(g))
+
+        geometries = X3DTranslateToThreeJs.remove_comma(geometries)
+        exchange = re.sub('{JSON_GEOM}', geometries, exchange)
+        return exchange
+
+    ## _parse_point method to parse a point data
     #  @param message to stock the data
     #  @return a json file
-    def __parse_point(self, message):
-        nbFace = 0
-        nbPoint = 1
+    def _parse_point(self, message, height):
+        vertice = message.split(' ')
+        vertice.pop()
+        return self._get_json_geom(vertice, height)
 
-        vertice = re.sub(' ', ',', message)
-        return self.__get_json(nbFace, nbPoint, None, vertice)
-
-    ## __parse_line method to parse a line data
+    ## _parse_line method to parse a line data
     #  @param xmldoc to stock the data
     #  @return a json file
-    def __parse_line(self, xmldoc):
-        nbFace = 0
+    def _parse_line(self, message, height):
+        xmldoc = minidom.parseString(message)
+        vertices = self._get_vertices(xmldoc)
+        vertices = vertices.split(',')
+        for i in range(len(vertices) - 1, 0, -self.nbPointVertice):
+            vertices.pop(i)
+        return self._get_json_geom(vertices, height)
 
-        vertices = self.__get_vertices(xmldoc)
-        nbVertice = self.__count_vertice(vertices)
+    def _parse_polygon(self, message, height):
+        js = json.loads(message)
+        print js['type']
+        if js['type'] == 'Polygon':
+            return self._get_json_geom(self._get_polygon_point(js['coordinates'][0]), height)
 
-        return self.__get_json(nbFace, nbVertice, None, vertices)
+        elif js['type'] == 'MultiPolygon':
+            geometries = ""
+            for i in range(len(js['coordinates'][0])):
+                geometries += self._get_json_geom(self._get_polygon_point(js['coordinates'][0][i]), height) + ','
+            return geometries
+        else:
+            return ""
 
-    ## __parse_triangle method to parse a triangle data
+    def _get_polygon_point(self, polygon):
+        X = 0
+        Y = 1
+        array = []
+        print polygon
+        for i in range(len(polygon)):
+            array.append(polygon[i][X])
+            array.append(polygon[i][Y])
+        return array
+
+    ## _parse_triangle method to parse a triangle data
     #  @param xmldoc to stock the data
     #  @return a json file
-    def __parse_triangle(self, xmldoc):
+    def _parse_triangle(self, string):
         nbIndexFace = 3
         bitMask = 0
-
-        vertices = self.__get_vertices(xmldoc)
-        nbVertice = self.__count_vertice(vertices)
+        xmldoc = minidom.parseString(string)
+        vertices = self._get_vertices(xmldoc)
+        nbVertice = self._count_vertice(vertices)
 
         facesTab = []
         for i in range(0, nbVertice, nbIndexFace):
@@ -106,51 +178,58 @@ class X3DTranslateToThreeJs:
 
         faces = ','.join(str(f) for f in facesTab)
         nbFace = nbVertice / nbIndexFace
-        return self.__get_json(nbFace, nbVertice, faces, vertices)
+        return self._get_json_threejs(nbFace, nbVertice, faces, vertices)
 
-    ## __get_vertices Getter of vertex data
+    ## _get_vertices Getter of vertex data
     #  @param xmldoc to stock the data
     #  @return a specific vertex
-    def __get_vertices(sef, xmldoc):
+    def _get_vertices(sef, xmldoc):
         nodeVertice = xmldoc.getElementsByTagName('Coordinate')
         vertices = nodeVertice[0].getAttribute('point')
         vertices = re.sub(' ', ',', vertices)
-        if vertices[-1:] == ',':
-            vertices = vertices[:-1]
-        return vertices
+        return X3DTranslateToThreeJs.remove_comma(vertices)
 
-    ## __count_vertice method to count the number of vertex
+    ## _count_vertice method to count the number of vertex
     #  @param vertices stock a vertex number
     #  @return a number of vertex
-    def __count_vertice(self, vertices):
+    def _count_vertice(self, vertices):
         verticesTab = vertices.split(',')
         return len(verticesTab) / self.nbPointVertice
 
-    ## __get_json Getter of json data
+    def _get_json_geom(self, pointArray, height):
+        gjson = self._jsonGeom
+        coord = ''
+        for i in range(len(pointArray) - 1):
+            coord += str(pointArray[i]) + ',' + str(pointArray[i + 1]) + ','
+            i += 1
+        coord = X3DTranslateToThreeJs.remove_comma(coord)
+
+        gjson = re.sub('{COORDINATES}', coord, gjson)
+        gjson = re.sub('{HEIGHT}', height, gjson)
+        return gjson
+
+    ## _get_json Getter of json data
     #  @param nbFaces to define the number of faces
     #  @param nbVertices to define the number of vertex
     #  @param faces stock a faces values
     #  @param vertices stock a vertex values
     #  @return a json file
-    def __get_json(self, nbFaces, nbVertices, faces, vertices):
-        self.__define_field(nbFaces, nbVertices)
+    def _get_json_threejs(self, nbFaces, nbVertices, faces, vertices):
+        js = self._jsonThreejs
 
-        json = self.__json
+        js = re.sub("{VERTICES}", str(nbVertices), js)
+        js = re.sub("{FACES}", str(nbFaces), js)
 
-        json = re.sub("{VERTICES}", str(nbVertices), json)
-        json = re.sub("{FACES}", str(nbFaces), json)
-
-        json = re.sub("{TAB_VERTICES}", str(vertices), json)
+        js = re.sub("{TAB_VERTICES}", str(vertices), js)
         if faces is not None:
-            json = re.sub("{TAB_FACES}", str(faces), json)
+            js = re.sub("{TAB_FACES}", str(faces), js)
         else:
-            json = re.sub("{TAB_FACES}", "", json)
+            json = re.sub("{TAB_FACES}", "", js)
 
-        return json
+        return js
 
-    ## __define_field method define information about data
-    #  @param nbFaces to define the number of faces
-    #  @param nbVertices to define the number of vertex
-    def __define_field(self, nbFaces, nbVertices):
-        self.nbFaces = nbFaces
-        self.nbVertices = nbVertices
+    @staticmethod
+    def remove_comma(string):
+        if string[-1:] == ',':
+            string = string[:-1]
+        return string
