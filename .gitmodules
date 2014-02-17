@@ -1,0 +1,3 @@
+[submodule "vt_viewer"]
+	path = vt_viewer
+	url = https://vmig2k05.univ-mlv.fr/gitlab/nmeunier/viewer.git
