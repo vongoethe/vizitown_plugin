@@ -9,6 +9,11 @@ from vt_as_sync import SyncManager
 class InitHandler(cyclone.web.RequestHandler):
     def initialize(self, initParam):
         self.initParam = initParam
+        
+    def set_default_headers(self):
+        self.set_header('Access-Control-Allow-Origin', '*')
+        self.set_header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        self.set_header('Access-Control-Allow-Headers', 'X-Requested-With')
 
     ## Handle GET HTTP
     def get(self):
