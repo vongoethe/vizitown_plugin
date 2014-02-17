@@ -23,7 +23,7 @@
 import os
 import re
 import sys
-import multiprocessing as mpre
+import multiprocessing as mp
 import shutil
 
 from ui_vizitown import Ui_Vizitown
