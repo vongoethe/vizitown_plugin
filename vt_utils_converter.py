@@ -209,7 +209,6 @@ class PostgisToJSON:
         gjson = self._jsonGeom
         coord = ''
         for i in range(0, len(pointArray) - 1, 2):
-            print i
             coord += str(pointArray[i]) + ',' + str(pointArray[i + 1]) + ','
         coord = PostgisToJSON.remove_comma(coord)
 
