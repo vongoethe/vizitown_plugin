@@ -23,7 +23,7 @@
 import os
 import re
 import sys
-import multiprocessing as mp
+import multiprocessing as mpre
 import shutil
 
 from ui_vizitown import Ui_Vizitown
@@ -95,7 +95,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             if is_dem(layer):
                 self.cb_dem.addItem(layer.name(), layer)
             if is_vector(layer):
-                d = vt_utils_parser.parse_vector(layer.source())
+                srid = layer.crs().postgisSrid()
+                d = vt_utils_parser.parse_vector(layer.source(), srid)
                 dic = PostgisProvider.get_columns_info_table(d['host'], d['dbname'], d['user'], d['password'], d['table'])
                 name = layer.name() + ' ' + re.search("(\(.*\)+)", layer.source()).group(0)
                 item = QtGui.QTableWidgetItem(name)
@@ -203,7 +204,9 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             # if the layer is checked
             if self.tw_layers.item(row_index, 0).checkState() == QtCore.Qt.Checked:
                 vectorLayer = self.tw_layers.item(row_index, 1).data(QtCore.Qt.UserRole)
-                connection_info = vt_utils_parser.parse_vector(vectorLayer.source())
+                srid = layer.crs().postgisSrid()
+                connection_info = vt_utils_parser.parse_vector(vectorLayer.source(), srid)
+
                 column2 = self.tw_layers.cellWidget(row_index, 2).currentText()
                 if column2 == "None":
                     provider = PostgisProvider(**connection_info)
@@ -237,7 +240,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
                 mp.set_executable(pythonPath)
                 sys.argv = [None]
             self.GDALprocess = mp.Process(target=launch_gdal_process, args=(dataSrcImg, dataSrcMnt, path, extent, tileSize, int(zoomLevel)))
-            self.GDALprocess.start()
+            #self.GDALprocess.start()
 
     ## Behavior whit a close event
     #  @override QtGui.QDialog
