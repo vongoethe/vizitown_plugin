@@ -16,10 +16,11 @@ class PostgisProvider:
     #  @param table of the resource
     #  @param column of the resource
     #  @param column2 representing a height of column or another geometry (TinZ)
-    def __init__(self, host, dbname, user, password, srid, table, column, column2=None, column2Type=None):
+    def __init__(self, host, dbname, port, user, password, srid, table, column, column2=None, column2Type=None):
         self.db = QSqlDatabase.addDatabase("QPSQL")
         self.db.setHostName(host)
         self.db.setDatabaseName(dbname)
+        self.db.setPort(port)
         self.db.setUserName(user)
         self.db.setPassword(password)
         self.table = table

@@ -23,7 +23,8 @@
 import os
 import re
 import sys
-import multiprocessing as mp
+import multiprocessing as mpre
+import shutil
 
 from ui_vizitown import Ui_Vizitown
 from PyQt4 import QtCore, QtGui
@@ -90,11 +91,14 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     def init_layers(self):
         self.reset_all_fields()
         layerListIems = QgsMapLayerRegistry().instance().mapLayers().items()
+        self.cb_dem.addItem("None")
+        self.cb_texture.addItem("None")
         for id, layer in layerListIems:
             if is_dem(layer):
                 self.cb_dem.addItem(layer.name(), layer)
             if is_vector(layer):
-                d = vt_utils_parser.parse_vector(layer.source())
+                srid = layer.crs().postgisSrid()
+                d = vt_utils_parser.parse_vector(layer.source(), srid)
                 dic = PostgisProvider.get_columns_info_table(d['host'], d['dbname'], d['user'], d['password'], d['table'])
                 name = layer.name() + ' ' + re.search("(\(.*\)+)", layer.source()).group(0)
                 item = QtGui.QTableWidgetItem(name)
@@ -117,11 +121,11 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
     ## Return true if there is a DEM to generate
     def has_dem(self):
-        return self.cb_dem.count() > 0
+        return self.cb_dem.count() > 0 and self.cb_dem.currentText() != "None"
 
     ## Return true if there is a texture to generate
     def has_texture(self):
-        return self.cb_texture.count() > 0
+        return self.cb_texture.count() > 0 and self.cb_texture.currentText() != "None"
 
     ## Return true if there is a least one raster to generate
     def has_raster(self):
@@ -178,12 +182,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     ## Generate and launch the rendering of the 3D scene
     def on_btn_generate_released(self):
         if self.appServerRunning:
-            self.pb_loading.hide()
-            self.btn_generate.setText("Server is stopping")
-            self.appServer.stop()
-            self.btn_generate.setText("Generate")
-            self.appServerRunning = False
-            self.kill_gdal_process()
+            self.closeEvent(None)
         else:
             self.pb_loading.show()
             self.create_vector_providers()
@@ -207,14 +206,16 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             # if the layer is checked
             if self.tw_layers.item(row_index, 0).checkState() == QtCore.Qt.Checked:
                 vectorLayer = self.tw_layers.item(row_index, 1).data(QtCore.Qt.UserRole)
-                d = vt_utils_parser.parse_vector(vectorLayer.source())
+                srid = layer.crs().postgisSrid()
+                connection_info = vt_utils_parser.parse_vector(vectorLayer.source(), srid)
+
                 column2 = self.tw_layers.cellWidget(row_index, 2).currentText()
-                if not column2 == "None":
-                    column2Name = column2.split(" - ")[0]
-                    column2Type = column2.split(" - ")[1]
-                    provider = PostgisProvider(d['host'], d['dbname'], d['user'], d['password'], d['srid'], d['table'], d['column'], column2Name, column2Type)
+                if column2 == "None":
+                    provider = PostgisProvider(**connection_info)
                 else:
-                    provider = PostgisProvider(d['host'], d['dbname'], d['user'], d['password'], d['srid'], d['table'], d['column'])
+                    connection_info['column2'] = column2.split(" - ")[0]
+                    connection_info['column2Type'] = column2.split(" - ")[1]
+                    provider = PostgisProvider(**connection_info)
                 ProviderManager.instance().add_vector_provider(provider)
 
     ## Create all providers for DEM and raster
@@ -227,12 +228,12 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         zoomLevel = self.cb_zoom.currentText()
         if self.has_dem():
             dem = self.cb_dem.itemData(self.cb_dem.currentIndex())
-            demProvider = ProviderManager.instance().create_raster_provider(dem, self.get_port(), str(tileSize), zoomLevel)
+            demProvider = ProviderManager.instance().create_raster_provider(dem, self.get_port(), 'dem', str(tileSize), zoomLevel)
             ProviderManager.instance().dem = demProvider
             dataSrcMnt = demProvider.source
         if self.has_texture():
             texture = self.cb_texture.itemData(self.cb_texture.currentIndex())
-            textureProvider = ProviderManager.instance().create_raster_provider(texture, self.get_port(), str(tileSize), zoomLevel)
+            textureProvider = ProviderManager.instance().create_raster_provider(texture, self.get_port(), 'img', str(tileSize), zoomLevel)
             ProviderManager.instance().texture = textureProvider
             dataSrcImg = textureProvider.source
         if self.has_raster():
@@ -247,11 +248,15 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     #  @override QtGui.QDialog
     def closeEvent(self, QCloseEvent):
         if self.appServer:
+            self.pb_loading.hide()
+            self.btn_generate.setText("Server is stopping")
             self.appServer.stop()
+            self.btn_generate.setText("Generate")
+            self.appServerRunning = False
         if self.GDALprocess:
             GDALDialog = QtGui.QMessageBox()
             GDALDialog.setIcon(QtGui.QMessageBox.Warning)
-            GDALDialog.setText("The tiling process is not complete. Would you like to run the process in background to use te generated tile later ?")
+            GDALDialog.setText("The tiling process is not complete. Would you like to run the process in background to use the generated tile later ?")
             GDALDialog.setStandardButtons(QtGui.QMessageBox.Discard | QtGui.QMessageBox.Save)
             ret = GDALDialog.exec_()
             if ret == QtGui.QMessageBox.Save:
@@ -264,3 +269,14 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         if self.GDALprocess and self.GDALprocess.is_alive():
             self.GDALprocess.terminate()
             self.GDALprocess = None
+            mergeSuffix = '_merge.tif'
+            demLocation = os.path.join(os.path.dirname(__file__), 'rasters', os.path.basename(ProviderManager.instance().dem.httpResource))
+            textureLocation = os.path.join(os.path.dirname(__file__), 'rasters', os.path.basename(ProviderManager.instance().texture.httpResource))
+            print demLocation
+            shutil.rmtree(demLocation, True)
+            shutil.rmtree(textureLocation, True)
+            try:
+                os.remove(textureLocation + mergeSuffix)
+                os.remove(demLocation + mergeSuffix)
+            except OSError:
+                pass
