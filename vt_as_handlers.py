@@ -39,20 +39,17 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
             ## TODO: Maybe make a buffer
             array = []
             while v['it'].next():
-                # seconde boucle
-                for i in range(bufferSize):
-                    if v['hasH']:
-                        array.append([v['it'].value(0), v['it'].value(1)])
-                    else:
-                        array.append(v['it'].value(0))
+                if v['hasH']:
+                    array.append([v['it'].value(0), v['it'].value(1)])
+                else:
+                    array.append(v['it'].value(0))
 
-                    if not v['it'].next():
-                        break
+                if not v['it'].next():
+                    break
 
-                json_ = translator.parse(array, v['geom'], v['hasH'])
-                print "Send message"
-                array = []
-                self.sendMessage(json_)
+            json_ = translator.parse(array, v['geom'], v['hasH'])
+            array = []
+            self.sendMessage(json_)
 
     ## Method call when the websocket is closed
     def connectionLost(self, reason):
