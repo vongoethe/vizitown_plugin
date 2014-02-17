@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_vizitown.ui'
 #
-# Created: Mon Feb 17 15:21:45 2014
+# Created: Mon Feb 17 15:32:51 2014
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -156,6 +156,7 @@ class Ui_Vizitown(object):
         self.pb_loading = QtGui.QProgressBar(Vizitown)
         self.pb_loading.setMaximum(0)
         self.pb_loading.setProperty("value", -1)
+        self.pb_loading.setTextVisible(False)
         self.pb_loading.setObjectName(_fromUtf8("pb_loading"))
         self.verticalLayout_2.addWidget(self.pb_loading)
         spacerItem2 = QtGui.QSpacerItem(20, 55, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
