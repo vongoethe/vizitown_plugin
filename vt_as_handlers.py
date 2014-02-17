@@ -34,7 +34,6 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
         if not vectors:
             self.sendMessage("{}")
             return
-
         translator = PostgisToJSON()
         for v in vectors:
             ## TODO: Maybe make a buffer
@@ -49,7 +48,10 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
 
                     if not v['it'].next():
                         break
+
                 json_ = translator.parse(array, v['geom'], v['hasH'])
+                print "Send message"
+                array = []
                 self.sendMessage(json_)
 
     ## Method call when the websocket is closed
