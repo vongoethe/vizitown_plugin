@@ -39,13 +39,18 @@ def build_viewer_param(extent, port, hasRaster):
 
 
 ## Get the tiles info done by the process GDAL
-def build_tiling_param(zoomLevel, tileSize, dem, texture):
-    return {
+def build_tiling_param(zoomLevel, tileSize, dem=None, texture=None):
+    param = {
         'zoomLevel': zoomLevel,
         'tileSize': tileSize,
         'dem': dem,
         'texture': texture
     }
+    if dem:
+        param['dem'] = dem
+    if texture:
+        param['texture'] = texture
+    return param
 
 
 ## Open a web browser at localhost address
