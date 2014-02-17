@@ -34,13 +34,12 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
     #  '{"Xmin": 0, "Ymin": 0, "Xmax": 50, "Ymax": 50}'
     def messageReceived(self, message):
         d = json.loads(message)
-        vectors = ProviderManager.instance().request_tile(d['Xmin'], d['Ymin'], d['Xmax'], d['Ymax'])
+        vectors = ProviderManager.instance().request_tile(**d)
         if not vectors:
             self.sendMessage("{}")
             return
         translator = PostgisToJSON()
         for v in vectors:
-            ## TODO: Maybe make a buffer
             array = []
             while v['it'].next():
                 if v['hasH']:
@@ -70,7 +69,6 @@ class SyncHandler(cyclone.websocket.WebSocketHandler):
     ## Method call when the websocket is opened
     def connectionMade(self):
         print "WebSocket sync opened"
-        SyncManager.instance().isSocketOpen = True
 
     ## Method call when a message is received
     def messageReceived(self, message):
@@ -79,7 +77,10 @@ class SyncHandler(cyclone.websocket.WebSocketHandler):
     ## Method call when the websocket is closed
     def connectionLost(self, reason):
         print "WebSocket sync closed"
-        SyncManager.instance().isSocketOpen = False
+
+    def on_finish(self):
+        print "WebSocket finished"
+        SyncManager.instance().remove_listener(self)
 
 
 ## Tiles information handler

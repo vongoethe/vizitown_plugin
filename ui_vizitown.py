@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_vizitown.ui'
 #
-# Created: Thu Feb 13 14:05:21 2014
+# Created: Mon Feb 17 15:32:51 2014
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -28,16 +28,12 @@ class Ui_Vizitown(object):
         Vizitown.setObjectName(_fromUtf8("Vizitown"))
         Vizitown.setEnabled(True)
         Vizitown.resize(482, 512)
-        Vizitown.setMinimumSize(QtCore.QSize(482, 512))
-        Vizitown.setMaximumSize(QtCore.QSize(482, 512))
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(_fromUtf8("vt.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         Vizitown.setWindowIcon(icon)
         self.verticalLayout_2 = QtGui.QVBoxLayout(Vizitown)
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
         self.tabWidget = QtGui.QTabWidget(Vizitown)
-        self.tabWidget.setMinimumSize(QtCore.QSize(456, 398))
-        self.tabWidget.setMaximumSize(QtCore.QSize(456, 16777215))
         self.tabWidget.setObjectName(_fromUtf8("tabWidget"))
         self.Layers = QtGui.QWidget()
         self.Layers.setObjectName(_fromUtf8("Layers"))
@@ -160,6 +156,7 @@ class Ui_Vizitown(object):
         self.pb_loading = QtGui.QProgressBar(Vizitown)
         self.pb_loading.setMaximum(0)
         self.pb_loading.setProperty("value", -1)
+        self.pb_loading.setTextVisible(False)
         self.pb_loading.setObjectName(_fromUtf8("pb_loading"))
         self.verticalLayout_2.addWidget(self.pb_loading)
         spacerItem2 = QtGui.QSpacerItem(20, 55, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
@@ -194,10 +191,10 @@ class Ui_Vizitown(object):
         self.label_9.setText(_translate("Vizitown", "Zoom level", None))
         self.btn_default.setText(_translate("Vizitown", "By default", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Opt), _translate("Vizitown", "Preferences", None))
-        self.label_11.setText(_translate("Vizitown", "Xmin", None))
-        self.label_13.setText(_translate("Vizitown", "Xmax", None))
-        self.label_12.setText(_translate("Vizitown", "Ymin", None))
-        self.label_14.setText(_translate("Vizitown", "Ymax", None))
+        self.label_11.setText(_translate("Vizitown", "le_xmin", None))
+        self.label_13.setText(_translate("Vizitown", "le_xmax", None))
+        self.label_12.setText(_translate("Vizitown", "le_ymin", None))
+        self.label_14.setText(_translate("Vizitown", "le_ymax", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.extent), _translate("Vizitown", "Extent", None))
         self.btn_generate.setText(_translate("Vizitown", "Generate", None))
 

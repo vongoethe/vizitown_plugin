@@ -23,7 +23,7 @@
 import os
 import re
 import sys
-import multiprocessing as mpre
+import multiprocessing as mp
 import shutil
 
 from ui_vizitown import Ui_Vizitown
@@ -35,6 +35,7 @@ from vt_as_app import AppServer
 from vt_as_provider_manager import ProviderManager
 from vt_as_provider_postgis import PostgisProvider
 from vt_as_provider_raster import RasterProvider
+from vt_as_sync import SyncManager
 
 import vt_utils_parser
 from vt_utils_tiler import TileGenerator
@@ -190,7 +191,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             viewerParam = build_viewer_param(self.get_gui_extent(), self.get_port(), self.has_raster())
             if self.has_raster():
                 demResource = ProviderManager.instance().dem.httpResource
-                textureResource = ProviderManager.instance().dem.httpResource
+                textureResource = ProviderManager.instance().texture.httpResource
                 tilingParam = build_tiling_param(int(self.cb_zoom.currentText()), self.get_size_tile(), demResource, textureResource)
                 self.appServer = AppServer(self, viewerParam, self.GDALprocess, tilingParam)
             else:
@@ -206,7 +207,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             # if the layer is checked
             if self.tw_layers.item(row_index, 0).checkState() == QtCore.Qt.Checked:
                 vectorLayer = self.tw_layers.item(row_index, 1).data(QtCore.Qt.UserRole)
-                srid = layer.crs().postgisSrid()
+                srid = vectorLayer.crs().postgisSrid()
                 connection_info = vt_utils_parser.parse_vector(vectorLayer.source(), srid)
 
                 column2 = self.tw_layers.cellWidget(row_index, 2).currentText()
@@ -253,6 +254,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.appServer.stop()
             self.btn_generate.setText("Generate")
             self.appServerRunning = False
+            SyncManager.instance().remove_all_listener()
         if self.GDALprocess:
             GDALDialog = QtGui.QMessageBox()
             GDALDialog.setIcon(QtGui.QMessageBox.Warning)
@@ -272,7 +274,6 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             mergeSuffix = '_merge.tif'
             demLocation = os.path.join(os.path.dirname(__file__), 'rasters', os.path.basename(ProviderManager.instance().dem.httpResource))
             textureLocation = os.path.join(os.path.dirname(__file__), 'rasters', os.path.basename(ProviderManager.instance().texture.httpResource))
-            print demLocation
             shutil.rmtree(demLocation, True)
             shutil.rmtree(textureLocation, True)
             try:
