@@ -35,6 +35,7 @@ from vt_as_app import AppServer
 from vt_as_provider_manager import ProviderManager
 from vt_as_provider_postgis import PostgisProvider
 from vt_as_provider_raster import RasterProvider
+from vt_as_sync import SyncManager
 
 import vt_utils_parser
 from vt_utils_tiler import TileGenerator
@@ -93,11 +94,14 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     def init_layers(self):
         self.reset_all_fields()
         layerListIems = QgsMapLayerRegistry().instance().mapLayers().items()
+        self.cb_dem.addItem("None")
+        self.cb_texture.addItem("None")
         for id, layer in layerListIems:
             if is_dem(layer):
                 self.cb_dem.addItem(layer.name(), layer)
             if is_vector(layer):
-                d = vt_utils_parser.parse_vector(layer.source())
+                srid = layer.crs().postgisSrid()
+                d = vt_utils_parser.parse_vector(layer.source(), srid)
                 dic = PostgisProvider.get_columns_info_table(d['host'], d['dbname'], d['user'], d['password'], d['table'])
                 name = layer.name() + ' ' + re.search("(\(.*\)+)", layer.source()).group(0)
                 item = QtGui.QTableWidgetItem(name)
@@ -120,11 +124,11 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
     ## Return true if there is a DEM to generate
     def has_dem(self):
-        return self.cb_dem.count() > 0
+        return self.cb_dem.count() > 0 and self.cb_dem.currentText() != "None"
 
     ## Return true if there is a texture to generate
     def has_texture(self):
-        return self.cb_texture.count() > 0
+        return self.cb_texture.count() > 0 and self.cb_texture.currentText() != "None"
 
     ## Return true if there is a least one raster to generate
     def has_raster(self):
@@ -191,7 +195,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             viewerParam = build_viewer_param(self.get_gui_extent(), self.get_port(), self.has_raster())
             if self.has_raster():
                 demResource = ProviderManager.instance().dem.httpResource
-                textureResource = ProviderManager.instance().dem.httpResource
+                textureResource = ProviderManager.instance().texture.httpResource
                 tilingParam = build_tiling_param(int(self.cb_zoom.currentText()), self.get_size_tile(), demResource, textureResource)
                 self.appServer = AppServer(self, viewerParam, self.GDALprocess, tilingParam)
             else:
@@ -207,7 +211,9 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             # if the layer is checked
             if self.tw_layers.item(row_index, 0).checkState() == QtCore.Qt.Checked:
                 vectorLayer = self.tw_layers.item(row_index, 1).data(QtCore.Qt.UserRole)
-                connection_info = vt_utils_parser.parse_vector(vectorLayer.source())
+                srid = vectorLayer.crs().postgisSrid()
+                connection_info = vt_utils_parser.parse_vector(vectorLayer.source(), srid)
+
                 column2 = self.tw_layers.cellWidget(row_index, 2).currentText()
                 if column2 == "None":
                     provider = PostgisProvider(**connection_info)
@@ -252,6 +258,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.appServer.stop()
             self.btn_generate.setText("Generate")
             self.appServerRunning = False
+            SyncManager.instance().remove_all_listener()
         if self.GDALprocess:
             GDALDialog = QtGui.QMessageBox()
             GDALDialog.setIcon(QtGui.QMessageBox.Warning)
@@ -271,7 +278,6 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             mergeSuffix = '_merge.tif'
             demLocation = os.path.join(os.path.dirname(__file__), 'rasters', os.path.basename(ProviderManager.instance().dem.httpResource))
             textureLocation = os.path.join(os.path.dirname(__file__), 'rasters', os.path.basename(ProviderManager.instance().texture.httpResource))
-            print demLocation
             shutil.rmtree(demLocation, True)
             shutil.rmtree(textureLocation, True)
             try:

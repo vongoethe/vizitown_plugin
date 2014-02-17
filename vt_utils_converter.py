@@ -3,67 +3,68 @@ from xml.dom import minidom
 import json
 
 
-## X3DTranslateToThreeJs class to converts an X3D formats in a json
-class X3DTranslateToThreeJs:
+## PostgisToJSON class to converts an X3D formats in a json
+class PostgisToJSON:
 
     ## The Constructor
     def __init__(self):
         self.nbPointVertice = 3
+        self.noHeight = 0
 
         self._jsonThreejs = """{
-    "metadata" :
-    {
-        "formatVersion" : 3.1,
-        "generatedBy"   : "Vizitown Creation",
-        "vertices"      : {VERTICES},
-        "faces"         : {FACES},
-        "normals"       : 0,
-        "colors"        : 0,
-        "uvs"           : 0,
-        "materials"     : 0,
-        "morphTargets"  : 0,
-        "bones"         : 0
-    },
+        "metadata" :
+        {
+            "formatVersion" : 3.1,
+            "generatedBy"   : "Vizitown Creation",
+            "vertices"      : {VERTICES},
+            "faces"         : {FACES},
+            "normals"       : 0,
+            "colors"        : 0,
+            "uvs"           : 0,
+            "materials"     : 0,
+            "morphTargets"  : 0,
+            "bones"         : 0
+        },
 
-    "vertices" : [{TAB_VERTICES}],
+        "vertices" : [{TAB_VERTICES}],
 
-    "morphTargets" : [],
+        "morphTargets" : [],
 
-    "normals" : [],
+        "normals" : [],
 
-    "colors" : [],
+        "colors" : [],
 
-    "uvs" : [],
+        "uvs" : [],
 
-    "faces" : [{TAB_FACES}],
+        "faces" : [{TAB_FACES}],
 
-    "bones" : [],
+        "bones" : [],
 
-    "skinIndices" : [],
+        "skinIndices" : [],
 
-    "skinWeights" : [],
+        "skinWeights" : [],
 
-    "animations" : []
+        "animations" : []
 
-}"""
+    }"""
 
         self._jsonExchange = """{
-    "type"          : {TYPE},
+    "type"          : "{TYPE}",
     "geometries"    : [{JSON_GEOM}]
 }"""
 
         self._jsonGeom = """{
-    "height"        : {HEIGHT},
-    "coordinates"   : [{COORDINATES}]
-}"""
+        "height"        : {HEIGHT},
+        "coordinates"   : [{COORDINATES}]
+    }"""
 
     ## parse method to manage the process in the class and
     #  use the appropriate process in function of the data
-    #  @param message to stock the data
+    #  @param resultArray to stock the data
     #  @param geometry to check the type of geometry
     #  @param hasH to define the representation of data
     #  @return a json
-    def parse(self, array, geometry, hasH):
+    def parse(self, resultArray, geometry, hasH):
 
         exchange = self._jsonExchange
         # geometry in 3 dimensions
@@ -80,7 +81,7 @@ class X3DTranslateToThreeJs:
 
         noHeight = "0"
         geometries = ""
-        for g in array:
+        for g in resultArray:
             # geometry has height
             if hasH:
                 if geometry == 'POINT':
@@ -114,7 +115,7 @@ class X3DTranslateToThreeJs:
                         geometry == 'TIN'):
                     geometries += self._parse_triangle(str(g))
 
-        geometries = X3DTranslateToThreeJs.remove_comma(geometries)
+        geometries = PostgisToJSON.remove_comma(geometries)
         exchange = re.sub('{JSON_GEOM}', geometries, exchange)
         return exchange
 
@@ -126,6 +127,16 @@ class X3DTranslateToThreeJs:
         vertice = message.split(' ')
         vertice.pop()
         return self._get_json_geom(vertice, height)
+
+    #def _parse_point(self, result, hasH):
+    #    if hasH:
+    #        vertice = str(result[0])
+    #        height = str(result[1])
+    #    else:
+    #        vertice = str(result)
+    #        height = self.noHeight
+    #    vertice.pop()
+    #    return self._get_json_geom(vertice, height)
 
     ## _parse_line method to parse a line data
     #  @param message to stock the data
@@ -145,15 +156,14 @@ class X3DTranslateToThreeJs:
     #  @return a json file
     def _parse_polygon(self, message, height):
         js = json.loads(message)
-        print js['type']
         if js['type'] == 'Polygon':
             return self._get_json_geom(self._get_polygon_point(js['coordinates'][0]), height)
 
         elif js['type'] == 'MultiPolygon':
             geometries = ""
-            for i in range(len(js['coordinates'][0])):
-                geometries += self._get_json_geom(self._get_polygon_point(js['coordinates'][0][i]), height) + ','
-            return geometries
+            for i in range(len(js['coordinates'])):
+                geometries += self._get_json_geom(self._get_polygon_point(js['coordinates'][i][0]), height) + ','
+            return PostgisToJSON.remove_comma(geometries)
         else:
             return ""
 
@@ -164,7 +174,6 @@ class X3DTranslateToThreeJs:
         X = 0
         Y = 1
         array = []
-        print polygon
         for i in range(len(polygon)):
             array.append(polygon[i][X])
             array.append(polygon[i][Y])
@@ -198,7 +207,7 @@ class X3DTranslateToThreeJs:
         nodeVertice = xmldoc.getElementsByTagName('Coordinate')
         vertices = nodeVertice[0].getAttribute('point')
         vertices = re.sub(' ', ',', vertices)
-        return X3DTranslateToThreeJs.remove_comma(vertices)
+        return PostgisToJSON.remove_comma(vertices)
 
     ## _count_vertice method to count the number of vertex
     #  @param vertices stock a vertex number
@@ -214,10 +223,9 @@ class X3DTranslateToThreeJs:
     def _get_json_geom(self, pointArray, height):
         gjson = self._jsonGeom
         coord = ''
-        for i in range(len(pointArray) - 1):
+        for i in range(0, len(pointArray) - 1, 2):
             coord += str(pointArray[i]) + ',' + str(pointArray[i + 1]) + ','
-            i += 1
-        coord = X3DTranslateToThreeJs.remove_comma(coord)
+        coord = PostgisToJSON.remove_comma(coord)
 
         gjson = re.sub('{COORDINATES}', coord, gjson)
         gjson = re.sub('{HEIGHT}', height, gjson)

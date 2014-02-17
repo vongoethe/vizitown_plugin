@@ -2,7 +2,7 @@ import json
 import os
 import gdal
 import cyclone.websocket
-from vt_utils_converter import X3DTranslateToThreeJs
+from vt_utils_converter import PostgisToJSON
 from vt_as_provider_manager import ProviderManager
 from vt_as_sync import SyncManager
 
@@ -12,6 +12,11 @@ class InitHandler(cyclone.web.RequestHandler):
     ## Method to initialize the handler
     def initialize(self, initParam):
         self.initParam = initParam
+
+    def set_default_headers(self):
+        self.set_header('Access-Control-Allow-Origin', '*')
+        self.set_header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        self.set_header('Access-Control-Allow-Headers', 'X-Requested-With')
 
     ## Handle GET HTTP
     def get(self):
@@ -31,28 +36,26 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
     #  @param message in JSON format like:
     #  '{"Xmin": 0, "Ymin": 0, "Xmax": 50, "Ymax": 50}'
     def messageReceived(self, message):
-        bufferSize = 100
-        print message
         d = json.loads(message)
-        vectors = ProviderManager.instance().request_tile(d['Xmin'], d['Ymin'], d['Xmax'], d['Ymax'])
-        translator = X3DTranslateToThreeJs()
+        vectors = ProviderManager.instance().request_tile(**d)
+        if not vectors:
+            self.sendMessage("{}")
+            return
+        translator = PostgisToJSON()
         for v in vectors:
-            ## TODO: Maybe make a buffer
             array = []
             while v['it'].next():
-                # seconde boucle
-                print "sendmessage"
-                for i in range(bufferSize):
-                    if v['hasH']:
-                        array.append([v['it'].value(0), v['it'].value(1)])
-                    else:
-                        array.append(v['it'].value(0))
+                if v['hasH']:
+                    array.append([v['it'].value(0), v['it'].value(1)])
+                else:
+                    array.append(v['it'].value(0))
 
-                    if not v['it'].next():
-                        break
-                json_ = translator.parse(array, v['geom'], v['hasH'])
-                print json_
-                self.sendMessage(json_)
+                if not v['it'].next():
+                    break
+
+            json_ = translator.parse(array, v['geom'], v['hasH'])
+            array = []
+            self.sendMessage(json_)
 
     ## Method call when the websocket is closed
     #  @param reason to indicate the reason of the closed instance
@@ -71,7 +74,6 @@ class SyncHandler(cyclone.websocket.WebSocketHandler):
     ## Method call when the websocket is opened
     def connectionMade(self):
         print "WebSocket sync opened"
-        SyncManager.instance().isSocketOpen = True
 
     ## Method call when a message is received
     #  @param message received
@@ -82,7 +84,10 @@ class SyncHandler(cyclone.websocket.WebSocketHandler):
     #  @param reason to indicate the reason of the closed instance
     def connectionLost(self, reason):
         print "WebSocket sync closed"
-        SyncManager.instance().isSocketOpen = False
+
+    def on_finish(self):
+        print "WebSocket finished"
+        SyncManager.instance().remove_listener(self)
 
 
 ## Tiles information handler
