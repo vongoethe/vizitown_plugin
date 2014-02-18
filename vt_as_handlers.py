@@ -1,8 +1,17 @@
+import os
 import json
 import cyclone.websocket
 from vt_utils_converter import PostgisToJSON
 from vt_as_provider_manager import ProviderManager
 from vt_as_sync import SyncManager
+
+
+## A static file handler which authorize cross origin
+class CorsStaticFileHandler(cyclone.web.StaticFileHandler):
+    def set_default_headers(self):
+        self.set_header('Access-Control-Allow-Origin', '*')
+        self.set_header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        self.set_header('Access-Control-Allow-Headers', 'X-Requested-With')
 
 
 ## A handler give initial parameters to the browser

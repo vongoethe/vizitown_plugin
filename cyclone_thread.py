@@ -6,7 +6,7 @@ import cyclone.web
 from cyclone.bottle import run, route, unrun
 
 from vt_test_handlers import PingHandler, EchoHandler
-from vt_as_handlers import DataHandler, SyncHandler, InitHandler, TilesInfoHandler
+from vt_as_handlers import *
 
 
 ## CycloneThread
@@ -29,14 +29,16 @@ class CycloneThread(QThread):
 
     def run(self):
         rastersPath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "rasters")
+        viewerPath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "vt_viewer")
         handlers = [
+            (r'/app/(.*)', CorsStaticFileHandler, {"path": viewerPath}),
             (r'/init', InitHandler, dict(initParam=self.initParam)),
             (r'/data', DataHandler),
             (r'/sync', SyncHandler),
         ]
         if self.GDALprocess and self.tilesInfo:
             handlers.append((r'/tiles_info', TilesInfoHandler, dict(GDALprocess=self.GDALprocess, tilesInfo=self.tilesInfo)))
-            handlers.append((r'/rasters/(.*)', cyclone.web.StaticFileHandler, {"path": rastersPath}))
+            handlers.append((r'/rasters/(.*)', CorsStaticFileHandler, {"path": rastersPath}))
         if self.debug:
             handlers.append((r'/test/echo', EchoHandler))
             handlers.append((r'/test/ping', PingHandler))
