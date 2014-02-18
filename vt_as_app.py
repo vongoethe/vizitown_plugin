@@ -36,6 +36,9 @@ class AppServer(QObject):
 
     ## Constructor.
     #  @param parent  the QObject parent
+    #  @param initParam  the initial parameter
+    #  @param GDALprocess  the GDAL process if exist
+    #  @param tilesInfo  the tiles informations if imagery data is include
     def __init__(self, parent, initParam, GDALprocess=None, tilesInfo=None):
         QObject.__init__(self, parent)
         self.rollbackImporter = None

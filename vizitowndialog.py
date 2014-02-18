@@ -50,6 +50,7 @@ def launch_gdal_process(dataSrcImg, dataSrcMnt, path, extent, tileSize=512, leve
 ## Vizitown dialog in QGIS GUI
 class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
+    ## The Constructor
     def __init__(self, extent):
         QtGui.QDialog.__init__(self)
         self.setupUi(self)
@@ -59,6 +60,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.GDALprocess = None
 
     ## Set the default extent
+    #  @param extent the extent to init the parameter
     def init_extent(self, extent):
         self.extent = extent
         self.le_xmin.setText("%.4f" % extent.xMinimum())
@@ -92,8 +94,6 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     def init_layers(self):
         self.reset_all_fields()
         layerListIems = QgsMapLayerRegistry().instance().mapLayers().items()
-        self.cb_dem.addItem("None")
-        self.cb_texture.addItem("None")
         for id, layer in layerListIems:
             if is_dem(layer):
                 self.cb_dem.addItem(layer.name(), layer)
@@ -114,6 +114,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     def reset_all_fields(self):
         self.cb_dem.clear()
         self.cb_texture.clear()
+        self.cb_dem.addItem("None")
+        self.cb_texture.addItem("None")
         self.tw_layers.setRowCount(0)
         self.tw_layers.setColumnWidth(0, 45)
         self.tw_layers.setColumnWidth(1, 150)
@@ -122,17 +124,19 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
     ## Return true if there is a DEM to generate
     def has_dem(self):
-        return self.cb_dem.count() > 0 and self.cb_dem.currentText() != "None"
+        return self.cb_dem.currentIndex() != 0
 
     ## Return true if there is a texture to generate
     def has_texture(self):
-        return self.cb_texture.count() > 0 and self.cb_texture.currentText() != "None"
+        return self.cb_texture.currentIndex() != 0
 
     ## Return true if there is a least one raster to generate
     def has_raster(self):
         return self.has_dem() or self.has_texture()
 
     ## Add vector layer in QTableWidget
+    #  @param item the new layer to add in the dic
+    #  @param dic the dic with the existant data
     def add_vector_layer(self, item, dic):
         self.tw_layers.insertRow(0)
         checkBox = QtGui.QTableWidgetItem()
@@ -181,7 +185,6 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.tw_layers.clear()
         self.tw_layers.setHorizontalHeaderLabels(('Display', 'Layer', 'Field'))
 
-
     ## Generate and launch the rendering of the 3D scene
     def on_btn_generate_released(self):
         if self.appServerRunning:
@@ -192,8 +195,12 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.create_raster_providers()
             viewerParam = build_viewer_param(self.get_gui_extent(), self.get_port(), self.has_raster())
             if self.has_raster():
-                demResource = ProviderManager.instance().dem.httpResource
-                textureResource = ProviderManager.instance().texture.httpResource
+                demResource = None
+                textureResource = None
+                if self.has_dem():
+                    demResource = ProviderManager.instance().dem.httpResource
+                if self.has_texture():
+                    textureResource = ProviderManager.instance().texture.httpResource
                 tilingParam = build_tiling_param(int(self.cb_zoom.currentText()), self.get_size_tile(), demResource, textureResource)
                 self.appServer = AppServer(self, viewerParam, self.GDALprocess, tilingParam)
             else:
