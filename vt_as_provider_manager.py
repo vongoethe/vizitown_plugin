@@ -27,17 +27,17 @@ class ProviderManager:
     #  @param prefix define the type of the data
     #  @param tileSize indicate the size of the tile
     #  @param zoomLevel indicate the value of zoom levels
-    #  @return a raster provider 
+    #  @return a raster provider
     def create_raster_provider(self, raster, port, prefix, tileSize, zoomLevel):
         httpResource = 'http://localhost:' + port + '/rasters/' + '_'.join([prefix, raster.name(), tileSize, zoomLevel])
         return RasterProvider(raster.name(), raster.extent(), raster.crs().postgisSrid(), raster.source(), httpResource)
 
     ## Request a tile for all his providers
-    #  @param Xmin 
-    #  @param Ymin 
-    #  @param Xmax 
+    #  @param Xmin
+    #  @param Ymin
+    #  @param Xmax
     #  @param Ymax
-    #  @return the tile 
+    #  @return the tile
     def request_tile(self, Xmin, Ymin, Xmax, Ymax):
         result = []
         for p in self.vectors:

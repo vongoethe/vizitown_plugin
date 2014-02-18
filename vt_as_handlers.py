@@ -105,7 +105,7 @@ class SyncHandler(cyclone.websocket.WebSocketHandler):
 class TilesInfoHandler(cyclone.websocket.WebSocketHandler):
 
     ## Method to initialize the handler
-    #  @param GDALprocess the process gdal 
+    #  @param GDALprocess the process gdal
     #  @param tilesInfo the dictionnary with the information about the data
     def initialize(self, GDALprocess, tilesInfo):
         self.GDALprocess = GDALprocess

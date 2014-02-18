@@ -69,9 +69,9 @@ class PostgisProvider:
                 raise Exception('DB request failed')
 
     ## Return all the result contains in the extent in param
-    #  @param Xmin 
-    #  @param Ymin 
-    #  @param Xmax 
+    #  @param Xmin
+    #  @param Ymin
+    #  @param Xmax
     #  @param Ymax
     #  @return the tile
     def request_tile(self, Xmin, Ymin, Xmax, Ymax):

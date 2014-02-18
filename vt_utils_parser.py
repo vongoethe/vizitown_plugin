@@ -20,5 +20,5 @@ def parse_vector(source, srid, color):
         'srid': srid,
         'table': m.group('table'),
         'column': m.group('column'),
-        'color' : color
+        'color': color
     }
