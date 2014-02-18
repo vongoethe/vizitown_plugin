@@ -50,6 +50,7 @@ def launch_gdal_process(dataSrcImg, dataSrcMnt, path, extent, tileSize=512, leve
 ## Vizitown dialog in QGIS GUI
 class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
+    ## The Constructor
     def __init__(self, extent):
         QtGui.QDialog.__init__(self)
         self.setupUi(self)
@@ -59,6 +60,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.GDALprocess = None
 
     ## Set the default extent
+    #  @param extent the extent to init the parameter
     def init_extent(self, extent):
         self.extent = extent
         self.le_xmin.setText("%.4f" % extent.xMinimum())
@@ -133,6 +135,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         return self.has_dem() or self.has_texture()
 
     ## Add vector layer in QTableWidget
+    #  @param item the new layer to add in the dic
+    #  @param dic the dic with the existant data
     def add_vector_layer(self, item, dic):
         self.tw_layers.insertRow(0)
         checkBox = QtGui.QTableWidgetItem()
