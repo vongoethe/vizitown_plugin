@@ -17,7 +17,7 @@ class PostgisProvider:
     #  @param table of the resource
     #  @param column of the resource
     #  @param column2 representing a height of column or another geometry (TinZ)
-    def __init__(self, host, dbname, port, user, password, srid, table, column, column2=None, column2Type=None):
+    def __init__(self, host, dbname, port, user, password, srid, table, column, color, column2=None, column2Type=None):
         self.db = QSqlDatabase.addDatabase("QPSQL")
         self.db.setHostName(host)
         self.db.setDatabaseName(dbname)
@@ -33,6 +33,7 @@ class PostgisProvider:
         self.geometry2 = None
         self.retGeometry = None
         self.hasH = False
+        self.color = color
 
         if not self.db.open():
             raise Exception('Connection to database cannot be established')
