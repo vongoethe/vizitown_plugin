@@ -270,7 +270,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.btn_generate.setText("Generate")
             self.appServerRunning = False
             SyncManager.instance().remove_all_listener()
-        if self.GDALprocess:
+        if self.GDALprocess and self.GDALprocess.is_alive():
             GDALDialog = QtGui.QMessageBox()
             GDALDialog.setIcon(QtGui.QMessageBox.Warning)
             GDALDialog.setText("The tiling process is not complete. Would you like to run the process in background to use the generated tile later ?")
