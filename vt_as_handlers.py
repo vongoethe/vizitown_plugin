@@ -113,16 +113,18 @@ class TilesInfoHandler(cyclone.websocket.WebSocketHandler):
 
     ## Method call when the websocket is opened
     def connectionMade(self):
-        if self.GDALprocess.is_alive():
+        if self.GDALprocess and self.GDALprocess.is_alive():
             print "Wait GDAL tiling ..."
             self.GDALprocess.join()
             print "Send tiles info ..."
 
+        if self.tilesInfo['dem']:
             demPixelSize = {}
             demLocation = os.path.join(os.path.dirname(__file__), 'rasters', os.path.basename(ProviderManager.instance().dem.httpResource))
             demPixelSize = self._list_pixel_size(0, demPixelSize, demLocation)
             self.tilesInfo['demPixelSize'] = demPixelSize
 
+        if self.tilesInfo['texture']:
             texturePixelSize = {}
             textureLocation = os.path.join(os.path.dirname(__file__), 'rasters', os.path.basename(ProviderManager.instance().texture.httpResource))
             texturePixelSize = self._list_pixel_size(0, texturePixelSize, textureLocation)
