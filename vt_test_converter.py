@@ -165,5 +165,4 @@ class translateX3D(unittest.TestCase):
         self.assertEqual(self.translator.nbFaces, 12)
 
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(translateX3D)
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    unittest.main()
