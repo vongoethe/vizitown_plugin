@@ -67,6 +67,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.le_ymin.setText("%.4f" % extent.yMinimum())
         self.le_xmax.setText("%.4f" % extent.xMaximum())
         self.le_ymax.setText("%.4f" % extent.yMaximum())
+        print "width : " + str(int(extent.width()))
+        print "height : " + str(int(extent.height()))
 
     ## Set the the of the combobox
     def init_tile_size(self):
@@ -98,7 +100,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             if is_dem(layer):
                 self.cb_dem.addItem(layer.name(), layer)
             if is_vector(layer):
-                layerColor = layer.rendererV2().symbol().color().name()
+                layerColor = str(layer.rendererV2().symbol().color().name())
                 srid = layer.crs().postgisSrid()
                 d = vt_utils_parser.parse_vector(layer.source(), srid, layerColor)
                 dic = PostgisProvider.get_columns_info_table(d['host'], d['dbname'], d['user'], d['password'], d['table'])
@@ -216,7 +218,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             # if the layer is checked
             if self.tw_layers.item(row_index, 0).checkState() == QtCore.Qt.Checked:
                 vectorLayer = self.tw_layers.item(row_index, 1).data(QtCore.Qt.UserRole)
-                layerColor = vectorLayer.rendererV2().symbol().color().name()
+                layerColor = str(vectorLayer.rendererV2().symbol().color().name())
                 srid = vectorLayer.crs().postgisSrid()
                 connection_info = vt_utils_parser.parse_vector(vectorLayer.source(), srid, layerColor)
                 column2 = self.tw_layers.cellWidget(row_index, 2).currentText()
