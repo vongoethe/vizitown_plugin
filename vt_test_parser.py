@@ -9,7 +9,7 @@ class TestParser(unittest.TestCase):
         """
 
     def test_parse_vector(self):
-        result = vt_utils_parser.parse_vector(self.source, "2154")
+        result = vt_utils_parser.parse_vector(self.source, "2154", "#000000")
         self.assertEqual(result['dbname'], 'data', 'Parsing dbname fail')
         self.assertEqual(result['host'], '12.12.12.12', 'Parsing host fail')
         self.assertEqual(result['port'], 5432, 'Parsing port fail')
