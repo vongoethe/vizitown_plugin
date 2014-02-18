@@ -102,7 +102,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             if is_dem(layer):
                 self.cb_dem.addItem(layer.name(), layer)
             if is_vector(layer):
-                layerColor = str(layer.rendererV2().symbol().color().name())
+                layerColor = getColor(layer)
                 srid = layer.crs().postgisSrid()
                 d = vt_utils_parser.parse_vector(layer.source(), srid, layerColor)
                 dic = PostgisProvider.get_columns_info_table(d['host'], d['dbname'], d['user'], d['password'], d['table'])
@@ -270,7 +270,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.btn_generate.setText("Generate")
             self.appServerRunning = False
             SyncManager.instance().remove_all_listener()
-        if self.GDALprocess:
+        if self.GDALprocess and self.GDALprocess.is_alive():
             GDALDialog = QtGui.QMessageBox()
             GDALDialog.setIcon(QtGui.QMessageBox.Warning)
             GDALDialog.setText("The tiling process is not complete. Would you like to run the process in background to use the generated tile later ?")

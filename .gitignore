@@ -1,4 +1,6 @@
 *.pyc
+GDAL_Process.err
+GDAL_Process.out
 ui_vizitown.ui.autosave
 rasters
 pep8.bat
