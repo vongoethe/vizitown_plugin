@@ -62,8 +62,7 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
                 if not v['it'].next():
                     break
 
-            json_ = translator.parse(array, v['geom'], v['hasH'])
-            array = []
+            json_ = translator.parse(array, v['geom'], v['hasH'], v['color'])
             self.sendMessage(json_)
 
     ## Method call when the websocket is closed

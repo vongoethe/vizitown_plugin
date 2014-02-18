@@ -101,7 +101,7 @@ class PostgisProvider:
             print query.lastError().text()
             raise Exception('DB request failed')
 
-        return {'it': query, 'geom': self.retGeometry, 'hasH': self.hasH}
+        return {'it': query, 'geom': self.retGeometry, 'hasH': self.hasH, 'color': self.color}
 
     ## _get_request send a request to catch the type of the data
     #  @return the request
