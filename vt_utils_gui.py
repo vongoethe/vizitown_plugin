@@ -52,3 +52,12 @@ def build_tiling_param(zoomLevel, tileSize, dem=None, texture=None):
 def open_web_browser(port):
     url = 'http://localhost:' + str(port) + '/app/index.html'
     webbrowser.open(url)
+
+
+## Get the color of the vector layer. If is categorized symbol or graduate symbol, the color is white
+def getColor(layer):
+    # By default the color is red
+    layerColor = "#FFFAFA"
+    if layer.rendererV2().type() == "singleSymbol":
+        layerColor = str(layer.rendererV2().symbol().color().name())
+    return layerColor
