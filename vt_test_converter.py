@@ -239,5 +239,4 @@ class translateJSON(unittest.TestCase):
         self.assertEqual(metadata['vertices'], 36)
 
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(translateJSON)
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    unittest.main()
