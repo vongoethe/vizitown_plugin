@@ -102,7 +102,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             if is_dem(layer):
                 self.cb_dem.addItem(layer.name(), layer)
             if is_vector(layer):
-                layerColor = str(layer.rendererV2().symbol().color().name())
+                layerColor = getColor(layer)
                 srid = layer.crs().postgisSrid()
                 d = vt_utils_parser.parse_vector(layer.source(), srid, layerColor)
                 dic = PostgisProvider.get_columns_info_table(d['host'], d['dbname'], d['user'], d['password'], d['table'])
