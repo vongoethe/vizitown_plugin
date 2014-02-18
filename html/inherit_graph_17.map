@@ -1,3 +1,8 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$class_git_app_server_1_1vt__utils__converter_1_1_postgis_to_j_s_o_n.html" title="PostgisToJSON class to converts an X3D formats in a json. " alt="" coords="5,5,189,46"/>
+<area shape="rect" id="node2" href="$class_git_app_server_1_1vt__test__converter_1_1translate_j_s_o_n.html" title="GitAppServer.vt_test\l_converter.translateJSON" alt="" coords="153,5,329,46"/>
+<area shape="rect" id="node3" href="$class_git_app_server_1_1vt__test__parser_1_1_test_parser.html" title="GitAppServer.vt_test\l_parser.TestParser" alt="" coords="169,70,314,111"/>
+<area shape="rect" id="node4" href="$class_git_app_server_1_1vt__test__providers_1_1_test_postgis_provider.html" title="GitAppServer.vt_test\l_providers.TestPostgisProvider" alt="" coords="138,135,345,177"/>
+<area shape="rect" id="node5" href="$class_git_app_server_1_1vt__test__providers_1_1_test_provider_manager.html" title="GitAppServer.vt_test\l_providers.TestProviderManager" alt="" coords="133,201,349,242"/>
+<area shape="rect" id="node6" href="$class_git_app_server_1_1vt__test__providers_1_1_test_raster_provider.html" title="GitAppServer.vt_test\l_providers.TestRasterProvider" alt="" coords="140,266,343,307"/>
+<area shape="rect" id="node7" href="$class_git_app_server_1_1vt__test__tiler_1_1_test_tiler.html" title="GitAppServer.vt_test\l_tiler.TestTiler" alt="" coords="169,331,314,373"/>
 </map>

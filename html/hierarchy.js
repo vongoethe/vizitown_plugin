@@ -26,6 +26,9 @@ var hierarchy =
       [ "GitAppServer.vt_test_handlers.PingHandler", "class_git_app_server_1_1vt__test__handlers_1_1_ping_handler.html", null ]
     ] ],
     [ "GitAppServer.vt_utils_singleton.Singleton", "class_git_app_server_1_1vt__utils__singleton_1_1_singleton.html", null ],
+    [ "StaticFileHandler", null, [
+      [ "GitAppServer.vt_as_handlers.CorsStaticFileHandler", "class_git_app_server_1_1vt__as__handlers_1_1_cors_static_file_handler.html", null ]
+    ] ],
     [ "GitAppServer.vt_as_sync.SyncManager", "class_git_app_server_1_1vt__as__sync_1_1_sync_manager.html", null ],
     [ "TestCase", null, [
       [ "GitAppServer.vt_test_converter.translateJSON", "class_git_app_server_1_1vt__test__converter_1_1translate_j_s_o_n.html", null ],

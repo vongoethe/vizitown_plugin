@@ -28,8 +28,8 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "____init_____8py.html",
-"class_git_app_server_1_1vt__test__converter_1_1translate_j_s_o_n.html#a75763527754622914e75c074395d3a86",
-"namespace_git_app_server_1_1vt__utils__singleton.html"
+"class_git_app_server_1_1vt__test__converter_1_1translate_j_s_o_n.html#a500deae86cae6f26891e8453cc46de40",
+"namespace_git_app_server_1_1vt__utils__gui.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
