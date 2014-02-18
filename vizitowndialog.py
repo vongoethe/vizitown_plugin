@@ -67,8 +67,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.le_ymin.setText("%.4f" % extent.yMinimum())
         self.le_xmax.setText("%.4f" % extent.xMaximum())
         self.le_ymax.setText("%.4f" % extent.yMaximum())
-        print "width : " + str(int(extent.width()))
-        print "height : " + str(int(extent.height()))
+        self.lb_width.setText(str(int(extent.width())))
+        self.lb_height.setText(str(int(extent.height())))
 
     ## Set the the of the combobox
     def init_tile_size(self):
