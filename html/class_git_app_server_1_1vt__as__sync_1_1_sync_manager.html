@@ -124,8 +124,6 @@ $(document).ready(function(){initNavTree('class_git_app_server_1_1vt__as__sync_1
 Collaboration diagram for GitAppServer.vt_as_sync.SyncManager:</div>
 <div class="dyncontent">
 <div class="center"><img src="class_git_app_server_1_1vt__as__sync_1_1_sync_manager__coll__graph.png" border="0" usemap="#_git_app_server_8vt__as__sync_8_sync_manager_coll__map" alt="Collaboration graph"/></div>
-<map name="_git_app_server_8vt__as__sync_8_sync_manager_coll__map" id="_git_app_server_8vt__as__sync_8_sync_manager_coll__map">
-</map>
 </div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
@@ -135,6 +133,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a4138322c823c4d847a9df3edd9ab64d0"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_git_app_server_1_1vt__as__sync_1_1_sync_manager.html#a4138322c823c4d847a9df3edd9ab64d0">add_listener</a></td></tr>
 <tr class="memdesc:a4138322c823c4d847a9df3edd9ab64d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Record a websocket as listener for sync.  <a href="#a4138322c823c4d847a9df3edd9ab64d0">More...</a><br/></td></tr>
 <tr class="separator:a4138322c823c4d847a9df3edd9ab64d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e0345170fb5f0455af2954246921ef9"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_git_app_server_1_1vt__as__sync_1_1_sync_manager.html#a9e0345170fb5f0455af2954246921ef9">remove_all_listener</a></td></tr>
+<tr class="memdesc:a9e0345170fb5f0455af2954246921ef9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Delete a listener for sync.  <a href="#a9e0345170fb5f0455af2954246921ef9">More...</a><br/></td></tr>
+<tr class="separator:a9e0345170fb5f0455af2954246921ef9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0067a2bc7e9129f288729bae3071fb29"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_git_app_server_1_1vt__as__sync_1_1_sync_manager.html#a0067a2bc7e9129f288729bae3071fb29">notify_extent_change</a></td></tr>
 <tr class="memdesc:a0067a2bc7e9129f288729bae3071fb29"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send new extent with all websockets stored.  <a href="#a0067a2bc7e9129f288729bae3071fb29">More...</a><br/></td></tr>
 <tr class="separator:a0067a2bc7e9129f288729bae3071fb29"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -143,8 +144,6 @@ Public Member Functions</h2></td></tr>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a43c0975c49a0417f691571c62f8170c6"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_git_app_server_1_1vt__as__sync_1_1_sync_manager.html#a43c0975c49a0417f691571c62f8170c6">websockets</a></td></tr>
 <tr class="separator:a43c0975c49a0417f691571c62f8170c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a86936f255ae022f5d3d187854cdec862"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_git_app_server_1_1vt__as__sync_1_1_sync_manager.html#a86936f255ae022f5d3d187854cdec862">isSocketOpen</a></td></tr>
-<tr class="separator:a86936f255ae022f5d3d187854cdec862"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p><a class="el" href="class_git_app_server_1_1vt__as__sync_1_1_sync_manager.html" title="SyncManager A singleton to store websockets who want to be registered as listener of QGIS extent chan...">SyncManager</a> A singleton to store websockets who want to be registered as listener of QGIS extent changes. </p>
@@ -222,19 +221,25 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<h2 class="groupheader">Member Data Documentation</h2>
-<a class="anchor" id="a86936f255ae022f5d3d187854cdec862"></a>
+<a class="anchor" id="a9e0345170fb5f0455af2954246921ef9"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">GitAppServer.vt_as_sync.SyncManager.isSocketOpen</td>
+          <td class="memname">def GitAppServer.vt_as_sync.SyncManager.remove_all_listener </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>self</em></td><td>)</td>
+          <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
+<p>Delete a listener for sync. </p>
+
 </div>
 </div>
+<h2 class="groupheader">Member Data Documentation</h2>
 <a class="anchor" id="a43c0975c49a0417f691571c62f8170c6"></a>
 <div class="memitem">
 <div class="memproto">
@@ -256,7 +261,7 @@ Public Attributes</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespace_git_app_server.html">GitAppServer</a></li><li class="navelem"><a class="el" href="namespace_git_app_server_1_1vt__as__sync.html">vt_as_sync</a></li><li class="navelem"><a class="el" href="class_git_app_server_1_1vt__as__sync_1_1_sync_manager.html">SyncManager</a></li>
-    <li class="footer">Generated on Sat Feb 15 2014 17:30:12 for Vizitown by
+    <li class="footer">Generated on Tue Feb 18 2014 14:34:07 for Vizitown by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

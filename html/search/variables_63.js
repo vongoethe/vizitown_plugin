@@ -7,6 +7,7 @@ var searchData=
   ['cb_5ftile',['cb_tile',['../class_git_app_server_1_1ui__vizitown_1_1_ui___vizitown.html#a0e5d22457a8062433b6c7a3112873f75',1,'GitAppServer::ui_vizitown::Ui_Vizitown']]],
   ['cb_5fzoom',['cb_zoom',['../class_git_app_server_1_1ui__vizitown_1_1_ui___vizitown.html#a02f7d4996a388d4a9580241ae769e43f',1,'GitAppServer::ui_vizitown::Ui_Vizitown']]],
   ['ci',['ci',['../class_git_app_server_1_1gdal__retile_1_1mosaic__info.html#a7f805cd2c21d12ed860c91c8c925ba27',1,'GitAppServer::gdal_retile::mosaic_info']]],
+  ['color',['color',['../class_git_app_server_1_1vt__as__provider__postgis_1_1_postgis_provider.html#a4e470f4ba3bad3dbee280f174c13811d',1,'GitAppServer::vt_as_provider_postgis::PostgisProvider']]],
   ['column',['column',['../class_git_app_server_1_1vt__as__provider__postgis_1_1_postgis_provider.html#a50c6593872d9b7438cc3dbfdb7cb6de2',1,'GitAppServer.vt_as_provider_postgis.PostgisProvider.column()'],['../class_git_app_server_1_1vt__test__providers_1_1_test_postgis_provider.html#a4d832a9c66b1fc92bb49e3f2ac94751e',1,'GitAppServer.vt_test_providers.TestPostgisProvider.column()']]],
   ['column2',['column2',['../class_git_app_server_1_1vt__as__provider__postgis_1_1_postgis_provider.html#a253648128c940ff1ed9813018eb52c43',1,'GitAppServer::vt_as_provider_postgis::PostgisProvider']]],
   ['column2type',['column2Type',['../class_git_app_server_1_1vt__as__provider__postgis_1_1_postgis_provider.html#aaa82edbf958036401c6bf91729da2348',1,'GitAppServer::vt_as_provider_postgis::PostgisProvider']]],

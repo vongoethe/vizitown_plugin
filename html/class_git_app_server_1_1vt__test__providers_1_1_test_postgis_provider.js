@@ -8,6 +8,7 @@ var class_git_app_server_1_1vt__test__providers_1_1_test_postgis_provider =
     [ "host", "class_git_app_server_1_1vt__test__providers_1_1_test_postgis_provider.html#a8b6993d74fe86b4145cd91f1c718fd47", null ],
     [ "p", "class_git_app_server_1_1vt__test__providers_1_1_test_postgis_provider.html#a5531a0c1d4304b3dd39907e73e746e30", null ],
     [ "password", "class_git_app_server_1_1vt__test__providers_1_1_test_postgis_provider.html#ada2c9c2c0fd140ef7dd4798e7e7a462f", null ],
+    [ "port", "class_git_app_server_1_1vt__test__providers_1_1_test_postgis_provider.html#acdd173e3a8645fc234dd953b07ada88b", null ],
     [ "srid", "class_git_app_server_1_1vt__test__providers_1_1_test_postgis_provider.html#a2296f8547dd573d52beb5abb9b0fc245", null ],
     [ "table", "class_git_app_server_1_1vt__test__providers_1_1_test_postgis_provider.html#a0c8572d214bd24a5e9c149d535faee64", null ],
     [ "user", "class_git_app_server_1_1vt__test__providers_1_1_test_postgis_provider.html#ae04f495af37e18a15c44fb5ad459cab9", null ]

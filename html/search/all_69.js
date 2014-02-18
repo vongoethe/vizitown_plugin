@@ -16,6 +16,5 @@ var searchData=
   ['is_5fdem',['is_dem',['../namespace_git_app_server_1_1vt__utils__gui.html#a519ce49c792509932c4206025da151ec',1,'GitAppServer::vt_utils_gui']]],
   ['is_5fraster',['is_raster',['../namespace_git_app_server_1_1vt__utils__gui.html#afeb00683d53093b8b40f2cde006c6baf',1,'GitAppServer::vt_utils_gui']]],
   ['is_5ftexture',['is_texture',['../namespace_git_app_server_1_1vt__utils__gui.html#a0ee80193b75b34a8222c3730f49d6fa5',1,'GitAppServer::vt_utils_gui']]],
-  ['is_5fvector',['is_vector',['../namespace_git_app_server_1_1vt__utils__gui.html#a4a999daf68a34913e6ecd1cda32128c4',1,'GitAppServer::vt_utils_gui']]],
-  ['issocketopen',['isSocketOpen',['../class_git_app_server_1_1vt__as__sync_1_1_sync_manager.html#a86936f255ae022f5d3d187854cdec862',1,'GitAppServer::vt_as_sync::SyncManager']]]
+  ['is_5fvector',['is_vector',['../namespace_git_app_server_1_1vt__utils__gui.html#a4a999daf68a34913e6ecd1cda32128c4',1,'GitAppServer::vt_utils_gui']]]
 ];

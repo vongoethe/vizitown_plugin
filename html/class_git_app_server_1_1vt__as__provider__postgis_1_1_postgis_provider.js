@@ -8,6 +8,7 @@ var class_git_app_server_1_1vt__as__provider__postgis_1_1_postgis_provider =
     [ "_request_tin", "class_git_app_server_1_1vt__as__provider__postgis_1_1_postgis_provider.html#af54e7e6de74f8289fea526ebd512a0ff", null ],
     [ "get_columns_info_table", "class_git_app_server_1_1vt__as__provider__postgis_1_1_postgis_provider.html#af9fadf86f06e39dd7232629124fac1c9", null ],
     [ "request_tile", "class_git_app_server_1_1vt__as__provider__postgis_1_1_postgis_provider.html#a8dc07663a19c502b0c628b437fc113b1", null ],
+    [ "color", "class_git_app_server_1_1vt__as__provider__postgis_1_1_postgis_provider.html#a4e470f4ba3bad3dbee280f174c13811d", null ],
     [ "column", "class_git_app_server_1_1vt__as__provider__postgis_1_1_postgis_provider.html#a50c6593872d9b7438cc3dbfdb7cb6de2", null ],
     [ "column2", "class_git_app_server_1_1vt__as__provider__postgis_1_1_postgis_provider.html#a253648128c940ff1ed9813018eb52c43", null ],
     [ "column2Type", "class_git_app_server_1_1vt__as__provider__postgis_1_1_postgis_provider.html#aaa82edbf958036401c6bf91729da2348", null ],
