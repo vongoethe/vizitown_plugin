@@ -44,6 +44,8 @@ from vt_utils_gui import *
 
 ## A intermediate method too launch process without import issue on windows
 def launch_gdal_process(dataSrcImg, dataSrcMnt, path, extent, tileSize=512, levels=2):
+    sys.stderr = open(os.path.join(os.path.dirname(__file__), "GDAL_Process.err"), "w")
+    sys.stdout = open(os.path.join(os.path.dirname(__file__), "GDAL_Process.out"), "w")
     TileGenerator.launch_process(dataSrcImg, dataSrcMnt, path, extent, tileSize, levels)
 
 
@@ -253,8 +255,10 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
                 pythonPath = os.path.abspath(os.path.join(sys.exec_prefix, '../../bin/pythonw.exe'))
                 mp.set_executable(pythonPath)
                 sys.argv = [None]
-            self.GDALprocess = mp.Process(target=launch_gdal_process, args=(dataSrcImg, dataSrcMnt, path, extent, tileSize, int(zoomLevel)))
-            self.GDALprocess.start()
+            if (TileGenerator._check_existing_dir(dataSrcImg, dataSrcMnt, path, tileSize, int(zoomLevel)) != 0):
+                print "GDALprocess Start"
+                self.GDALprocess = mp.Process(target=launch_gdal_process, args=(dataSrcImg, dataSrcMnt, path, extent, tileSize, int(zoomLevel)))
+                self.GDALprocess.start()
 
     ## Behavior whit a close event
     #  @override QtGui.QDialog
