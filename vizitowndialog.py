@@ -50,6 +50,7 @@ def launch_gdal_process(dataSrcImg, dataSrcMnt, path, extent, tileSize=512, leve
 ## Vizitown dialog in QGIS GUI
 class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
+    ## The Constructor
     def __init__(self, extent):
         QtGui.QDialog.__init__(self)
         self.setupUi(self)
@@ -59,6 +60,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.GDALprocess = None
 
     ## Set the default extent
+    #  @param extent the extent to init the parameter
     def init_extent(self, extent):
         self.extent = extent
         self.le_xmin.setText("%.4f" % extent.xMinimum())
@@ -96,8 +98,9 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             if is_dem(layer):
                 self.cb_dem.addItem(layer.name(), layer)
             if is_vector(layer):
+                layerColor = layer.rendererV2().symbol().color().name()
                 srid = layer.crs().postgisSrid()
-                d = vt_utils_parser.parse_vector(layer.source(), srid)
+                d = vt_utils_parser.parse_vector(layer.source(), srid, layerColor)
                 dic = PostgisProvider.get_columns_info_table(d['host'], d['dbname'], d['user'], d['password'], d['table'])
                 name = layer.name() + ' ' + re.search("(\(.*\)+)", layer.source()).group(0)
                 item = QtGui.QTableWidgetItem(name)
@@ -114,7 +117,6 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.cb_dem.addItem("None")
         self.cb_texture.addItem("None")
         self.tw_layers.setRowCount(0)
-        self.tw_layers.setHorizontalHeaderLabels(('Display', 'Layer', 'Field'))
         self.tw_layers.setColumnWidth(0, 45)
         self.tw_layers.setColumnWidth(1, 150)
         # set column name of tw_layers
@@ -133,6 +135,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         return self.has_dem() or self.has_texture()
 
     ## Add vector layer in QTableWidget
+    #  @param item the new layer to add in the dic
+    #  @param dic the dic with the existant data
     def add_vector_layer(self, item, dic):
         self.tw_layers.insertRow(0)
         checkBox = QtGui.QTableWidgetItem()
@@ -212,9 +216,9 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             # if the layer is checked
             if self.tw_layers.item(row_index, 0).checkState() == QtCore.Qt.Checked:
                 vectorLayer = self.tw_layers.item(row_index, 1).data(QtCore.Qt.UserRole)
+                layerColor = vectorLayer.rendererV2().symbol().color().name()
                 srid = vectorLayer.crs().postgisSrid()
-                connection_info = vt_utils_parser.parse_vector(vectorLayer.source(), srid)
-
+                connection_info = vt_utils_parser.parse_vector(vectorLayer.source(), srid, layerColor)
                 column2 = self.tw_layers.cellWidget(row_index, 2).currentText()
                 if column2 == "None":
                     provider = PostgisProvider(**connection_info)

@@ -7,6 +7,7 @@ from PyQt4.QtSql import *
 ## Postgis provider
 #  Stock the attribute to use a postgis resource
 class PostgisProvider:
+
     ## Constructor
     #  @param host database host
     #  @param dbname database name
@@ -16,7 +17,7 @@ class PostgisProvider:
     #  @param table of the resource
     #  @param column of the resource
     #  @param column2 representing a height of column or another geometry (TinZ)
-    def __init__(self, host, dbname, port, user, password, srid, table, column, column2=None, column2Type=None):
+    def __init__(self, host, dbname, port, user, password, srid, table, column, color, column2=None, column2Type=None):
         self.db = QSqlDatabase.addDatabase("QPSQL")
         self.db.setHostName(host)
         self.db.setDatabaseName(dbname)
@@ -32,6 +33,7 @@ class PostgisProvider:
         self.geometry2 = None
         self.retGeometry = None
         self.hasH = False
+        self.color = color
 
         if not self.db.open():
             raise Exception('Connection to database cannot be established')
@@ -67,6 +69,11 @@ class PostgisProvider:
                 raise Exception('DB request failed')
 
     ## Return all the result contains in the extent in param
+    #  @param Xmin
+    #  @param Ymin
+    #  @param Xmax
+    #  @param Ymax
+    #  @return the tile
     def request_tile(self, Xmin, Ymin, Xmax, Ymax):
         query = QSqlQuery(self.db)
         request = ""
@@ -96,6 +103,8 @@ class PostgisProvider:
 
         return {'it': query, 'geom': self.retGeometry, 'hasH': self.hasH}
 
+    ## _get_request send a request to catch the type of the data
+    #  @return the request
     def _get_request(self):
         if (self.geometry1 == 'TIN' or
                 self.geometry2 == 'TIN'):
@@ -126,6 +135,8 @@ class PostgisProvider:
 
         return request
 
+    ## _request_point_line to request point or line data
+    #  @return the request for data point or line
     def _request_point_line(self):
         if self.column2 is None or self.column2Type == 'geometry':
             return """SELECT ST_AsX3D(ST_Force3D({column_})) FROM {table_}
@@ -139,6 +150,8 @@ class PostgisProvider:
                        hcolumn_=self.column2,
                        table_=self.table)
 
+    ## _request_polygon to request polygon data
+    #  @return the request for data polygon
     def _request_polygon(self):
         if self.column2 is None or self.column2Type == 'geometry':
             return """SELECT ST_AsGeoJSON(ST_Force3D({column_})) FROM {table_}
@@ -152,6 +165,8 @@ class PostgisProvider:
                        hcolumn_=self.column2,
                        table_=self.table)
 
+    ## _request_point_line to request polyhedral data
+    #  @return the request for data polyhedral
     def _request_polyh(self):
         # SHOULD BE PATIENT
         if self.geometry1 == 'POLYHEDRALSURFACE':
@@ -162,6 +177,8 @@ class PostgisProvider:
         """.format(column_=col,
                    table_=self.table)
 
+    ## _request_point_line to request tin data
+    #  @return the request for data tin
     def _request_tin(self):
         if self.geometry1 == 'TIN':
             col = self.column
@@ -172,6 +189,12 @@ class PostgisProvider:
                    table_=self.table)
 
     ## Return columns and types of a specific table
+    #  @param host to define the host of the database
+    #  @param dbname to define the database
+    #  @param user to define the user of the database
+    #  @param password to define the password of the user
+    #  @param table to define the table in the database
+    #  @return the result of the request
     @staticmethod
     def get_columns_info_table(host, dbname, user, password, table):
         db = QSqlDatabase.addDatabase("QPSQL")

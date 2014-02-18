@@ -6,7 +6,7 @@ import re
 #  return vectors informations into QGIS
 #  @param source String information to query the database
 #  @return String with vectors informations
-def parse_vector(source, srid):
+def parse_vector(source, srid, color):
     m = re.match(r"""
     \s*dbname='(?P<dbname>.*?)'\s*host=(?P<host>\d+.\d+.\d+.\d+)\s*port=(?P<port>\d+)
     \s*user='(?P<user>.*?)'\s*password='(?P<password>.*?)'\s*.*
@@ -20,4 +20,5 @@ def parse_vector(source, srid):
         'srid': srid,
         'table': m.group('table'),
         'column': m.group('column'),
+        'color': color
     }
