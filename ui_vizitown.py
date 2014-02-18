@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_vizitown.ui'
 #
-# Created: Tue Feb 18 14:00:33 2014
+# Created: Tue Feb 18 14:22:34 2014
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -157,18 +157,18 @@ class Ui_Vizitown(object):
         self.gridLayout_4.addWidget(self.le_ymin, 5, 1, 1, 3)
         self.label = QtGui.QLabel(self.extent)
         self.label.setObjectName(_fromUtf8("label"))
-        self.gridLayout_4.addWidget(self.label, 6, 0, 1, 2)
+        self.gridLayout_4.addWidget(self.label, 6, 0, 1, 1)
         self.lb_height = QtGui.QLabel(self.extent)
         self.lb_height.setText(_fromUtf8(""))
         self.lb_height.setObjectName(_fromUtf8("lb_height"))
-        self.gridLayout_4.addWidget(self.lb_height, 6, 3, 1, 2)
+        self.gridLayout_4.addWidget(self.lb_height, 6, 3, 1, 1)
         self.label_2 = QtGui.QLabel(self.extent)
         self.label_2.setObjectName(_fromUtf8("label_2"))
-        self.gridLayout_4.addWidget(self.label_2, 7, 0, 1, 2)
+        self.gridLayout_4.addWidget(self.label_2, 7, 0, 1, 1)
         self.lb_width = QtGui.QLabel(self.extent)
         self.lb_width.setText(_fromUtf8(""))
         self.lb_width.setObjectName(_fromUtf8("lb_width"))
-        self.gridLayout_4.addWidget(self.lb_width, 7, 3, 1, 2)
+        self.gridLayout_4.addWidget(self.lb_width, 7, 3, 1, 1)
         spacerItem1 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.gridLayout_4.addItem(spacerItem1, 8, 2, 1, 1)
         self.tabWidget.addTab(self.extent, _fromUtf8(""))
@@ -215,8 +215,8 @@ class Ui_Vizitown(object):
         self.label_11.setText(_translate("Vizitown", "Xmin", None))
         self.label_13.setText(_translate("Vizitown", "Xmax", None))
         self.label_12.setText(_translate("Vizitown", "Ymin", None))
-        self.label.setText(_translate("Vizitown", "Height", None))
-        self.label_2.setText(_translate("Vizitown", "Width", None))
+        self.label.setText(_translate("Vizitown", "Height (in meters) :", None))
+        self.label_2.setText(_translate("Vizitown", "Width (in meters) :", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.extent), _translate("Vizitown", "Extent", None))
         self.btn_generate.setText(_translate("Vizitown", "Generate", None))
 
