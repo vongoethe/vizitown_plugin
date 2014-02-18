@@ -50,7 +50,7 @@ class PostgisToJSON:
 
         self._jsonExchange = """{
     "type"          : "{TYPE}",
-    "color"         : {COLOR},
+    "color"         : "{COLOR}",
     "geometries"    : [{JSON_GEOM}]
 }"""
 
