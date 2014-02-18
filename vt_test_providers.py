@@ -26,7 +26,8 @@ class TestPostgisProvider(unittest.TestCase):
         self.srid = "2154"
         self.table = "test"
         self.column = "geom"
-        self.p = PostgisProvider(self.host, self.dbname, self.port, self.user, self.password, self.srid, self.table, self.column)
+        self.color = "#000000"
+        self.p = PostgisProvider(self.host, self.dbname, self.port, self.user, self.password, self.srid, self.table, self.column, self.color)
 
     def test_connection(self):
         assert self.p.db.open()

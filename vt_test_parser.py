@@ -20,5 +20,4 @@ class TestParser(unittest.TestCase):
         self.assertEqual(result['column'], 'geom', 'Parsing column fail')
 
 if __name__ == "__main__":
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestParser)
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    unittest.main()
