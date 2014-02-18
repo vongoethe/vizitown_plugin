@@ -39,15 +39,17 @@ var files =
       [ "PingHandler", "class_git_app_server_1_1vt__test__handlers_1_1_ping_handler.html", "class_git_app_server_1_1vt__test__handlers_1_1_ping_handler" ],
       [ "EchoHandler", "class_git_app_server_1_1vt__test__handlers_1_1_echo_handler.html", "class_git_app_server_1_1vt__test__handlers_1_1_echo_handler" ]
     ] ],
-    [ "vt_test_parser.py", "vt__test__parser_8py.html", [
-      [ "TestParser", "class_git_app_server_1_1vt__test__parser_1_1_test_parser.html", "class_git_app_server_1_1vt__test__parser_1_1_test_parser" ]
+    [ "vt_test_parser.py", "vt__test__parser_8py.html", "vt__test__parser_8py" ],
+    [ "vt_test_providers.py", "vt__test__providers_8py.html", [
+      [ "TestProviderManager", "class_git_app_server_1_1vt__test__providers_1_1_test_provider_manager.html", "class_git_app_server_1_1vt__test__providers_1_1_test_provider_manager" ],
+      [ "TestPostgisProvider", "class_git_app_server_1_1vt__test__providers_1_1_test_postgis_provider.html", "class_git_app_server_1_1vt__test__providers_1_1_test_postgis_provider" ],
+      [ "TestRasterProvider", "class_git_app_server_1_1vt__test__providers_1_1_test_raster_provider.html", "class_git_app_server_1_1vt__test__providers_1_1_test_raster_provider" ]
     ] ],
-    [ "vt_test_providers.py", "vt__test__providers_8py.html", "vt__test__providers_8py" ],
     [ "vt_test_tiler.py", "vt__test__tiler_8py.html", [
       [ "TestTiler", "class_git_app_server_1_1vt__test__tiler_1_1_test_tiler.html", "class_git_app_server_1_1vt__test__tiler_1_1_test_tiler" ]
     ] ],
     [ "vt_utils_converter.py", "vt__utils__converter_8py.html", [
-      [ "X3DTranslateToThreeJs", "class_git_app_server_1_1vt__utils__converter_1_1_x3_d_translate_to_three_js.html", "class_git_app_server_1_1vt__utils__converter_1_1_x3_d_translate_to_three_js" ]
+      [ "PostgisToJSON", "class_git_app_server_1_1vt__utils__converter_1_1_postgis_to_j_s_o_n.html", "class_git_app_server_1_1vt__utils__converter_1_1_postgis_to_j_s_o_n" ]
     ] ],
     [ "vt_utils_gui.py", "vt__utils__gui_8py.html", "vt__utils__gui_8py" ],
     [ "vt_utils_parser.py", "vt__utils__parser_8py.html", "vt__utils__parser_8py" ],

@@ -8,5 +8,5 @@ var searchData=
   ['tile_5finfo',['tile_info',['../class_git_app_server_1_1gdal__retile_1_1tile__info.html',1,'GitAppServer::gdal_retile']]],
   ['tilegenerator',['TileGenerator',['../class_git_app_server_1_1vt__utils__tiler_1_1_tile_generator.html',1,'GitAppServer::vt_utils_tiler']]],
   ['tilesinfohandler',['TilesInfoHandler',['../class_git_app_server_1_1vt__as__handlers_1_1_tiles_info_handler.html',1,'GitAppServer::vt_as_handlers']]],
-  ['translatex3d',['translateX3D',['../class_git_app_server_1_1vt__test__converter_1_1translate_x3_d.html',1,'GitAppServer::vt_test_converter']]]
+  ['translatejson',['translateJSON',['../class_git_app_server_1_1vt__test__converter_1_1translate_j_s_o_n.html',1,'GitAppServer::vt_test_converter']]]
 ];

@@ -9,6 +9,7 @@ var hierarchy =
       [ "GitAppServer.vt_as_app.RollbackImporter", "class_git_app_server_1_1vt__as__app_1_1_rollback_importer.html", null ]
     ] ],
     [ "GitAppServer.vt_as_provider_postgis.PostgisProvider", "class_git_app_server_1_1vt__as__provider__postgis_1_1_postgis_provider.html", null ],
+    [ "GitAppServer.vt_utils_converter.PostgisToJSON", "class_git_app_server_1_1vt__utils__converter_1_1_postgis_to_j_s_o_n.html", null ],
     [ "GitAppServer.vt_as_provider_manager.ProviderManager", "class_git_app_server_1_1vt__as__provider__manager_1_1_provider_manager.html", null ],
     [ "QDialog", null, [
       [ "GitAppServer.vizitowndialog.VizitownDialog", "class_git_app_server_1_1vizitowndialog_1_1_vizitown_dialog.html", null ]
@@ -27,7 +28,7 @@ var hierarchy =
     [ "GitAppServer.vt_utils_singleton.Singleton", "class_git_app_server_1_1vt__utils__singleton_1_1_singleton.html", null ],
     [ "GitAppServer.vt_as_sync.SyncManager", "class_git_app_server_1_1vt__as__sync_1_1_sync_manager.html", null ],
     [ "TestCase", null, [
-      [ "GitAppServer.vt_test_converter.translateX3D", "class_git_app_server_1_1vt__test__converter_1_1translate_x3_d.html", null ],
+      [ "GitAppServer.vt_test_converter.translateJSON", "class_git_app_server_1_1vt__test__converter_1_1translate_j_s_o_n.html", null ],
       [ "GitAppServer.vt_test_parser.TestParser", "class_git_app_server_1_1vt__test__parser_1_1_test_parser.html", null ],
       [ "GitAppServer.vt_test_providers.TestPostgisProvider", "class_git_app_server_1_1vt__test__providers_1_1_test_postgis_provider.html", null ],
       [ "GitAppServer.vt_test_providers.TestProviderManager", "class_git_app_server_1_1vt__test__providers_1_1_test_provider_manager.html", null ],
@@ -43,7 +44,6 @@ var hierarchy =
       [ "GitAppServer.vt_as_handlers.TilesInfoHandler", "class_git_app_server_1_1vt__as__handlers_1_1_tiles_info_handler.html", null ],
       [ "GitAppServer.vt_test_handlers.EchoHandler", "class_git_app_server_1_1vt__test__handlers_1_1_echo_handler.html", null ]
     ] ],
-    [ "GitAppServer.vt_utils_converter.X3DTranslateToThreeJs", "class_git_app_server_1_1vt__utils__converter_1_1_x3_d_translate_to_three_js.html", null ],
     [ "Ui_Vizitown", null, [
       [ "GitAppServer.vizitowndialog.VizitownDialog", "class_git_app_server_1_1vizitowndialog_1_1_vizitown_dialog.html", null ]
     ] ]
