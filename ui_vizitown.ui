@@ -24,7 +24,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="Layers">
       <attribute name="title">
@@ -138,7 +138,7 @@
           <item>
            <widget class="QLineEdit" name="le_port">
             <property name="inputMask">
-             <string>00000; </string>
+             <string>00000</string>
             </property>
             <property name="text">
              <string>8888</string>
@@ -193,55 +193,17 @@
       </layout>
      </widget>
      <widget class="QWidget" name="extent">
+      <property name="minimumSize">
+       <size>
+        <width>452</width>
+        <height>0</height>
+       </size>
+      </property>
       <attribute name="title">
        <string>Extent</string>
       </attribute>
-      <layout class="QGridLayout" name="gridLayout_6">
-       <item row="2" column="2">
-        <widget class="QLabel" name="label_11">
-         <property name="text">
-          <string>Xmin</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="5">
-        <widget class="QLabel" name="label_13">
-         <property name="text">
-          <string>Xmax</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="3">
-        <widget class="QLabel" name="label_12">
-         <property name="text">
-          <string>Ymin</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="3">
-        <widget class="QLineEdit" name="le_ymax">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="5">
-        <widget class="QLineEdit" name="le_xmax">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="3">
+      <layout class="QGridLayout" name="gridLayout_4">
+       <item row="0" column="1">
         <widget class="QLabel" name="label_14">
          <property name="text">
           <string>Ymax</string>
@@ -251,21 +213,93 @@
          </property>
         </widget>
        </item>
-       <item row="5" column="3">
-        <widget class="QLineEdit" name="le_ymin">
+       <item row="1" column="1" colspan="3">
+        <widget class="QLineEdit" name="le_ymax">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
-       <item row="3" column="2">
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_11">
+         <property name="text">
+          <string>Xmin</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="4">
+        <widget class="QLabel" name="label_13">
+         <property name="text">
+          <string>Xmax</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
         <widget class="QLineEdit" name="le_xmin">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
-       <item row="6" column="3">
+       <item row="3" column="4">
+        <widget class="QLineEdit" name="le_xmax">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QLabel" name="label_12">
+         <property name="text">
+          <string>Ymin</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1" colspan="3">
+        <widget class="QLineEdit" name="le_ymin">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0" colspan="2">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Height</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="3" colspan="2">
+        <widget class="QLabel" name="lb_height">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="0" colspan="2">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Width</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="3" colspan="2">
+        <widget class="QLabel" name="lb_width">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="2">
         <spacer name="verticalSpacer_2">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
