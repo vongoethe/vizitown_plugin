@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_vizitown.ui'
 #
-# Created: Mon Feb 17 15:32:51 2014
+# Created: Mon Feb 17 17:40:58 2014
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -93,6 +93,7 @@ class Ui_Vizitown(object):
         self.horizontalLayout_3.addItem(spacerItem)
         self.le_port = QtGui.QLineEdit(self.groupBox_4)
         self.le_port.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.le_port.setCursorMoveStyle(QtCore.Qt.LogicalMoveStyle)
         self.le_port.setObjectName(_fromUtf8("le_port"))
         self.horizontalLayout_3.addWidget(self.le_port)
         self.verticalLayout_3.addWidget(self.groupBox_4)
@@ -122,12 +123,15 @@ class Ui_Vizitown(object):
         self.gridLayout_6 = QtGui.QGridLayout(self.extent)
         self.gridLayout_6.setObjectName(_fromUtf8("gridLayout_6"))
         self.label_11 = QtGui.QLabel(self.extent)
+        self.label_11.setAlignment(QtCore.Qt.AlignCenter)
         self.label_11.setObjectName(_fromUtf8("label_11"))
         self.gridLayout_6.addWidget(self.label_11, 2, 2, 1, 1)
         self.label_13 = QtGui.QLabel(self.extent)
+        self.label_13.setAlignment(QtCore.Qt.AlignCenter)
         self.label_13.setObjectName(_fromUtf8("label_13"))
         self.gridLayout_6.addWidget(self.label_13, 2, 5, 1, 1)
         self.label_12 = QtGui.QLabel(self.extent)
+        self.label_12.setAlignment(QtCore.Qt.AlignCenter)
         self.label_12.setObjectName(_fromUtf8("label_12"))
         self.gridLayout_6.addWidget(self.label_12, 4, 3, 1, 1)
         self.le_ymax = QtGui.QLineEdit(self.extent)
@@ -139,6 +143,7 @@ class Ui_Vizitown(object):
         self.le_xmax.setObjectName(_fromUtf8("le_xmax"))
         self.gridLayout_6.addWidget(self.le_xmax, 3, 5, 1, 1)
         self.label_14 = QtGui.QLabel(self.extent)
+        self.label_14.setAlignment(QtCore.Qt.AlignCenter)
         self.label_14.setObjectName(_fromUtf8("label_14"))
         self.gridLayout_6.addWidget(self.label_14, 0, 3, 1, 1)
         self.le_ymin = QtGui.QLineEdit(self.extent)
@@ -166,7 +171,7 @@ class Ui_Vizitown(object):
         self.verticalLayout_2.addWidget(self.btn_generate)
 
         self.retranslateUi(Vizitown)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(Vizitown)
 
     def retranslateUi(self, Vizitown):
@@ -184,17 +189,17 @@ class Ui_Vizitown(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Layers), _translate("Vizitown", "Layers", None))
         self.groupBox_4.setTitle(_translate("Vizitown", "Server", None))
         self.label_7.setText(_translate("Vizitown", "Port number", None))
-        self.le_port.setInputMask(_translate("Vizitown", "00000", None))
+        self.le_port.setInputMask(_translate("Vizitown", "00000; ", None))
         self.le_port.setText(_translate("Vizitown", "8888", None))
         self.groupBox_5.setTitle(_translate("Vizitown", "Scene", None))
         self.label_8.setText(_translate("Vizitown", "Tile size", None))
         self.label_9.setText(_translate("Vizitown", "Zoom level", None))
         self.btn_default.setText(_translate("Vizitown", "By default", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Opt), _translate("Vizitown", "Preferences", None))
-        self.label_11.setText(_translate("Vizitown", "le_xmin", None))
-        self.label_13.setText(_translate("Vizitown", "le_xmax", None))
-        self.label_12.setText(_translate("Vizitown", "le_ymin", None))
-        self.label_14.setText(_translate("Vizitown", "le_ymax", None))
+        self.label_11.setText(_translate("Vizitown", "Xmin", None))
+        self.label_13.setText(_translate("Vizitown", "Xmax", None))
+        self.label_12.setText(_translate("Vizitown", "Ymin", None))
+        self.label_14.setText(_translate("Vizitown", "Ymax", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.extent), _translate("Vizitown", "Extent", None))
         self.btn_generate.setText(_translate("Vizitown", "Generate", None))
 

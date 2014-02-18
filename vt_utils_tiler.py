@@ -151,6 +151,7 @@ class TileGenerator:
                                       ((float(geoInfo[5]) * int(self.tileSize)) + float(geoInfo[3]))))
                     optionsMnt.append("%s %s" % (self.dataSrcMnt, mntDst))
                     cmdMnt = "gdal_translate " + " ".join(optionsMnt)
+
                     proc = subprocess.Popen(cmdMnt)
                     proc.wait()
 

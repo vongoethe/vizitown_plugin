@@ -27,6 +27,7 @@ class CycloneThread(QThread):
         self.GDALprocess = GDALprocess
         self.tilesInfo = tilesInfo
 
+    ## run method launch the cyclone server
     def run(self):
         rastersPath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "rasters")
         viewerPath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "vt_viewer")
@@ -44,7 +45,7 @@ class CycloneThread(QThread):
             handlers.append((r'/test/ping', PingHandler))
         run(host="127.0.0.1", port=int(self.initParam['port']), more_handlers=handlers)
 
-    ## Stop the cyclone server
+    ## stop method stop the cyclone server
     def stop(self):
         try:
             unrun()
