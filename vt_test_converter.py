@@ -38,7 +38,7 @@ class translateJSON(unittest.TestCase):
     def test_json_one_point_check_type(self):
         ret = self.translator.parse(self.oneSimplePoint, self.geomPoint, self.noHeight, self.colors)
         jsonOnePoint = json.loads(ret)
-        self.assertEqual(jsonOnePoint['type'], "2")
+        self.assertEqual(jsonOnePoint['dim'], "2")
 
     def test_json_one_pont_check_nb_geometry(self):
         ret = self.translator.parse(self.oneSimplePoint, self.geomPoint, self.noHeight, self.colors)
@@ -66,7 +66,7 @@ class translateJSON(unittest.TestCase):
     def test_json_two_points_check_type(self):
         ret = self.translator.parse(self.twoPointsHeight, self.geomPoint, self.hasHeight, self.colors)
         jsonTwoPoints = json.loads(ret)
-        self.assertEqual(jsonTwoPoints['type'], "2.5")
+        self.assertEqual(jsonTwoPoints['dim'], "2.5")
 
     def test_json_two_points_check_nb_geometry(self):
         ret = self.translator.parse(self.twoPointsHeight, self.geomPoint, self.hasHeight, self.colors)
@@ -110,7 +110,7 @@ class translateJSON(unittest.TestCase):
     def test_json_line_check_type(self):
         ret = self.translator.parse(self.lineSimple, self.geomLine, self.noHeight, self.colors)
         jsonLine = json.loads(ret)
-        self.assertEqual(jsonLine['type'], "2")
+        self.assertEqual(jsonLine['dim'], "2")
 
     def test_json_line_check_nb_geometry(self):
         ret = self.translator.parse(self.lineSimple, self.geomLine, self.noHeight, self.colors)
@@ -137,7 +137,7 @@ class translateJSON(unittest.TestCase):
     def test_json_lineH_check_type(self):
         ret = self.translator.parse(self.lineWithHeight, self.geomLine, self.hasHeight, self.colors)
         jsonLine = json.loads(ret)
-        self.assertEqual(jsonLine['type'], "2.5")
+        self.assertEqual(jsonLine['dim'], "2.5")
 
     def test_json_lineH_check_coordinates(self):
         ret = self.translator.parse(self.lineWithHeight, self.geomLine, self.hasHeight, self.colors)
@@ -160,7 +160,7 @@ class translateJSON(unittest.TestCase):
     def test_json_polygon_check_type(self):
         ret = self.translator.parse(self.polygon, self.geomPolyg, self.noHeight, self.colors)
         jsonPoly = json.loads(ret)
-        self.assertEqual(jsonPoly['type'], "2")
+        self.assertEqual(jsonPoly['dim'], "2")
 
     def test_json_polygon_check_coordinates(self):
         ret = self.translator.parse(self.polygon, self.geomPolyg, self.noHeight, self.colors)
@@ -182,7 +182,7 @@ class translateJSON(unittest.TestCase):
     def test_json_multipolygon_check_type(self):
         ret = self.translator.parse(self.multipolygon, self.geomMPolyg, self.noHeight, self.colors)
         jsonMPoly = json.loads(ret)
-        self.assertEqual(jsonMPoly['type'], "2")
+        self.assertEqual(jsonMPoly['dim'], "2")
 
     def test_json_two_points_check_nb_geometry(self):
         ret = self.translator.parse(self.multipolygon, self.geomMPolyg, self.noHeight, self.colors)
@@ -218,7 +218,7 @@ class translateJSON(unittest.TestCase):
     def test_json_tin_check_type(self):
         ret = self.translator.parse(self.tin, self.geomPolyh, self.noHeight, self.colors)
         jsonPolyh = json.loads(ret)
-        self.assertEqual(jsonPolyh['type'], "3")
+        self.assertEqual(jsonPolyh['dim'], "3")
 
     def test_json_tin_check_nb_faces(self):
         ret = self.translator.parse(self.tin, self.geomPolyh, self.noHeight, self.colors)
