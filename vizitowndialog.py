@@ -69,8 +69,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.le_ymin.setText("%.4f" % extent.yMinimum())
         self.le_xmax.setText("%.4f" % extent.xMaximum())
         self.le_ymax.setText("%.4f" % extent.yMaximum())
-        self.lb_width.setText(str(int(extent.width())))
-        self.lb_height.setText(str(int(extent.height())))
+        self.calculate_size_extent()
 
     ## Set the the of the combobox
     def init_tile_size(self):
@@ -195,7 +194,6 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.cb_zoom.setCurrentIndex(1)
         self.tw_layers.clear()
         self.tw_layers.setHorizontalHeaderLabels(('Display', 'Layer', 'Field'))
-        print self.get_gui_extent()
 
     ## Generate and launch the rendering of the 3D scene
     def on_btn_generate_released(self):
@@ -221,6 +219,13 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.btn_generate.setText("Server is running")
             open_web_browser(self.get_port())
             self.appServerRunning = True
+
+    def calculate_size_extent(self):
+        extent2 = self.get_gui_extent()      
+        width = extent2[2] - extent2[0]
+        height = extent2[3] - extent2[1]
+        self.lb_width.setText(str(width))
+        self.lb_height.setText(str(height))
 
     ## Create all providers with the selected layers in the GUI
     def create_vector_providers(self):

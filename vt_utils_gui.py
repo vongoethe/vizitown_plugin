@@ -66,6 +66,6 @@ def get_color(layer):
 
 # Check is the number is coherent for the extent
 def is_number_extent(number):
-    if re.match("^-?\d+?\.?\d+?$", number) is None:
+    if re.match("^-?\d+\.?\d*$", number) is None:
         return False
     return True

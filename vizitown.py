@@ -55,6 +55,7 @@ class Vizitown:
         self.dlg = VizitownDialog(iface.mapCanvas().extent())
         QObject.connect(iface.mapCanvas(), SIGNAL("extentsChanged()"), self.info)
 
+
     def initGui(self):
         # Create action that will start plugin configuration
         self.action = QAction(
@@ -91,5 +92,9 @@ class Vizitown:
         self.dlg.init_zoom_level()
         self.dlg.init_layers()
         self.dlg.le_port.setText("8888")
+        self.dlg.le_xmin.editingFinished.connect(self.dlg.calculate_size_extent)
+        self.dlg.le_xmax.editingFinished.connect(self.dlg.calculate_size_extent)
+        self.dlg.le_ymax.editingFinished.connect(self.dlg.calculate_size_extent)
+        self.dlg.le_ymin.editingFinished.connect(self.dlg.calculate_size_extent)
         # show the dialog
         self.dlg.show()
