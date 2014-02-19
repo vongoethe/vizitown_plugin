@@ -150,6 +150,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         comboBox.addItem("None")
         for nameColumn, type in dic.items():
             comboBox.addItem(nameColumn + ' - ' + type)
+        comboBox.model().sort(0)
         self.tw_layers.setItem(0, 0, checkBox)
         self.tw_layers.setItem(0, 1, item)
         self.tw_layers.setCellWidget(0, 2, comboBox)
