@@ -49,10 +49,10 @@ class PostgisToJSON:
     }"""
 
         self._jsonExchange = """{
-    "type"          : "{TYPE}",
-    "color"         : "{COLOR}",
-    "geometry"      : "{GEOMETRY}",
-    "geometries"    : [{JSON_GEOM}]
+    "dim"          : "{TYPE}",
+    "color"        : "{COLOR}",
+    "type"         : "{GEOMETRY}",
+    "geometries"   : [{JSON_GEOM}]
 }"""
 
         self._jsonGeom = """{
@@ -102,7 +102,7 @@ class PostgisToJSON:
 
                 elif (geometry == 'POLYHEDRALSURFACE' or
                         geometry == 'TIN'):
-                    geometries += self._parse_triangle(str(g[0]))
+                    geometries += self._parse_triangle(str(g[0])) + ','
 
             else:
                 if geometry == 'POINT':
@@ -118,7 +118,7 @@ class PostgisToJSON:
 
                 elif (geometry == 'POLYHEDRALSURFACE' or
                         geometry == 'TIN'):
-                    geometries += self._parse_triangle(str(g))
+                    geometries += self._parse_triangle(str(g)) + ','
 
         geometries = PostgisToJSON.remove_comma(geometries)
         exchange = re.sub('{JSON_GEOM}', geometries, exchange)
