@@ -1,4 +1,5 @@
 import webbrowser
+import re
 
 from qgis.core import *
 from qgis.gui import *
@@ -55,9 +56,16 @@ def open_web_browser(port):
 
 
 ## Get the color of the vector layer. If is categorized symbol or graduate symbol, the color is white
-def getColor(layer):
-    # By default the color is red
+def get_color(layer):
+    # By default the color is white
     layerColor = "#FFFAFA"
     if layer.rendererV2().type() == "singleSymbol":
         layerColor = str(layer.rendererV2().symbol().color().name())
     return layerColor
+
+
+# Check is the number is coherent for the extent
+def is_number_extent(number):
+    if re.match("^-?\d+?\.?\d+?$", number) is None:
+        return False
+    return True

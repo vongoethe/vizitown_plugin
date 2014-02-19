@@ -102,7 +102,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             if is_dem(layer):
                 self.cb_dem.addItem(layer.name(), layer)
             if is_vector(layer):
-                layerColor = getColor(layer)
+                layerColor = get_color(layer)
                 srid = layer.crs().postgisSrid()
                 d = vt_utils_parser.parse_vector(layer.source(), srid, layerColor)
                 dic = PostgisProvider.get_columns_info_table(d['host'], d['dbname'], d['user'], d['password'], d['table'])
@@ -176,9 +176,16 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         if index == 4:
             return 4096
 
-    ## Get the extent specified in the GUI
+    ## Get the extent specified in the GUI or if the fields filled by the user are incoherent it's the extent of current view of QGIS
     def get_gui_extent(self):
-        return [float(self.le_xmin.text()), float(self.le_ymin.text()), float(self.le_xmax.text()), float(self.le_ymax.text())]
+        xmin = self.le_xmin.text()
+        xmax = self.le_xmax.text()
+        ymin = self.le_ymin.text()
+        ymax = self.le_ymax.text()
+        if is_number_extent(xmin) and is_number_extent(ymin) and is_number_extent(xmax) and is_number_extent(ymax):
+            if float(xmin) < float(xmax) and float(ymin) < float(ymax):
+                return [float(xmin), float(ymin), float(xmax), float(ymax)]
+        return [float(self.extent.xMinimum()), float(self.extent.yMinimum()), float(self.extent.xMaximum()), float(self.extent.yMaximum())]
 
     ## Set the tab advanced option by default
     #  @override QtGui.QDialog
@@ -188,6 +195,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.cb_zoom.setCurrentIndex(1)
         self.tw_layers.clear()
         self.tw_layers.setHorizontalHeaderLabels(('Display', 'Layer', 'Field'))
+        print self.get_gui_extent()
 
     ## Generate and launch the rendering of the 3D scene
     def on_btn_generate_released(self):
@@ -220,7 +228,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             # if the layer is checked
             if self.tw_layers.item(row_index, 0).checkState() == QtCore.Qt.Checked:
                 vectorLayer = self.tw_layers.item(row_index, 1).data(QtCore.Qt.UserRole)
-                layerColor = str(vectorLayer.rendererV2().symbol().color().name())
+                layerColor = get_color(layer)
                 srid = vectorLayer.crs().postgisSrid()
                 connection_info = vt_utils_parser.parse_vector(vectorLayer.source(), srid, layerColor)
                 column2 = self.tw_layers.cellWidget(row_index, 2).currentText()
