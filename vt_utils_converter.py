@@ -51,6 +51,7 @@ class PostgisToJSON:
         self._jsonExchange = """{
     "type"          : "{TYPE}",
     "color"         : "{COLOR}",
+    "geometry"      : "{GEOMETRY}",
     "geometries"    : [{JSON_GEOM}]
 }"""
 
@@ -81,6 +82,8 @@ class PostgisToJSON:
                 exchange = re.sub('{TYPE}', "2", exchange)
 
         exchange = re.sub('{COLOR}', color, exchange)
+        exchange = re.sub('{GEOMETRY}', geometry, exchange)
+
         noHeight = "0"
         geometries = ""
         for g in resultArray:
