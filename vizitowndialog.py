@@ -220,12 +220,13 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             open_web_browser(self.get_port())
             self.appServerRunning = True
 
+    ## Calculate the width and the height
     def calculate_size_extent(self):
-        extent2 = self.get_gui_extent()      
+        extent2 = self.get_gui_extent()
         width = extent2[2] - extent2[0]
         height = extent2[3] - extent2[1]
-        self.lb_width.setText(str(width))
-        self.lb_height.setText(str(height))
+        self.lb_width.setText("%.2f" % (width / 1000))
+        self.lb_height.setText("%.2f" % (height / 1000))
 
     ## Create all providers with the selected layers in the GUI
     def create_vector_providers(self):
@@ -233,7 +234,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             # if the layer is checked
             if self.tw_layers.item(row_index, 0).checkState() == QtCore.Qt.Checked:
                 vectorLayer = self.tw_layers.item(row_index, 1).data(QtCore.Qt.UserRole)
-                layerColor = get_color(layer)
+                layerColor = get_color(vectorLayer)
                 srid = vectorLayer.crs().postgisSrid()
                 connection_info = vt_utils_parser.parse_vector(vectorLayer.source(), srid, layerColor)
                 column2 = self.tw_layers.cellWidget(row_index, 2).currentText()
