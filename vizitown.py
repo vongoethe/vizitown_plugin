@@ -55,7 +55,6 @@ class Vizitown:
         self.dlg = VizitownDialog(iface.mapCanvas().extent())
         QObject.connect(iface.mapCanvas(), SIGNAL("extentsChanged()"), self.info)
 
-
     def initGui(self):
         # Create action that will start plugin configuration
         self.action = QAction(
