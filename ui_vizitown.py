@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_vizitown.ui'
 #
-# Created: Thu Feb 20 11:54:15 2014
+# Created: Thu Feb 20 21:19:46 2014
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -129,6 +129,7 @@ class Ui_Vizitown(object):
         self.gridLayout_4.addWidget(self.label_14, 2, 2, 1, 1)
         self.lb_width = QtGui.QSpinBox(self.extent)
         self.lb_width.setReadOnly(True)
+        self.lb_width.setButtonSymbols(QtGui.QAbstractSpinBox.NoButtons)
         self.lb_width.setMinimum(-999999999)
         self.lb_width.setMaximum(999999999)
         self.lb_width.setObjectName(_fromUtf8("lb_width"))
@@ -146,6 +147,7 @@ class Ui_Vizitown(object):
         self.gridLayout_4.addWidget(self.label_2, 14, 0, 1, 1)
         self.lb_height = QtGui.QSpinBox(self.extent)
         self.lb_height.setReadOnly(True)
+        self.lb_height.setButtonSymbols(QtGui.QAbstractSpinBox.NoButtons)
         self.lb_height.setMinimum(-999999999)
         self.lb_height.setMaximum(999999999)
         self.lb_height.setObjectName(_fromUtf8("lb_height"))
