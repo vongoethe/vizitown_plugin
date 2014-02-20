@@ -273,7 +273,9 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             if (TileGenerator._check_existing_dir(dataSrcImg, dataSrcMnt, path, tileSize, int(zoomLevel)) != 0):
                 print "GDALprocess Start"
                 settings = QtCore.QSettings()
-                gdalPath = unicode(settings.value("/GdalTools/gdalPath", ""))
+                gdalPath = settings.value("/GdalTools/gdalPath", None)
+                if gdalPath != None:
+                    gdalPath = unicode(gdalPath)
                 self.GDALprocess = mp.Process(target=launch_gdal_process, args=(gdalPath, dataSrcImg, dataSrcMnt, path, extent, tileSize, int(zoomLevel)))
                 self.GDALprocess.start()
 

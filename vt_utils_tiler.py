@@ -21,7 +21,7 @@ class TileGenerator:
     #  @param extent the extent of the view
     #  @param tileSize to dimension and tile the data
     #  @param levels to define the several levels of zoom
-    def __init__(self, gdalPath, dataSrcImg, dataSrcMnt, path, extent, tileSize=2048, levels=2):
+    def __init__(self, dataSrcImg, dataSrcMnt, path, extent, tileSize=2048, levels=2):
         if path is None:
             raise Exception("Invalid path")
         self.dataDst = path
@@ -262,14 +262,14 @@ class TileGenerator:
     ## launch_process manage the several process to generate data tiles
     @staticmethod
     def launch_process(gdalPath, dataSrcImg, dataSrcMnt, path, extent, tileSize=512, levels=2):
-        envval = unicode(os.getenv("PATH"))
-        if not gdalPath.lower() in envval.lower().split(os.pathsep):
-            envval += "%s%s" % (os.pathsep, gdalPath)
-            os.putenv("PATH", envval)
-        print gdalPath
-        cwd = os.getcwd()
-        os.chdir(gdalPath)
-        generator = TileGenerator(gdalPath, dataSrcImg, dataSrcMnt, path, extent, tileSize, levels)
+        if gdalPath != None:
+            envval = unicode(os.getenv("PATH"))
+            if not gdalPath.lower() in envval.lower().split(os.pathsep):
+                envval += "%s%s" % (os.pathsep, gdalPath)
+                os.putenv("PATH", envval)
+                cwd = os.getcwd()
+                os.chdir(gdalPath)
+        generator = TileGenerator(dataSrcImg, dataSrcMnt, path, extent, tileSize, levels)
         generator._create_repositories()
         generator._calculate_extent()
         generator._process_merge()
@@ -283,5 +283,6 @@ class TileGenerator:
         elif (generator.processChoice == 2):
             generator._process_tile_mnt()
             generator._process_to_dim_tile(generator.dataDst, generator.tmpRepo)
-        os.chdir(cwd)
+        if gdalPath != None:
+            os.chdir(cwd)
         generator._clean_up()
