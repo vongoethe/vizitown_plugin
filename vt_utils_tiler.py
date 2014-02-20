@@ -7,6 +7,7 @@ import subprocess
 from osgeo import gdal
 import gdal_retile
 import gdal_merge
+from processing.gdal.GdalUtils import GdalUtils
 
 
 ## TileGenerator
@@ -146,22 +147,26 @@ class TileGenerator:
                     mntDst = os.path.join(dirMnt, mntName)
 
                     optionsMnt = []
-                    optionsMnt.append("-of Png -projwin %f %f %f %f" % (float(geoInfo[0]), float(geoInfo[3]),
-                                      ((float(geoInfo[1]) * float(self.tileSize)) + float(geoInfo[0])),
-                                      ((float(geoInfo[5]) * int(self.tileSize)) + float(geoInfo[3]))))
-                    optionsMnt.append("%s %s" % ("\"" + self.dataSrcMnt + "\"", "\"" + mntDst + "\""))
-                    cmdMnt = "gdal_translate " + " ".join(optionsMnt)
+                    optionsMnt.append('gdal_translate')
+                    optionsMnt.append('-of')
+                    optionsMnt.append('Png')
+                    optionsMnt.append('-projwin')
+                    optionsMnt.append(str(float(geoInfo[0])))
+                    optionsMnt.append(str(float(geoInfo[3])))
+                    optionsMnt.append(str(((float(geoInfo[1]) * float(self.tileSize)) + float(geoInfo[0]))))
+                    optionsMnt.append(str(((float(geoInfo[5]) * int(self.tileSize)) + float(geoInfo[3]))))
+                    optionsMnt.append(GdalUtils.escapeAndJoin((self.dataSrcMnt,)))
+                    optionsMnt.append(GdalUtils.escapeAndJoin((mntDst,)))
 
                     if subprocess.mswindows:
                         info = subprocess.STARTUPINFO()
                         info.dwFlags |= subprocess.STARTF_USESHOWWINDOW
                         info.wShowWindow = subprocess.SW_HIDE
-                        proc = subprocess.Popen(cmdMnt, startupinfo=info, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                        proc = subprocess.Popen(optionsMnt, startupinfo=info, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                     else:
-                        proc = subprocess.Popen(cmdMnt, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                        proc = subprocess.Popen(optionsMnt, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
                     proc.wait()
-                    proc.kill()
 
     ## _process_to_dim_tile manage mnt and image tiles to fix this dimension
     #  @param dataTile the repository to find the data source
@@ -185,20 +190,24 @@ class TileGenerator:
 
                     if(ds.RasterXSize != int(self.tileSize) or ds.RasterYSize != int(self.tileSize)):
                         options = []
-                        options.append("-of png -outsize %d %d" % (int(self.tileSize), int(self.tileSize)))
-                        options.append("%s %s " % ("\"" + os.path.join(dataTile, currentFile) + "\"", "\"" + os.path.join(dstDir, currentFile) + "\""))
-                        cmd = "gdal_translate " + " ".join(options)
+                        options.append('gdal_translate')
+                        options.append('-of')
+                        options.append("Png")
+                        options.append('-outsize')
+                        options.append(str(int(self.tileSize)))
+                        options.append(str(int(self.tileSize)))
+                        options.append(GdalUtils.escapeAndJoin((os.path.join(dataTile, currentFile),)))
+                        options.append(GdalUtils.escapeAndJoin((os.path.join(dstDir, currentFile),)))
 
                         if subprocess.mswindows:
                             info = subprocess.STARTUPINFO()
                             info.dwFlags |= subprocess.STARTF_USESHOWWINDOW
                             info.wShowWindow = subprocess.SW_HIDE
-                            proc = subprocess.Popen(cmd, startupinfo=info, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                            proc = subprocess.Popen(options, startupinfo=info, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                         else:
-                            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                            proc = subprocess.Popen(options, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
                         proc.wait()
-                        proc.kill()
                     else:
                         shutil.copy(os.path.join(dataTile, currentFile), os.path.join(dstDir, currentFile))
                         shutil.copy(os.path.join(dataTile, currentFile) + ".aux.xml", os.path.join(dstDir, currentFile) + ".aux.xml")
@@ -208,9 +217,11 @@ class TileGenerator:
         if hasattr(self, 'dataSrcImg'):
             imgDirName = os.path.basename(os.path.normpath(self.dataDstImg))
             self._copytree(os.path.join(self.tmpRepo, imgDirName), os.path.join(self.dataDst, imgDirName))
+            os.remove(self.dataSrcImg)
         if hasattr(self, 'dataSrcMnt'):
             mntDirName = os.path.basename(os.path.normpath(self.dataDstMnt))
             self._copytree(os.path.join(self.tmpRepo, mntDirName), os.path.join(self.dataDst, mntDirName))
+            os.remove(self.dataSrcMnt)
 
     ## _copytree method copy data with specifics actions
     #  Our implementation of copytree because standard cannot copy in an existing repository
@@ -249,6 +260,10 @@ class TileGenerator:
     ## launch_process manage the several process to generate data tiles
     @staticmethod
     def launch_process(dataSrcImg, dataSrcMnt, path, extent, tileSize=512, levels=2):
+        #envval = unicode(os.getenv("PATH"))
+        #if not gdalPath.lower() in envval.lower().split(os.pathsep):
+        #    envval += "%s%s" % (os.pathsep, gdalPath)
+        #    os.putenv( "PATH", envval )
         generator = TileGenerator(dataSrcImg, dataSrcMnt, path, extent, tileSize, levels)
         generator._create_repositories()
         generator._calculate_extent()
