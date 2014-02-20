@@ -54,6 +54,10 @@ class Vizitown:
         # Create the dialog (after translation) and keep reference
         self.dlg = VizitownDialog(iface.mapCanvas().extent())
         QObject.connect(iface.mapCanvas(), SIGNAL("extentsChanged()"), self.info)
+        QObject.connect(self.dlg.le_xmin, SIGNAL("valueChanged(double)"), self.dlg.calculate_size_extent)
+        QObject.connect(self.dlg.le_ymin, SIGNAL("valueChanged(double)"), self.dlg.calculate_size_extent)
+        QObject.connect(self.dlg.le_xmax, SIGNAL("valueChanged(double)"), self.dlg.calculate_size_extent)
+        QObject.connect(self.dlg.le_ymax, SIGNAL("valueChanged(double)"), self.dlg.calculate_size_extent)
 
     def initGui(self):
         # Create action that will start plugin configuration
@@ -72,6 +76,7 @@ class Vizitown:
         self.iface.removeToolBarIcon(self.action)
         # run method that performs all the real work
 
+    ## Sent the extent of QGIS. Enables synchronization between the viewer and qgis
     def info(self):
         xMin = self.iface.mapCanvas().extent().xMinimum()
         yMin = self.iface.mapCanvas().extent().yMinimum()
@@ -91,9 +96,5 @@ class Vizitown:
         self.dlg.init_zoom_level()
         self.dlg.init_layers()
         self.dlg.sb_port.setValue(8888)
-        QObject.connect(self.dlg.le_xmin, SIGNAL("valueChanged(double)"), self.dlg.calculate_size_extent)
-        QObject.connect(self.dlg.le_ymin, SIGNAL("valueChanged(double)"), self.dlg.calculate_size_extent)
-        QObject.connect(self.dlg.le_xmax, SIGNAL("valueChanged(double)"), self.dlg.calculate_size_extent)
-        QObject.connect(self.dlg.le_ymax, SIGNAL("valueChanged(double)"), self.dlg.calculate_size_extent)
         # show the dialog
         self.dlg.show()

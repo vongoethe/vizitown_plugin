@@ -72,6 +72,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.le_ymax.setValue(extent.yMaximum())
         self.calculate_size_extent()
 
+    ## Set the limit of the doublespinbox in the tab extent
     def set_limit_sb(self):
         self.le_xmin.setMaximum(sys.maxint)
         self.le_xmin.setMinimum(-sys.maxint)
@@ -82,9 +83,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.le_ymax.setMaximum(sys.maxint)
         self.le_ymax.setMinimum(-sys.maxint)
 
-    ## Set the the of the combobox
+    ## Set the values of the taile by default
     def init_tile_size(self):
-        ## Set the values of the taile by default
         self.cb_tile.clear()
         self.cb_tile.addItem('256 x 256')
         self.cb_tile.addItem('512 x 512')
@@ -93,9 +93,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.cb_tile.addItem('4096 x 4096')
         self.cb_tile.setCurrentIndex(1)
 
-    ## Set the the of the combobox
+    ## Set the value of the zoom level
     def init_zoom_level(self):
-        ## Set the value of the zoom level
         self.cb_zoom.clear()
         self.cb_zoom.addItem('1')
         self.cb_zoom.addItem('2')
@@ -133,7 +132,6 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.tw_layers.setRowCount(0)
         self.tw_layers.setColumnWidth(0, 45)
         self.tw_layers.setColumnWidth(1, 150)
-        # set column name of tw_layers
         self.pb_loading.hide()
 
     ## Return true if there is a DEM to generate
@@ -149,8 +147,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         return self.has_dem() or self.has_texture()
 
     ## Add vector layer in QTableWidget
-    #  @param item the new layer to add in the dic
-    #  @param dic the dic with the existant data
+    #  @param item the new layer
+    #  @param dic the dic with the fields and their types
     def add_vector_layer(self, item, dic):
         self.tw_layers.insertRow(0)
         checkBox = QtGui.QTableWidgetItem()
@@ -165,7 +163,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.tw_layers.setItem(0, 1, item)
         self.tw_layers.setCellWidget(0, 2, comboBox)
 
-    ## Get the size tile
+    ## Get the size tile selected by the user
+    #  @return the size tile
     def get_size_tile(self):
         index = self.cb_tile.currentIndex()
         if index == 0:
@@ -180,6 +179,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             return 4096
 
     ## Get the extent specified in the GUI or if the fields filled by the user are incoherent it's the extent of current view of QGIS
+    #  @return the extent
     def get_gui_extent(self):
         xmin = self.le_xmin.value()
         xmax = self.le_xmax.value()
@@ -206,7 +206,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.pb_loading.show()
             self.create_vector_providers()
             self.create_raster_providers()
-            viewerParam = build_viewer_param(self.get_gui_extent(), self.sb_port.value(), self.has_raster())
+            viewerParam = build_viewer_param(self.get_gui_extent(), str(self.sb_port.value()), self.has_raster())
             if self.has_raster():
                 demResource = None
                 textureResource = None
@@ -223,7 +223,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             open_web_browser(self.sb_port.value())
             self.appServerRunning = True
 
-    ## Calculate the width and the height
+    ## Calculate the width and the height in kilometers
     def calculate_size_extent(self):
         extent2 = self.get_gui_extent()
         width = extent2[2] - extent2[0]
@@ -259,12 +259,12 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         zoomLevel = self.cb_zoom.currentText()
         if self.has_dem():
             dem = self.cb_dem.itemData(self.cb_dem.currentIndex())
-            demProvider = ProviderManager.instance().create_raster_provider(dem, self.sb_port.value(), 'dem', str(tileSize), zoomLevel)
+            demProvider = ProviderManager.instance().create_raster_provider(dem, str(self.sb_port.value()), 'dem', str(tileSize), zoomLevel)
             ProviderManager.instance().dem = demProvider
             dataSrcMnt = demProvider.source
         if self.has_texture():
             texture = self.cb_texture.itemData(self.cb_texture.currentIndex())
-            textureProvider = ProviderManager.instance().create_raster_provider(texture, self.sb_port.value(), 'img', str(tileSize), zoomLevel)
+            textureProvider = ProviderManager.instance().create_raster_provider(texture, str(self.sb_port.value()), 'img', str(tileSize), zoomLevel)
             ProviderManager.instance().texture = textureProvider
             dataSrcImg = textureProvider.source
         if self.has_raster():
