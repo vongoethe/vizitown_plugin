@@ -65,11 +65,22 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     #  @param extent the extent to init the parameter
     def init_extent(self, extent):
         self.extent = extent
-        self.le_xmin.setText("%.4f" % extent.xMinimum())
-        self.le_ymin.setText("%.4f" % extent.yMinimum())
-        self.le_xmax.setText("%.4f" % extent.xMaximum())
-        self.le_ymax.setText("%.4f" % extent.yMaximum())
+        self.set_limit_sb()
+        self.le_xmin.setValue(extent.xMinimum())
+        self.le_ymin.setValue(extent.yMinimum())
+        self.le_xmax.setValue(extent.xMaximum())
+        self.le_ymax.setValue(extent.yMaximum())
         self.calculate_size_extent()
+
+    def set_limit_sb(self):
+        self.le_xmin.setMaximum(sys.maxint)
+        self.le_xmin.setMinimum(-sys.maxint)
+        self.le_ymin.setMaximum(sys.maxint)
+        self.le_ymin.setMinimum(-sys.maxint)
+        self.le_xmax.setMaximum(sys.maxint)
+        self.le_xmax.setMinimum(-sys.maxint)
+        self.le_ymax.setMaximum(sys.maxint)
+        self.le_ymax.setMinimum(-sys.maxint)
 
     ## Set the the of the combobox
     def init_tile_size(self):
@@ -154,14 +165,6 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.tw_layers.setItem(0, 1, item)
         self.tw_layers.setCellWidget(0, 2, comboBox)
 
-    ## Get the port number. If the port isn't good this function return the value by default, 8888
-    def get_port(self):
-        if self.le_port.text().isdigit() and int(self.le_port.text()) < 65536 and int(self.le_port.text()) > 1024:
-            return self.le_port.text()
-        else:
-            # Maybe change for another exotic port
-            return 8888
-
     ## Get the size tile
     def get_size_tile(self):
         index = self.cb_tile.currentIndex()
@@ -178,19 +181,18 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
     ## Get the extent specified in the GUI or if the fields filled by the user are incoherent it's the extent of current view of QGIS
     def get_gui_extent(self):
-        xmin = self.le_xmin.text()
-        xmax = self.le_xmax.text()
-        ymin = self.le_ymin.text()
-        ymax = self.le_ymax.text()
-        if is_number_extent(xmin) and is_number_extent(ymin) and is_number_extent(xmax) and is_number_extent(ymax):
-            if float(xmin) < float(xmax) and float(ymin) < float(ymax):
-                return [float(xmin), float(ymin), float(xmax), float(ymax)]
+        xmin = self.le_xmin.value()
+        xmax = self.le_xmax.value()
+        ymin = self.le_ymin.value()
+        ymax = self.le_ymax.value()
+        if float(xmin) < float(xmax) and float(ymin) < float(ymax):
+            return [float(xmin), float(ymin), float(xmax), float(ymax)]
         return [float(self.extent.xMinimum()), float(self.extent.yMinimum()), float(self.extent.xMaximum()), float(self.extent.yMaximum())]
 
     ## Set the tab advanced option by default
     #  @override QtGui.QDialog
     def on_btn_default_released(self):
-        self.le_port.setText("8888")
+        self.sb_port.setValue(8888)
         self.cb_tile.setCurrentIndex(1)
         self.cb_zoom.setCurrentIndex(1)
         self.tw_layers.clear()
@@ -204,7 +206,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.pb_loading.show()
             self.create_vector_providers()
             self.create_raster_providers()
-            viewerParam = build_viewer_param(self.get_gui_extent(), self.get_port(), self.has_raster())
+            viewerParam = build_viewer_param(self.get_gui_extent(), self.sb_port.value(), self.has_raster())
             if self.has_raster():
                 demResource = None
                 textureResource = None
@@ -218,7 +220,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
                 self.appServer = AppServer(self, viewerParam)
             self.appServer.start()
             self.btn_generate.setText("Server is running")
-            open_web_browser(self.get_port())
+            open_web_browser(self.sb_port.value())
             self.appServerRunning = True
 
     ## Calculate the width and the height
@@ -226,8 +228,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         extent2 = self.get_gui_extent()
         width = extent2[2] - extent2[0]
         height = extent2[3] - extent2[1]
-        self.lb_width.setText("%.2f" % (width / 1000))
-        self.lb_height.setText("%.2f" % (height / 1000))
+        self.lb_width.setValue(width / 1000)
+        self.lb_height.setValue(height / 1000)
 
     ## Create all providers with the selected layers in the GUI
     def create_vector_providers(self):
@@ -257,12 +259,12 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         zoomLevel = self.cb_zoom.currentText()
         if self.has_dem():
             dem = self.cb_dem.itemData(self.cb_dem.currentIndex())
-            demProvider = ProviderManager.instance().create_raster_provider(dem, self.get_port(), 'dem', str(tileSize), zoomLevel)
+            demProvider = ProviderManager.instance().create_raster_provider(dem, self.sb_port.value(), 'dem', str(tileSize), zoomLevel)
             ProviderManager.instance().dem = demProvider
             dataSrcMnt = demProvider.source
         if self.has_texture():
             texture = self.cb_texture.itemData(self.cb_texture.currentIndex())
-            textureProvider = ProviderManager.instance().create_raster_provider(texture, self.get_port(), 'img', str(tileSize), zoomLevel)
+            textureProvider = ProviderManager.instance().create_raster_provider(texture, self.sb_port.value(), 'img', str(tileSize), zoomLevel)
             ProviderManager.instance().texture = textureProvider
             dataSrcImg = textureProvider.source
         if self.has_raster():
