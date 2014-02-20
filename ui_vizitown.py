@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_vizitown.ui'
 #
-# Created: Tue Feb 18 14:22:34 2014
+# Created: Wed Feb 19 17:55:17 2014
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -215,8 +215,8 @@ class Ui_Vizitown(object):
         self.label_11.setText(_translate("Vizitown", "Xmin", None))
         self.label_13.setText(_translate("Vizitown", "Xmax", None))
         self.label_12.setText(_translate("Vizitown", "Ymin", None))
-        self.label.setText(_translate("Vizitown", "Height (in meters) :", None))
-        self.label_2.setText(_translate("Vizitown", "Width (in meters) :", None))
+        self.label.setText(_translate("Vizitown", "Height (in kilometers) :", None))
+        self.label_2.setText(_translate("Vizitown", "Width (in kilometers) :", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.extent), _translate("Vizitown", "Extent", None))
         self.btn_generate.setText(_translate("Vizitown", "Generate", None))
 

@@ -35,12 +35,16 @@ var files =
     [ "vt_as_sync.py", "vt__as__sync_8py.html", [
       [ "SyncManager", "class_git_app_server_1_1vt__as__sync_1_1_sync_manager.html", "class_git_app_server_1_1vt__as__sync_1_1_sync_manager" ]
     ] ],
-    [ "vt_test_converter.py", "vt__test__converter_8py.html", "vt__test__converter_8py" ],
+    [ "vt_test_converter.py", "vt__test__converter_8py.html", [
+      [ "translateJSON", "class_git_app_server_1_1vt__test__converter_1_1translate_j_s_o_n.html", "class_git_app_server_1_1vt__test__converter_1_1translate_j_s_o_n" ]
+    ] ],
     [ "vt_test_handlers.py", "vt__test__handlers_8py.html", [
       [ "PingHandler", "class_git_app_server_1_1vt__test__handlers_1_1_ping_handler.html", "class_git_app_server_1_1vt__test__handlers_1_1_ping_handler" ],
       [ "EchoHandler", "class_git_app_server_1_1vt__test__handlers_1_1_echo_handler.html", "class_git_app_server_1_1vt__test__handlers_1_1_echo_handler" ]
     ] ],
-    [ "vt_test_parser.py", "vt__test__parser_8py.html", "vt__test__parser_8py" ],
+    [ "vt_test_parser.py", "vt__test__parser_8py.html", [
+      [ "TestParser", "class_git_app_server_1_1vt__test__parser_1_1_test_parser.html", "class_git_app_server_1_1vt__test__parser_1_1_test_parser" ]
+    ] ],
     [ "vt_test_providers.py", "vt__test__providers_8py.html", [
       [ "TestProviderManager", "class_git_app_server_1_1vt__test__providers_1_1_test_provider_manager.html", "class_git_app_server_1_1vt__test__providers_1_1_test_provider_manager" ],
       [ "TestPostgisProvider", "class_git_app_server_1_1vt__test__providers_1_1_test_postgis_provider.html", "class_git_app_server_1_1vt__test__providers_1_1_test_postgis_provider" ],

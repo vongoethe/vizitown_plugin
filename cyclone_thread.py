@@ -37,9 +37,9 @@ class CycloneThread(QThread):
             (r'/data', DataHandler),
             (r'/sync', SyncHandler),
         ]
+        handlers.append((r'/rasters/(.*)', CorsStaticFileHandler, {"path": rastersPath}))
         if self.tilesInfo:
             handlers.append((r'/tiles_info', TilesInfoHandler, dict(GDALprocess=self.GDALprocess, tilesInfo=self.tilesInfo)))
-            handlers.append((r'/rasters/(.*)', CorsStaticFileHandler, {"path": rastersPath}))
         if self.debug:
             handlers.append((r'/test/echo', EchoHandler))
             handlers.append((r'/test/ping', PingHandler))

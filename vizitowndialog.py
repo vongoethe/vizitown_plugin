@@ -69,8 +69,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.le_ymin.setText("%.4f" % extent.yMinimum())
         self.le_xmax.setText("%.4f" % extent.xMaximum())
         self.le_ymax.setText("%.4f" % extent.yMaximum())
-        self.lb_width.setText(str(int(extent.width())))
-        self.lb_height.setText(str(int(extent.height())))
+        self.calculate_size_extent()
 
     ## Set the the of the combobox
     def init_tile_size(self):
@@ -102,7 +101,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             if is_dem(layer):
                 self.cb_dem.addItem(layer.name(), layer)
             if is_vector(layer):
-                layerColor = getColor(layer)
+                layerColor = get_color(layer)
                 srid = layer.crs().postgisSrid()
                 d = vt_utils_parser.parse_vector(layer.source(), srid, layerColor)
                 dic = PostgisProvider.get_columns_info_table(d['host'], d['dbname'], d['user'], d['password'], d['table'])
@@ -150,6 +149,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         comboBox.addItem("None")
         for nameColumn, type in dic.items():
             comboBox.addItem(nameColumn + ' - ' + type)
+        comboBox.model().sort(0)
         self.tw_layers.setItem(0, 0, checkBox)
         self.tw_layers.setItem(0, 1, item)
         self.tw_layers.setCellWidget(0, 2, comboBox)
@@ -176,9 +176,16 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         if index == 4:
             return 4096
 
-    ## Get the extent specified in the GUI
+    ## Get the extent specified in the GUI or if the fields filled by the user are incoherent it's the extent of current view of QGIS
     def get_gui_extent(self):
-        return [float(self.le_xmin.text()), float(self.le_ymin.text()), float(self.le_xmax.text()), float(self.le_ymax.text())]
+        xmin = self.le_xmin.text()
+        xmax = self.le_xmax.text()
+        ymin = self.le_ymin.text()
+        ymax = self.le_ymax.text()
+        if is_number_extent(xmin) and is_number_extent(ymin) and is_number_extent(xmax) and is_number_extent(ymax):
+            if float(xmin) < float(xmax) and float(ymin) < float(ymax):
+                return [float(xmin), float(ymin), float(xmax), float(ymax)]
+        return [float(self.extent.xMinimum()), float(self.extent.yMinimum()), float(self.extent.xMaximum()), float(self.extent.yMaximum())]
 
     ## Set the tab advanced option by default
     #  @override QtGui.QDialog
@@ -214,13 +221,21 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             open_web_browser(self.get_port())
             self.appServerRunning = True
 
+    ## Calculate the width and the height
+    def calculate_size_extent(self):
+        extent2 = self.get_gui_extent()
+        width = extent2[2] - extent2[0]
+        height = extent2[3] - extent2[1]
+        self.lb_width.setText("%.2f" % (width / 1000))
+        self.lb_height.setText("%.2f" % (height / 1000))
+
     ## Create all providers with the selected layers in the GUI
     def create_vector_providers(self):
         for row_index in range(self.tw_layers.rowCount()):
             # if the layer is checked
             if self.tw_layers.item(row_index, 0).checkState() == QtCore.Qt.Checked:
                 vectorLayer = self.tw_layers.item(row_index, 1).data(QtCore.Qt.UserRole)
-                layerColor = str(vectorLayer.rendererV2().symbol().color().name())
+                layerColor = get_color(vectorLayer)
                 srid = vectorLayer.crs().postgisSrid()
                 connection_info = vt_utils_parser.parse_vector(vectorLayer.source(), srid, layerColor)
                 column2 = self.tw_layers.cellWidget(row_index, 2).currentText()

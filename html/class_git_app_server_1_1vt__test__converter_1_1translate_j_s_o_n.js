@@ -29,6 +29,7 @@ var class_git_app_server_1_1vt__test__converter_1_1translate_j_s_o_n =
     [ "test_json_two_points_check_nb_geometry", "class_git_app_server_1_1vt__test__converter_1_1translate_j_s_o_n.html#a500deae86cae6f26891e8453cc46de40", null ],
     [ "test_json_two_points_check_nb_geometry", "class_git_app_server_1_1vt__test__converter_1_1translate_j_s_o_n.html#a500deae86cae6f26891e8453cc46de40", null ],
     [ "test_json_two_points_check_type", "class_git_app_server_1_1vt__test__converter_1_1translate_j_s_o_n.html#a38cb11c9ecfeea19e1efe48a68fe778b", null ],
+    [ "colors", "class_git_app_server_1_1vt__test__converter_1_1translate_j_s_o_n.html#a622abe6c189a19393de36127efe53eaa", null ],
     [ "geomLine", "class_git_app_server_1_1vt__test__converter_1_1translate_j_s_o_n.html#a09a042447892003169ecb14c32f71306", null ],
     [ "geomMPolyg", "class_git_app_server_1_1vt__test__converter_1_1translate_j_s_o_n.html#acb20b1f852f93ea2c9e79a6ccce4e23d", null ],
     [ "geomPoint", "class_git_app_server_1_1vt__test__converter_1_1translate_j_s_o_n.html#a15a29b30840d5f057973e0e66c004661", null ],
