@@ -262,12 +262,12 @@ class TileGenerator:
     ## launch_process manage the several process to generate data tiles
     @staticmethod
     def launch_process(gdalPath, dataSrcImg, dataSrcMnt, path, extent, tileSize=512, levels=2):
+        cwd = os.getcwd()
         if gdalPath != None:
             envval = unicode(os.getenv("PATH"))
             if not gdalPath.lower() in envval.lower().split(os.pathsep):
                 envval += "%s%s" % (os.pathsep, gdalPath)
                 os.putenv("PATH", envval)
-                cwd = os.getcwd()
                 os.chdir(gdalPath)
         generator = TileGenerator(dataSrcImg, dataSrcMnt, path, extent, tileSize, levels)
         generator._create_repositories()
@@ -283,6 +283,5 @@ class TileGenerator:
         elif (generator.processChoice == 2):
             generator._process_tile_mnt()
             generator._process_to_dim_tile(generator.dataDst, generator.tmpRepo)
-        if gdalPath != None:
-            os.chdir(cwd)
+        os.chdir(cwd)
         generator._clean_up()
