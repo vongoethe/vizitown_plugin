@@ -7,7 +7,6 @@ import subprocess
 from osgeo import gdal
 import gdal_retile
 import gdal_merge
-from processing.gdal.GdalUtils import GdalUtils
 
 
 ## TileGenerator
@@ -22,7 +21,7 @@ class TileGenerator:
     #  @param extent the extent of the view
     #  @param tileSize to dimension and tile the data
     #  @param levels to define the several levels of zoom
-    def __init__(self, dataSrcImg, dataSrcMnt, path, extent, tileSize=2048, levels=2):
+    def __init__(self, gdalPath, dataSrcImg, dataSrcMnt, path, extent, tileSize=2048, levels=2):
         if path is None:
             raise Exception("Invalid path")
         self.dataDst = path
@@ -38,10 +37,12 @@ class TileGenerator:
             self.dataDstMnt = os.path.join(self.dataDst, "dem_%s_%d_%d" % (os.path.splitext(os.path.basename(dataSrcMnt))[0], tileSize, levels))
             self.dataMergeMnt = os.path.join(path, "dem_%s_%d_%d_merge.tif" % (os.path.splitext(os.path.basename(dataSrcMnt))[0], tileSize, levels))
 
+        self.gdalTranslate = 'gdal_translate'
         self.tileSize = tileSize
         self.levels = levels
         self.extent = extent
         self.processChoice = self._check_data(dataSrcImg, dataSrcMnt)
+        print self.gdalTranslate
 
     ## _create_repositories method to create the several repositories
     def _create_repositories(self):
@@ -147,7 +148,7 @@ class TileGenerator:
                     mntDst = os.path.join(dirMnt, mntName)
 
                     optionsMnt = []
-                    optionsMnt.append('gdal_translate')
+                    optionsMnt.append(self.gdalTranslate)
                     optionsMnt.append('-of')
                     optionsMnt.append('Png')
                     optionsMnt.append('-projwin')
@@ -155,8 +156,10 @@ class TileGenerator:
                     optionsMnt.append(str(float(geoInfo[3])))
                     optionsMnt.append(str(((float(geoInfo[1]) * float(self.tileSize)) + float(geoInfo[0]))))
                     optionsMnt.append(str(((float(geoInfo[5]) * int(self.tileSize)) + float(geoInfo[3]))))
-                    optionsMnt.append(GdalUtils.escapeAndJoin((self.dataSrcMnt,)))
-                    optionsMnt.append(GdalUtils.escapeAndJoin((mntDst,)))
+                    optionsMnt.append(self.dataSrcMnt)
+                    optionsMnt.append(mntDst)
+
+                    print optionsMnt
 
                     if subprocess.mswindows:
                         info = subprocess.STARTUPINFO()
@@ -190,14 +193,14 @@ class TileGenerator:
 
                     if(ds.RasterXSize != int(self.tileSize) or ds.RasterYSize != int(self.tileSize)):
                         options = []
-                        options.append('gdal_translate')
+                        options.append(self.gdalTranslate)
                         options.append('-of')
                         options.append("Png")
                         options.append('-outsize')
                         options.append(str(int(self.tileSize)))
                         options.append(str(int(self.tileSize)))
-                        options.append(GdalUtils.escapeAndJoin((os.path.join(dataTile, currentFile),)))
-                        options.append(GdalUtils.escapeAndJoin((os.path.join(dstDir, currentFile),)))
+                        options.append(os.path.join(dataTile, currentFile))
+                        options.append(os.path.join(dstDir, currentFile))
 
                         if subprocess.mswindows:
                             info = subprocess.STARTUPINFO()
@@ -221,7 +224,6 @@ class TileGenerator:
         if hasattr(self, 'dataSrcMnt'):
             mntDirName = os.path.basename(os.path.normpath(self.dataDstMnt))
             self._copytree(os.path.join(self.tmpRepo, mntDirName), os.path.join(self.dataDst, mntDirName))
-            os.remove(self.dataSrcMnt)
 
     ## _copytree method copy data with specifics actions
     #  Our implementation of copytree because standard cannot copy in an existing repository
@@ -259,12 +261,15 @@ class TileGenerator:
 
     ## launch_process manage the several process to generate data tiles
     @staticmethod
-    def launch_process(dataSrcImg, dataSrcMnt, path, extent, tileSize=512, levels=2):
-        #envval = unicode(os.getenv("PATH"))
-        #if not gdalPath.lower() in envval.lower().split(os.pathsep):
-        #    envval += "%s%s" % (os.pathsep, gdalPath)
-        #    os.putenv( "PATH", envval )
-        generator = TileGenerator(dataSrcImg, dataSrcMnt, path, extent, tileSize, levels)
+    def launch_process(gdalPath, dataSrcImg, dataSrcMnt, path, extent, tileSize=512, levels=2):
+        envval = unicode(os.getenv("PATH"))
+        if not gdalPath.lower() in envval.lower().split(os.pathsep):
+            envval += "%s%s" % (os.pathsep, gdalPath)
+            os.putenv("PATH", envval)
+        print gdalPath
+        cwd = os.getcwd()
+        os.chdir(gdalPath)
+        generator = TileGenerator(gdalPath, dataSrcImg, dataSrcMnt, path, extent, tileSize, levels)
         generator._create_repositories()
         generator._calculate_extent()
         generator._process_merge()
@@ -278,4 +283,5 @@ class TileGenerator:
         elif (generator.processChoice == 2):
             generator._process_tile_mnt()
             generator._process_to_dim_tile(generator.dataDst, generator.tmpRepo)
+        os.chdir(cwd)
         generator._clean_up()
