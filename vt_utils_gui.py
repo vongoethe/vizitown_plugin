@@ -62,10 +62,3 @@ def get_color(layer):
     if layer.rendererV2().type() == "singleSymbol":
         layerColor = str(layer.rendererV2().symbol().color().name())
     return layerColor
-
-
-# Check is the number is coherent for the extent
-def is_number_extent(number):
-    if re.match("^-?\d+\.?\d*$", number) is None:
-        return False
-    return True

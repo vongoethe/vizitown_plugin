@@ -65,6 +65,7 @@ class PostgisToJSON:
     #  @param resultArray to stock the data
     #  @param geometry to check the type of geometry
     #  @param hasH to define the representation of data
+    #  @param color to define the color of data
     #  @return a json
     def parse(self, resultArray, geometry, hasH, color):
 

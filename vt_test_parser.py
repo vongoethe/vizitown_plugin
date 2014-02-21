@@ -2,6 +2,7 @@ import unittest
 import vt_utils_parser
 
 
+## Test if parse_vector can parse a url source from QGIS
 class TestParser(unittest.TestCase):
     def setUp(self):
         self.source = """

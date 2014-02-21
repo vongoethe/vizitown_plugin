@@ -15,6 +15,7 @@ class PostgisProvider:
     #  @param password database user password
     #  @param srid of the resource
     #  @param table of the resource
+    #  @param color of the resource
     #  @param column of the resource
     #  @param column2 representing a height of column or another geometry (TinZ)
     def __init__(self, host, dbname, port, user, password, srid, table, column, color, column2=None, column2Type=None):
