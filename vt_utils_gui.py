@@ -29,10 +29,10 @@ def is_vector(layer):
 def build_viewer_param(extent, port, hasRaster):
     return {
         'extent': {
-            'xMin': "%.4f" % extent[0],
-            'yMin': "%.4f" % extent[1],
-            'xMax': "%.4f" % extent[2],
-            'yMax': "%.4f" % extent[3],
+            'xMin': str(extent[0]),
+            'yMin': str(extent[1]),
+            'xMax': str(extent[2]),
+            'yMax': str(extent[3]),
         },
         'port': port,
         'hasRaster': hasRaster,
