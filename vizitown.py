@@ -78,6 +78,7 @@ class Vizitown:
 
     ## Sent the extent of QGIS. Enables synchronization between the viewer and qgis
     def info(self):
+        self.dlg.init_extent(self.iface.mapCanvas().extent())
         xMin = self.iface.mapCanvas().extent().xMinimum()
         yMin = self.iface.mapCanvas().extent().yMinimum()
         xMax = self.iface.mapCanvas().extent().xMaximum()
