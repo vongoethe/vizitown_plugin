@@ -1,11 +1,11 @@
 import os
 import json
 import os
-import gdal
 import cyclone.websocket
 from vt_utils_converter import PostgisToJSON
 from vt_as_provider_manager import ProviderManager
 from vt_as_sync import SyncManager
+from osgeo import gdal
 
 
 ## A static file handler which authorize cross origin
@@ -59,9 +59,6 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
                 else:
                     array.append(v['it'].value(0))
 
-                if not v['it'].next():
-                    break
-
             json_ = translator.parse(array, v['geom'], v['hasH'], v['color'])
             self.sendMessage(json_)
 
@@ -112,19 +109,22 @@ class TilesInfoHandler(cyclone.websocket.WebSocketHandler):
 
     ## Method call when the websocket is opened
     def connectionMade(self):
-        print "Wait GDAL tiling ..."
-        self.GDALprocess.join()
-        print "Send tiles info ..."
+        if self.GDALprocess and self.GDALprocess.is_alive():
+            print "Wait GDAL tiling ..."
+            self.GDALprocess.join()
+            print "Send tiles info ..."
 
-        demPixelSize = {}
-        demLocation = os.path.join(os.path.dirname(__file__), 'rasters', os.path.basename(ProviderManager.instance().dem.httpResource))
-        demPixelSize = self._list_pixel_size(0, demPixelSize, demLocation)
-        self.tilesInfo['demPixelSize'] = demPixelSize
+        if self.tilesInfo['dem']:
+            demPixelSize = {}
+            demLocation = os.path.join(os.path.dirname(__file__), 'rasters', os.path.basename(ProviderManager.instance().dem.httpResource))
+            demPixelSize = self._list_pixel_size(0, demPixelSize, demLocation)
+            self.tilesInfo['demPixelSize'] = demPixelSize
 
-        texturePixelSize = {}
-        textureLocation = os.path.join(os.path.dirname(__file__), 'rasters', os.path.basename(ProviderManager.instance().texture.httpResource))
-        texturePixelSize = self._list_pixel_size(0, texturePixelSize, textureLocation)
-        self.tilesInfo['texturePixelSize'] = texturePixelSize
+        if self.tilesInfo['texture']:
+            texturePixelSize = {}
+            textureLocation = os.path.join(os.path.dirname(__file__), 'rasters', os.path.basename(ProviderManager.instance().texture.httpResource))
+            texturePixelSize = self._list_pixel_size(0, texturePixelSize, textureLocation)
+            self.tilesInfo['texturePixelSize'] = texturePixelSize
 
         self.sendMessage(json.dumps(self.tilesInfo, separators=(',', ':')))
 

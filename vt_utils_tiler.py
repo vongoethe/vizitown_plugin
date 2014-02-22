@@ -21,7 +21,7 @@ class TileGenerator:
     #  @param extent the extent of the view
     #  @param tileSize to dimension and tile the data
     #  @param levels to define the several levels of zoom
-    def __init__(self, dataSrcImg, dataSrcMnt, path, extent, tileSize=2048, levels=2):
+    def __init__(self, gdalPath, dataSrcImg, dataSrcMnt, path, extent, tileSize=2048, levels=2):
         if path is None:
             raise Exception("Invalid path")
         self.dataDst = path
@@ -37,10 +37,12 @@ class TileGenerator:
             self.dataDstMnt = os.path.join(self.dataDst, "dem_%s_%d_%d" % (os.path.splitext(os.path.basename(dataSrcMnt))[0], tileSize, levels))
             self.dataMergeMnt = os.path.join(path, "dem_%s_%d_%d_merge.tif" % (os.path.splitext(os.path.basename(dataSrcMnt))[0], tileSize, levels))
 
+        self.gdalTranslate = 'gdal_translate'
         self.tileSize = tileSize
         self.levels = levels
         self.extent = extent
         self.processChoice = self._check_data(dataSrcImg, dataSrcMnt)
+        print self.gdalTranslate
 
     ## _create_repositories method to create the several repositories
     def _create_repositories(self):
@@ -83,9 +85,9 @@ class TileGenerator:
     ## _process_merge merge the image and mnt data with the new extent
     def _process_merge(self):
         uLX = str(self.extent[0])
-        uLY = str(self.extent[3])
         lRX = str(self.extent[1])
         lRY = str(self.extent[2])
+        uLY = str(self.extent[3])
 
         if hasattr(self, 'dataSrcImg'):
             gdal_merge.main(["-init", "0", "-ul_lr", uLX, uLY, lRX, lRY, "-o", self.dataMergeImg, self.dataSrcImg])
@@ -146,13 +148,27 @@ class TileGenerator:
                     mntDst = os.path.join(dirMnt, mntName)
 
                     optionsMnt = []
-                    optionsMnt.append("-of Png -projwin %f %f %f %f" % (float(geoInfo[0]), float(geoInfo[3]),
-                                      ((float(geoInfo[1]) * float(self.tileSize)) + float(geoInfo[0])),
-                                      ((float(geoInfo[5]) * int(self.tileSize)) + float(geoInfo[3]))))
-                    optionsMnt.append("%s %s" % (self.dataSrcMnt, mntDst))
-                    cmdMnt = "gdal_translate " + " ".join(optionsMnt)
+                    optionsMnt.append(self.gdalTranslate)
+                    optionsMnt.append('-of')
+                    optionsMnt.append('Png')
+                    optionsMnt.append('-projwin')
+                    optionsMnt.append(str(float(geoInfo[0])))
+                    optionsMnt.append(str(float(geoInfo[3])))
+                    optionsMnt.append(str(((float(geoInfo[1]) * float(self.tileSize)) + float(geoInfo[0]))))
+                    optionsMnt.append(str(((float(geoInfo[5]) * int(self.tileSize)) + float(geoInfo[3]))))
+                    optionsMnt.append(self.dataSrcMnt)
+                    optionsMnt.append(mntDst)
 
-                    proc = subprocess.Popen(cmdMnt)
+                    print optionsMnt
+
+                    if subprocess.mswindows:
+                        info = subprocess.STARTUPINFO()
+                        info.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                        info.wShowWindow = subprocess.SW_HIDE
+                        proc = subprocess.Popen(optionsMnt, startupinfo=info, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                    else:
+                        proc = subprocess.Popen(optionsMnt, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
                     proc.wait()
 
     ## _process_to_dim_tile manage mnt and image tiles to fix this dimension
@@ -177,11 +193,23 @@ class TileGenerator:
 
                     if(ds.RasterXSize != int(self.tileSize) or ds.RasterYSize != int(self.tileSize)):
                         options = []
-                        options.append("-of png -outsize %d %d" % (int(self.tileSize), int(self.tileSize)))
-                        options.append("%s %s " % (os.path.join(dataTile, currentFile), os.path.join(dstDir, currentFile)))
-                        cmd = "gdal_translate " + " ".join(options)
+                        options.append(self.gdalTranslate)
+                        options.append('-of')
+                        options.append("Png")
+                        options.append('-outsize')
+                        options.append(str(int(self.tileSize)))
+                        options.append(str(int(self.tileSize)))
+                        options.append(os.path.join(dataTile, currentFile))
+                        options.append(os.path.join(dstDir, currentFile))
 
-                        proc = subprocess.Popen(cmd)
+                        if subprocess.mswindows:
+                            info = subprocess.STARTUPINFO()
+                            info.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                            info.wShowWindow = subprocess.SW_HIDE
+                            proc = subprocess.Popen(options, startupinfo=info, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                        else:
+                            proc = subprocess.Popen(options, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
                         proc.wait()
                     else:
                         shutil.copy(os.path.join(dataTile, currentFile), os.path.join(dstDir, currentFile))
@@ -192,6 +220,7 @@ class TileGenerator:
         if hasattr(self, 'dataSrcImg'):
             imgDirName = os.path.basename(os.path.normpath(self.dataDstImg))
             self._copytree(os.path.join(self.tmpRepo, imgDirName), os.path.join(self.dataDst, imgDirName))
+            os.remove(self.dataSrcImg)
         if hasattr(self, 'dataSrcMnt'):
             mntDirName = os.path.basename(os.path.normpath(self.dataDstMnt))
             self._copytree(os.path.join(self.tmpRepo, mntDirName), os.path.join(self.dataDst, mntDirName))
@@ -232,20 +261,27 @@ class TileGenerator:
 
     ## launch_process manage the several process to generate data tiles
     @staticmethod
-    def launch_process(dataSrcImg, dataSrcMnt, path, extent, tileSize=512, levels=2):
-        if (TileGenerator._check_existing_dir(dataSrcImg, dataSrcMnt, path, tileSize, levels) != 0):
-            generator = TileGenerator(dataSrcImg, dataSrcMnt, path, extent, tileSize, levels)
-            generator._create_repositories()
-            generator._calculate_extent()
-            generator._process_merge()
-            if (generator.processChoice == 0):
-                generator._process_tile_img()
-                generator._process_clip_mnt(generator.dataDstImg, generator.dataDstMnt)
-                generator._process_to_dim_tile(generator.dataDst, generator.tmpRepo)
-            elif (generator.processChoice == 1):
-                generator._process_tile_img()
-                generator._process_to_dim_tile(generator.dataDst, generator.tmpRepo)
-            elif (generator.processChoice == 2):
-                generator._process_tile_mnt()
-                generator._process_to_dim_tile(generator.dataDst, generator.tmpRepo)
-            generator._clean_up()
+    def launch_process(gdalPath, dataSrcImg, dataSrcMnt, path, extent, tileSize=512, levels=2):
+        envval = unicode(os.getenv("PATH"))
+        if not gdalPath.lower() in envval.lower().split(os.pathsep):
+            envval += "%s%s" % (os.pathsep, gdalPath)
+            os.putenv("PATH", envval)
+        print gdalPath
+        cwd = os.getcwd()
+        os.chdir(gdalPath)
+        generator = TileGenerator(gdalPath, dataSrcImg, dataSrcMnt, path, extent, tileSize, levels)
+        generator._create_repositories()
+        generator._calculate_extent()
+        generator._process_merge()
+        if (generator.processChoice == 0):
+            generator._process_tile_img()
+            generator._process_clip_mnt(generator.dataDstImg, generator.dataDstMnt)
+            generator._process_to_dim_tile(generator.dataDst, generator.tmpRepo)
+        elif (generator.processChoice == 1):
+            generator._process_tile_img()
+            generator._process_to_dim_tile(generator.dataDst, generator.tmpRepo)
+        elif (generator.processChoice == 2):
+            generator._process_tile_mnt()
+            generator._process_to_dim_tile(generator.dataDst, generator.tmpRepo)
+        os.chdir(cwd)
+        generator._clean_up()

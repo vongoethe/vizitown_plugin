@@ -124,19 +124,18 @@ $(document).ready(function(){initNavTree('class_git_app_server_1_1vt__as__provid
 Collaboration diagram for GitAppServer.vt_as_provider_manager.ProviderManager:</div>
 <div class="dyncontent">
 <div class="center"><img src="class_git_app_server_1_1vt__as__provider__manager_1_1_provider_manager__coll__graph.png" border="0" usemap="#_git_app_server_8vt__as__provider__manager_8_provider_manager_coll__map" alt="Collaboration graph"/></div>
-<map name="_git_app_server_8vt__as__provider__manager_8_provider_manager_coll__map" id="_git_app_server_8vt__as__provider__manager_8_provider_manager_coll__map">
-</map>
 </div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a240c8ca80a93611efc09a78171c713c5"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_git_app_server_1_1vt__as__provider__manager_1_1_provider_manager.html#a240c8ca80a93611efc09a78171c713c5">__init__</a></td></tr>
+<tr class="memdesc:a240c8ca80a93611efc09a78171c713c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">The Constructor.  <a href="#a240c8ca80a93611efc09a78171c713c5">More...</a><br/></td></tr>
 <tr class="separator:a240c8ca80a93611efc09a78171c713c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4e37195e1457f89655a5be626a4936e2"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_git_app_server_1_1vt__as__provider__manager_1_1_provider_manager.html#a4e37195e1457f89655a5be626a4936e2">add_vector_provider</a></td></tr>
 <tr class="memdesc:a4e37195e1457f89655a5be626a4936e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a vector provider to the manager.  <a href="#a4e37195e1457f89655a5be626a4936e2">More...</a><br/></td></tr>
 <tr class="separator:a4e37195e1457f89655a5be626a4936e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae9213516275308265e3b852dc6b16138"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_git_app_server_1_1vt__as__provider__manager_1_1_provider_manager.html#ae9213516275308265e3b852dc6b16138">create_raster_provider</a></td></tr>
-<tr class="memdesc:ae9213516275308265e3b852dc6b16138"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a DEM raster provider to the manager.  <a href="#ae9213516275308265e3b852dc6b16138">More...</a><br/></td></tr>
+<tr class="memdesc:ae9213516275308265e3b852dc6b16138"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a raster provider to the manager.  <a href="#ae9213516275308265e3b852dc6b16138">More...</a><br/></td></tr>
 <tr class="separator:ae9213516275308265e3b852dc6b16138"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a591e60bd0124a4da5f062393284f8505"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_git_app_server_1_1vt__as__provider__manager_1_1_provider_manager.html#a591e60bd0124a4da5f062393284f8505">request_tile</a></td></tr>
 <tr class="memdesc:a591e60bd0124a4da5f062393284f8505"><td class="mdescLeft">&#160;</td><td class="mdescRight">Request a tile for all his providers.  <a href="#a591e60bd0124a4da5f062393284f8505">More...</a><br/></td></tr>
@@ -167,6 +166,8 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>The Constructor. </p>
 
 </div>
 </div>
@@ -231,6 +232,12 @@ Public Attributes</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>prefix</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
           <td class="paramname"><em>tileSize</em>, </td>
         </tr>
         <tr>
@@ -247,13 +254,18 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Add a DEM raster provider to the manager. </p>
+<p>Create a raster provider to the manager. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">p</td><td>the provider to add </td></tr>
+    <tr><td class="paramname">raster</td><td>add to the provider </td></tr>
+    <tr><td class="paramname">port</td><td>to define the port of the connection </td></tr>
+    <tr><td class="paramname">prefix</td><td>define the type of the data </td></tr>
+    <tr><td class="paramname">tileSize</td><td>indicate the size of the tile </td></tr>
+    <tr><td class="paramname">zoomLevel</td><td>indicate the value of zoom levels </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>a raster provider </dd></dl>
 
 </div>
 </div>
@@ -300,6 +312,16 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Request a tile for all his providers. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">Xmin</td><td></td></tr>
+    <tr><td class="paramname">Ymin</td><td></td></tr>
+    <tr><td class="paramname">Xmax</td><td></td></tr>
+    <tr><td class="paramname">Ymax</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>the tile </dd></dl>
 
 </div>
 </div>
@@ -349,7 +371,7 @@ Public Attributes</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespace_git_app_server.html">GitAppServer</a></li><li class="navelem"><a class="el" href="namespace_git_app_server_1_1vt__as__provider__manager.html">vt_as_provider_manager</a></li><li class="navelem"><a class="el" href="class_git_app_server_1_1vt__as__provider__manager_1_1_provider_manager.html">ProviderManager</a></li>
-    <li class="footer">Generated on Sat Feb 15 2014 17:30:12 for Vizitown by
+    <li class="footer">Generated on Tue Feb 18 2014 23:42:52 for Vizitown by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

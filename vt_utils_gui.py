@@ -1,4 +1,5 @@
 import webbrowser
+import re
 
 from qgis.core import *
 from qgis.gui import *
@@ -28,13 +29,13 @@ def is_vector(layer):
 def build_viewer_param(extent, port, hasRaster):
     return {
         'extent': {
-            'xMin': "%.4f" % extent[0],
-            'yMin': "%.4f" % extent[1],
-            'xMax': "%.4f" % extent[2],
-            'yMax': "%.4f" % extent[3],
+            'xMin': str(extent[0]),
+            'yMin': str(extent[1]),
+            'xMax': str(extent[2]),
+            'yMax': str(extent[3]),
         },
         'port': port,
-        'hasRaster': hasRaster,
+        'hasRaster': True,
     }
 
 
@@ -52,3 +53,12 @@ def build_tiling_param(zoomLevel, tileSize, dem=None, texture=None):
 def open_web_browser(port):
     url = 'http://localhost:' + str(port) + '/app/index.html'
     webbrowser.open(url)
+
+
+## Get the color of the vector layer. If is categorized symbol or graduate symbol, the color is white
+def get_color(layer):
+    # By default the color is white
+    layerColor = "#FFFAFA"
+    if layer.rendererV2().type() == "singleSymbol":
+        layerColor = str(layer.rendererV2().symbol().color().name())
+    return layerColor

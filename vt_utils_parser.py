@@ -5,6 +5,8 @@ import re
 #  This function give the query to ask the database and
 #  return vectors informations into QGIS
 #  @param source String information to query the database
+#  @param srid of the vector layer
+#  @param color of the vector layer
 #  @return String with vectors informations
 def parse_vector(source, srid, color):
     m = re.match(r"""

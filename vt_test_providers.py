@@ -7,6 +7,8 @@ from vt_as_provider_postgis import PostgisProvider
 from vt_as_provider_raster import RasterProvider
 
 
+## Test if the ProviderManager class can be instantiated
+# Test is the ProviderManager class can add a vector provider to the manager
 class TestProviderManager(unittest.TestCase):
     def setUp(self):
         self.pm = ProviderManager.instance()
@@ -16,6 +18,8 @@ class TestProviderManager(unittest.TestCase):
         self.assertEqual(ProviderManager.instance(), self.pm, "ProviderManager is not a singleton")
 
 
+## Test if the PostgisProvider class can connect to a postGis database
+# and if they can request the database
 class TestPostgisProvider(unittest.TestCase):
     def setUp(self):
         self.host = "37.58.147.68"
@@ -26,7 +30,8 @@ class TestPostgisProvider(unittest.TestCase):
         self.srid = "2154"
         self.table = "test"
         self.column = "geom"
-        self.p = PostgisProvider(self.host, self.dbname, self.port, self.user, self.password, self.srid, self.table, self.column)
+        self.color = "#000000"
+        self.p = PostgisProvider(self.host, self.dbname, self.port, self.user, self.password, self.srid, self.table, self.column, self.color)
 
     def test_connection(self):
         assert self.p.db.open()
@@ -37,6 +42,7 @@ class TestPostgisProvider(unittest.TestCase):
         self.assertNotEqual(result, [], "Result empty")
 
 
+## Test if the RasterProvider class can stock the attribute to use a raster resource
 class TestRasterProvider(unittest.TestCase):
     def setUp(self):
         self.name = "test"

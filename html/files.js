@@ -17,6 +17,7 @@ var files =
       [ "AppServer", "class_git_app_server_1_1vt__as__app_1_1_app_server.html", "class_git_app_server_1_1vt__as__app_1_1_app_server" ]
     ] ],
     [ "vt_as_handlers.py", "vt__as__handlers_8py.html", [
+      [ "CorsStaticFileHandler", "class_git_app_server_1_1vt__as__handlers_1_1_cors_static_file_handler.html", "class_git_app_server_1_1vt__as__handlers_1_1_cors_static_file_handler" ],
       [ "InitHandler", "class_git_app_server_1_1vt__as__handlers_1_1_init_handler.html", "class_git_app_server_1_1vt__as__handlers_1_1_init_handler" ],
       [ "DataHandler", "class_git_app_server_1_1vt__as__handlers_1_1_data_handler.html", "class_git_app_server_1_1vt__as__handlers_1_1_data_handler" ],
       [ "SyncHandler", "class_git_app_server_1_1vt__as__handlers_1_1_sync_handler.html", "class_git_app_server_1_1vt__as__handlers_1_1_sync_handler" ],
@@ -34,7 +35,9 @@ var files =
     [ "vt_as_sync.py", "vt__as__sync_8py.html", [
       [ "SyncManager", "class_git_app_server_1_1vt__as__sync_1_1_sync_manager.html", "class_git_app_server_1_1vt__as__sync_1_1_sync_manager" ]
     ] ],
-    [ "vt_test_converter.py", "vt__test__converter_8py.html", "vt__test__converter_8py" ],
+    [ "vt_test_converter.py", "vt__test__converter_8py.html", [
+      [ "translateJSON", "class_git_app_server_1_1vt__test__converter_1_1translate_j_s_o_n.html", "class_git_app_server_1_1vt__test__converter_1_1translate_j_s_o_n" ]
+    ] ],
     [ "vt_test_handlers.py", "vt__test__handlers_8py.html", [
       [ "PingHandler", "class_git_app_server_1_1vt__test__handlers_1_1_ping_handler.html", "class_git_app_server_1_1vt__test__handlers_1_1_ping_handler" ],
       [ "EchoHandler", "class_git_app_server_1_1vt__test__handlers_1_1_echo_handler.html", "class_git_app_server_1_1vt__test__handlers_1_1_echo_handler" ]
@@ -42,12 +45,16 @@ var files =
     [ "vt_test_parser.py", "vt__test__parser_8py.html", [
       [ "TestParser", "class_git_app_server_1_1vt__test__parser_1_1_test_parser.html", "class_git_app_server_1_1vt__test__parser_1_1_test_parser" ]
     ] ],
-    [ "vt_test_providers.py", "vt__test__providers_8py.html", "vt__test__providers_8py" ],
+    [ "vt_test_providers.py", "vt__test__providers_8py.html", [
+      [ "TestProviderManager", "class_git_app_server_1_1vt__test__providers_1_1_test_provider_manager.html", "class_git_app_server_1_1vt__test__providers_1_1_test_provider_manager" ],
+      [ "TestPostgisProvider", "class_git_app_server_1_1vt__test__providers_1_1_test_postgis_provider.html", "class_git_app_server_1_1vt__test__providers_1_1_test_postgis_provider" ],
+      [ "TestRasterProvider", "class_git_app_server_1_1vt__test__providers_1_1_test_raster_provider.html", "class_git_app_server_1_1vt__test__providers_1_1_test_raster_provider" ]
+    ] ],
     [ "vt_test_tiler.py", "vt__test__tiler_8py.html", [
       [ "TestTiler", "class_git_app_server_1_1vt__test__tiler_1_1_test_tiler.html", "class_git_app_server_1_1vt__test__tiler_1_1_test_tiler" ]
     ] ],
     [ "vt_utils_converter.py", "vt__utils__converter_8py.html", [
-      [ "X3DTranslateToThreeJs", "class_git_app_server_1_1vt__utils__converter_1_1_x3_d_translate_to_three_js.html", "class_git_app_server_1_1vt__utils__converter_1_1_x3_d_translate_to_three_js" ]
+      [ "PostgisToJSON", "class_git_app_server_1_1vt__utils__converter_1_1_postgis_to_j_s_o_n.html", "class_git_app_server_1_1vt__utils__converter_1_1_postgis_to_j_s_o_n" ]
     ] ],
     [ "vt_utils_gui.py", "vt__utils__gui_8py.html", "vt__utils__gui_8py" ],
     [ "vt_utils_parser.py", "vt__utils__parser_8py.html", "vt__utils__parser_8py" ],
