@@ -4,6 +4,7 @@ import re
 from qgis.core import *
 from qgis.gui import *
 
+from vt_as_provider_manager import ProviderManager
 
 ## Return True if the layer is a Raster which come from a database
 def is_raster(layer):
@@ -36,6 +37,7 @@ def build_viewer_param(extent, port, hasRaster):
         },
         'port': port,
         'hasRaster': hasRaster,
+        'vectors': ProviderManager.instance().vectors.keys(),
     }
 
 
