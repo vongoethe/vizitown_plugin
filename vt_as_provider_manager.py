@@ -41,7 +41,7 @@ class ProviderManager:
     #  @return the tile
     def request_tile(self, Xmin, Ymin, Xmax, Ymax, uuid=None):
         result = []
-        if uuid != None:
+        if uuid is not None:
             result.append(self.vectors[uuid].request_tile(Xmin, Ymin, Xmax, Ymax))
             return result
 
