@@ -35,7 +35,7 @@ def build_viewer_param(extent, port, hasRaster):
             'yMax': str(extent[3]),
         },
         'port': port,
-        'hasRaster': True,
+        'hasRaster': hasRaster,
     }
 
 
