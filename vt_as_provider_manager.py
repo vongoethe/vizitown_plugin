@@ -12,14 +12,15 @@ class ProviderManager:
 
     ## The Constructor
     def __init__(self):
-        self.vectors = []
+        self.vectors = {}
         self.dem = None
         self.texture = None
 
     ## Add a vector provider to the manager
     #  @param p the provider to add
     def add_vector_provider(self, p):
-        self.vectors.append(p)
+        uuid = p.db.databaseName() + p.table + p.column
+        self.vectors[uuid] = p
 
     ## Create a raster provider to the manager
     #  @param raster add to the provider
@@ -38,8 +39,12 @@ class ProviderManager:
     #  @param Xmax
     #  @param Ymax
     #  @return the tile
-    def request_tile(self, Xmin, Ymin, Xmax, Ymax):
+    def request_tile(self, Xmin, Ymin, Xmax, Ymax, uuid=None):
         result = []
-        for p in self.vectors:
+        if uuid != None:
+            result.append(self.vectors[uuid].request_tile(Xmin, Ymin, Xmax, Ymax))
+            return result
+
+        for (uuid, p) in self.vectorsi.items():
             result.append(p.request_tile(Xmin, Ymin, Xmax, Ymax))
         return result

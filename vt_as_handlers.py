@@ -43,7 +43,8 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
     ## Method call when a message is received
     #  Request all content in the extent specified in the message
     #  @param message in JSON format like:
-    #  '{"Xmin": 0, "Ymin": 0, "Xmax": 50, "Ymax": 50}'
+    #  '{"Xmin": 0, "Ymin": 0, "Xmax": 50, "Ymax": 50}' for request all vectors
+    #  '{"Xmin": 0, "Ymin": 0, "Xmax": 50, "Ymax": 50, uuid: "my_uuid"}' for a request only a specific vector
     def messageReceived(self, message):
         d = json.loads(message)
         vectors = ProviderManager.instance().request_tile(**d)
