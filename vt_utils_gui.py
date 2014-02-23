@@ -61,9 +61,6 @@ def open_web_browser(port):
 ## Get the color of the vector layer. If is categorized symbol or graduate symbol, the color is white
 def get_color(layer):
     if layer.rendererV2().type() == "singleSymbol":
-        layerColor = str(layer.rendererV2().symbol().color().name())
-    return layerColor
-
         tabColor = []
         tabColor.append(str(layer.rendererV2().symbol().color().name()))
         return layerColor

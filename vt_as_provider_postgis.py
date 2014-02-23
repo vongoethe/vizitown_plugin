@@ -196,10 +196,8 @@ class PostgisProvider:
     #  @param password to define the password of the user
     #  @param table to define the table in the database
     #  @return the result of the request
-    
-#    host, dbname, user, password, table
 
-    
+    #  host, dbname, user, password, table
     @staticmethod
     def get_columns_info_table(layer):
         db = QSqlDatabase.addDatabase("QPSQL")

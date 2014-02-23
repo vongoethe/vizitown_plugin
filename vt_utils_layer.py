@@ -2,7 +2,6 @@
 
 class Layer:
 
-
     def __init__(self, host, dbname, port, user, password, srid, table, colorType, column, column2=None, typeColumn2=None):
         self._host = host
         self._dbname = dbname
