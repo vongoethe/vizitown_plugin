@@ -9,7 +9,7 @@
     copyright            : (C) 2014 by Cubee(ESIPE)
     email                : vizitown@gmail.com
     ***************************************************************************/
-    
+
     /***************************************************************************
     *                                                                         *
     *   This program is free software; you can redistribute it and/or modify  *
@@ -36,6 +36,8 @@ from vt_as_provider_manager import ProviderManager
 from vt_as_provider_postgis import PostgisProvider
 from vt_as_provider_raster import RasterProvider
 from vt_as_sync import SyncManager
+from vt_utils_layer import Layer
+
 
 import vt_utils_parser
 from vt_utils_tiler import TileGenerator
@@ -51,7 +53,7 @@ def launch_gdal_process(gdalPath, dataSrcImg, dataSrcMnt, path, extent, tileSize
 
 ## Vizitown dialog in QGIS GUI
 class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
-    
+
     ## The Constructor
     def __init__(self, extent):
         QtGui.QDialog.__init__(self)
@@ -61,7 +63,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.appServerRunning = False
         self.GDALprocess = None
         self.hasData = False
-    
+
     ## Set the default extent
     #  @param extent the extent to init the parameter
     def init_extent(self, extent):
@@ -72,7 +74,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.le_xmax.setValue(extent.xMaximum())
         self.le_ymax.setValue(extent.yMaximum())
         self.calculate_size_extent()
-    
+
     ## Set the limit of the doublespinbox in the tab extent
     def set_limit_sb(self):
         self.le_xmin.setMaximum(sys.maxint)
@@ -83,7 +85,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.le_xmax.setMinimum(-sys.maxint)
         self.le_ymax.setMaximum(sys.maxint)
         self.le_ymax.setMinimum(-sys.maxint)
-    
+
     ## Set the values of the taile by default
     def init_tile_size(self):
         self.cb_tile.clear()
@@ -93,7 +95,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.cb_tile.addItem('2048 x 2048')
         self.cb_tile.addItem('4096 x 4096')
         self.cb_tile.setCurrentIndex(1)
-    
+
     ## Set the value of the zoom level
     def init_zoom_level(self):
         self.cb_zoom.clear()
@@ -103,7 +105,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.cb_zoom.addItem('4')
         self.cb_zoom.addItem('5')
         self.cb_zoom.setCurrentIndex(1)
-    
+
     ## Init combobox and table layers
     def init_layers(self):
         self.reset_all_fields()
@@ -112,10 +114,11 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             if is_dem(layer):
                 self.cb_dem.addItem(layer.name(), layer)
             if is_vector(layer):
-                layerColor = get_color(layer)
+                colorType = layer.rendererV2().type()
                 srid = layer.crs().postgisSrid()
-                d = vt_utils_parser.parse_vector(layer.source(), srid, layerColor)
-                dic = PostgisProvider.get_columns_info_table(d['host'], d['dbname'], d['user'], d['password'], d['table'])
+                d = vt_utils_parser.parse_vector(layer.source(), srid, colorType)
+                vLayer = Layer(**d)
+                dic = PostgisProvider.get_columns_info_table(vLayer)
                 name = layer.name() + ' ' + re.search("(\(.*\)+)", layer.source()).group(0)
                 item = QtGui.QTableWidgetItem(name)
                 item.setData(QtCore.Qt.UserRole, layer)
@@ -123,7 +126,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
                 self.add_vector_layer(item, dic)
             if is_texture(layer):
                 self.cb_texture.addItem(layer.name(), layer)
-    
+
     ## Reset all widgets
     def reset_all_fields(self):
         self.cb_dem.clear()
@@ -134,19 +137,19 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.tw_layers.setColumnWidth(0, 45)
         self.tw_layers.setColumnWidth(1, 150)
         self.pb_loading.hide()
-    
+
     ## Return true if there is a DEM to generate
     def has_dem(self):
         return self.cb_dem.currentIndex() != 0
-    
+
     ## Return true if there is a texture to generate
     def has_texture(self):
         return self.cb_texture.currentIndex() != 0
-    
+
     ## Return true if there is a least one raster to generate
     def has_raster(self):
         return self.has_dem() or self.has_texture()
-    
+
     ## Add vector layer in QTableWidget
     #  @param item the new layer
     #  @param dic the dic with the fields and their types
@@ -163,7 +166,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.tw_layers.setItem(0, 0, checkBox)
         self.tw_layers.setItem(0, 1, item)
         self.tw_layers.setCellWidget(0, 2, comboBox)
-    
+
     ## Get the size tile selected by the user
     #  @return the size tile
     def get_size_tile(self):
@@ -178,7 +181,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             return 2048
         if index == 4:
             return 4096
-    
+
     ## Get the extent specified in the GUI or if the fields filled by the user are incoherent it's the extent of current view of QGIS
     #  @return the extent
     def get_gui_extent(self):
@@ -189,7 +192,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         if float(xmin) < float(xmax) and float(ymin) < float(ymax):
             return [float(xmin), float(ymin), float(xmax), float(ymax)]
         return [float(self.extent.xMinimum()), float(self.extent.yMinimum()), float(self.extent.xMaximum()), float(self.extent.yMaximum())]
-    
+
     ## Set the tab advanced option by default
     #  @override QtGui.QDialog
     def on_btn_default_released(self):
@@ -198,7 +201,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.cb_zoom.setCurrentIndex(1)
         self.tw_layers.clear()
         self.tw_layers.setHorizontalHeaderLabels(('Display', 'Layer', 'Field'))
-    
+
     ## Generate and launch the rendering of the 3D scene
     def on_btn_generate_released(self):
         if self.appServerRunning:
@@ -206,8 +209,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         else:
             self.create_vector_providers()
             self.create_raster_providers()
-            if self.hasData == False:
-                QtGui.QMessageBox.warning(self, "Warning" , ("No data !"), QtGui.QMessageBox.Ok)
+            if not self.hasData:
+                QtGui.QMessageBox.warning(self, "Warning", ("No data !"), QtGui.QMessageBox.Ok)
                 return
             self.pb_loading.show()
             viewerParam = build_viewer_param(self.get_gui_extent(), str(self.sb_port.value()), self.has_raster())
@@ -226,7 +229,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.btn_generate.setText("Server is running")
             open_web_browser(self.sb_port.value())
             self.appServerRunning = True
-    
+
     ## Calculate the width and the height in kilometers
     def calculate_size_extent(self):
         extent2 = self.get_gui_extent()
@@ -234,7 +237,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         height = extent2[3] - extent2[1]
         self.lb_width.setValue(width / 1000)
         self.lb_height.setValue(height / 1000)
-    
+
     ## Create all providers with the selected layers in the GUI
     def create_vector_providers(self):
         for row_index in range(self.tw_layers.rowCount()):
@@ -242,18 +245,26 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             if self.tw_layers.item(row_index, 0).checkState() == QtCore.Qt.Checked:
                 self.hasData = True
                 vectorLayer = self.tw_layers.item(row_index, 1).data(QtCore.Qt.UserRole)
+
+                colorType = vectorLayer.rendererV2().type()
+                columnColor = get_column_color(vectorLayer)
                 layerColor = get_color(vectorLayer)
                 srid = vectorLayer.crs().postgisSrid()
-                connection_info = vt_utils_parser.parse_vector(vectorLayer.source(), srid, layerColor)
+                info = vt_utils_parser.parse_vector(vectorLayer.source(), srid, colorType)
                 column2 = self.tw_layers.cellWidget(row_index, 2).currentText()
+
                 if column2 == "None":
-                    provider = PostgisProvider(**connection_info)
+                    vLayer = Layer(**info)
+                    vLayer.add_color(columnColor, layerColor)
+                    provider = PostgisProvider(vLayer)
                 else:
-                    connection_info['column2'] = column2.split(" - ")[0]
-                    connection_info['column2Type'] = column2.split(" - ")[1]
-                    provider = PostgisProvider(**connection_info)
+                    info['column2'] = column2.split(" - ")[0]
+                    info['column2Type'] = column2.split(" - ")[1]
+                    vLayer = Layer(**info)
+                    vLayer.add_color(columnColor, layerColor)
+                    provider = PostgisProvider(vLayer)
                 ProviderManager.instance().add_vector_provider(provider)
-    
+
     ## Create all providers for DEM and raster
     def create_raster_providers(self):
         dataSrcImg = None
@@ -285,7 +296,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
                 gdalPath = unicode(settings.value("/GdalTools/gdalPath", ""))
                 self.GDALprocess = mp.Process(target=launch_gdal_process, args=(gdalPath, dataSrcImg, dataSrcMnt, path, extent, tileSize, int(zoomLevel)))
                 self.GDALprocess.start()
-    
+
     ## Behavior whit a close event
     #  @override QtGui.QDialog
     def closeEvent(self, QCloseEvent):
@@ -306,7 +317,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
                 print "GDALprocess continue"
             if ret == QtGui.QMessageBox.Discard:
                 self.kill_gdal_process()
-    
+
     ## Kill GDAL process and remove unfinished tiled files
     def kill_gdal_process(self):
         if self.GDALprocess and self.GDALprocess.is_alive():

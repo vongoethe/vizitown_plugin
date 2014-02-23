@@ -18,23 +18,23 @@ class PostgisProvider:
     #  @param color of the resource
     #  @param column of the resource
     #  @param column2 representing a height of column or another geometry (TinZ)
-    def __init__(self, host, dbname, port, user, password, srid, table, column, color, column2=None, column2Type=None):
+    def __init__(self, layer):
         self.db = QSqlDatabase.addDatabase("QPSQL")
-        self.db.setHostName(host)
-        self.db.setDatabaseName(dbname)
-        self.db.setPort(port)
-        self.db.setUserName(user)
-        self.db.setPassword(password)
-        self.table = table
-        self.column = column
-        self.column2 = column2
-        self.column2Type = column2Type
-        self.srid = srid
+        self.db.setHostName(layer._host)
+        self.db.setDatabaseName(layer._dbname)
+        self.db.setPort(layer._port)
+        self.db.setUserName(layer._user)
+        self.db.setPassword(layer._password)
+        self.table = layer._table
+        self.column = layer._column
+        self.column2 = layer._column2
+        self.column2Type = layer._column2Type
+        self.srid = layer._srid
         self.geometry1 = None
         self.geometry2 = None
         self.retGeometry = None
         self.hasH = False
-        self.color = color
+        self.color = layer._color
 
         if not self.db.open():
             raise Exception('Connection to database cannot be established')
@@ -196,13 +196,17 @@ class PostgisProvider:
     #  @param password to define the password of the user
     #  @param table to define the table in the database
     #  @return the result of the request
+    
+#    host, dbname, user, password, table
+
+    
     @staticmethod
-    def get_columns_info_table(host, dbname, user, password, table):
+    def get_columns_info_table(layer):
         db = QSqlDatabase.addDatabase("QPSQL")
-        db.setHostName(host)
-        db.setDatabaseName(dbname)
-        db.setUserName(user)
-        db.setPassword(password)
+        db.setHostName(layer._host)
+        db.setDatabaseName(layer._dbname)
+        db.setUserName(layer._user)
+        db.setPassword(layer._password)
         if db.open():
             query = QSqlQuery(db)
             st = table.split('.')
