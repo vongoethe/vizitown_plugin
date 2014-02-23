@@ -8,7 +8,7 @@ import re
 #  @param srid of the vector layer
 #  @param color of the vector layer
 #  @return String with vectors informations
-def parse_vector(source, srid, color):
+def parse_vector(source, srid, colorType):
     m = re.match(r"""
     \s*dbname='(?P<dbname>.*?)'\s*host=(?P<host>\d+.\d+.\d+.\d+)\s*port=(?P<port>\d+)
     \s*user='(?P<user>.*?)'\s*password='(?P<password>.*?)'\s*.*
@@ -22,5 +22,5 @@ def parse_vector(source, srid, color):
         'srid': srid,
         'table': m.group('table'),
         'column': m.group('column'),
-        'color': color
+        'colorType': colorType,
     }

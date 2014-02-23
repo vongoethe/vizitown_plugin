@@ -60,8 +60,46 @@ def open_web_browser(port):
 
 ## Get the color of the vector layer. If is categorized symbol or graduate symbol, the color is white
 def get_color(layer):
-    # By default the color is white
-    layerColor = "#FFFAFA"
     if layer.rendererV2().type() == "singleSymbol":
         layerColor = str(layer.rendererV2().symbol().color().name())
     return layerColor
+
+        tabColor = []
+        tabColor.append(str(layer.rendererV2().symbol().color().name()))
+        return layerColor
+    if layer.rendererV2().type() == "graduatedSymbol":
+        tabColor = []
+        color = []
+        lowerValue = []
+        upperValue = []
+        size = 0
+        for i in layer.rendererV2().symbols():
+            color.append(str(i.color().name()))
+            size = size + 1
+        for range in layer.rendererV2().ranges():
+            lowerValue.append(range.lowerValue())
+            upperValue.append(range.upperValue())
+        for nb in xrange(size):
+            tabColor.append([lowerValue[nb], upperValue[nb], color[nb]])
+        return tabColor
+    if layer.rendererV2().type() == "categorizedSymbol":
+        tabColor = []
+        color = []
+        value = []
+        size = 0
+        for i in layer.rendererV2().symbols():
+            color.append(str(i.color().name()))
+            size = size + 1
+        for cat in layer.rendererV2().categories():
+            value.append(cat.value())
+        for nb in xrange(size):
+            tabColor.append([value[nb], color[nb]])
+        return tabColor
+
+
+## Get the name of the column where the analysis was perform. If there isn't analysis, the name is none
+def get_column_color(layer):
+    if layer.rendererV2().type() == "singleSymbol":
+        return "None"
+    if layer.rendererV2().type() == "graduatedSymbol" or layer.rendererV2().type() == "categorizedSymbol":
+        return layer.rendererV2().classAttribute()

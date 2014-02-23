@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 """
-/***************************************************************************
- VizitownDialog
-                                 A QGIS plugin
- 2D to 3D
-                             -------------------
-        begin                : 2014-01-09
-        copyright            : (C) 2014 by Cubee(ESIPE)
-        email                : vizitown@gmail.com
- ***************************************************************************/
+    /***************************************************************************
+    VizitownDialog
+    A QGIS plugin
+    2D to 3D
+    -------------------
+    begin                : 2014-01-09
+    copyright            : (C) 2014 by Cubee(ESIPE)
+    email                : vizitown@gmail.com
+    ***************************************************************************/
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
-"""
+    /***************************************************************************
+    *                                                                         *
+    *   This program is free software; you can redistribute it and/or modify  *
+    *   it under the terms of the GNU General Public License as published by  *
+    *   the Free Software Foundation; either version 2 of the License, or     *
+    *   (at your option) any later version.                                   *
+    *                                                                         *
+    ***************************************************************************/
+    """
 
 import os
 import re
@@ -36,6 +36,8 @@ from vt_as_provider_manager import ProviderManager
 from vt_as_provider_postgis import PostgisProvider
 from vt_as_provider_raster import RasterProvider
 from vt_as_sync import SyncManager
+from vt_utils_layer import Layer
+
 
 import vt_utils_parser
 from vt_utils_tiler import VTTiler, Extent
@@ -53,6 +55,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.appServer = None
         self.appServerRunning = False
         self.GDALprocess = None
+        self.hasData = False
 
     ## Set the default extent
     #  @param extent the extent to init the parameter
@@ -104,10 +107,11 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             if is_dem(layer):
                 self.cb_dem.addItem(layer.name(), layer)
             if is_vector(layer):
-                layerColor = get_color(layer)
+                colorType = layer.rendererV2().type()
                 srid = layer.crs().postgisSrid()
-                d = vt_utils_parser.parse_vector(layer.source(), srid, layerColor)
-                dic = PostgisProvider.get_columns_info_table(d['host'], d['dbname'], d['user'], d['password'], d['table'])
+                d = vt_utils_parser.parse_vector(layer.source(), srid, colorType)
+                vLayer = Layer(**d)
+                dic = PostgisProvider.get_columns_info_table(vLayer)
                 name = layer.name() + ' ' + re.search("(\(.*\)+)", layer.source()).group(0)
                 item = QtGui.QTableWidgetItem(name)
                 item.setData(QtCore.Qt.UserRole, layer)
@@ -196,9 +200,12 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         if self.appServerRunning:
             self.closeEvent(None)
         else:
-            self.pb_loading.show()
             self.create_vector_providers()
             self.create_raster_providers()
+            if not self.hasData:
+                QtGui.QMessageBox.warning(self, "Warning", ("No data !"), QtGui.QMessageBox.Ok)
+                return
+            self.pb_loading.show()
             viewerParam = build_viewer_param(self.get_gui_extent(), str(self.sb_port.value()), self.has_raster())
             if self.has_raster():
                 demResource = None
@@ -229,17 +236,26 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         for row_index in range(self.tw_layers.rowCount()):
             # if the layer is checked
             if self.tw_layers.item(row_index, 0).checkState() == QtCore.Qt.Checked:
+                self.hasData = True
                 vectorLayer = self.tw_layers.item(row_index, 1).data(QtCore.Qt.UserRole)
+
+                colorType = vectorLayer.rendererV2().type()
+                columnColor = get_column_color(vectorLayer)
                 layerColor = get_color(vectorLayer)
                 srid = vectorLayer.crs().postgisSrid()
-                connection_info = vt_utils_parser.parse_vector(vectorLayer.source(), srid, layerColor)
+                info = vt_utils_parser.parse_vector(vectorLayer.source(), srid, colorType)
                 column2 = self.tw_layers.cellWidget(row_index, 2).currentText()
+
                 if column2 == "None":
-                    provider = PostgisProvider(**connection_info)
+                    vLayer = Layer(**info)
+                    vLayer.add_color(columnColor, layerColor)
+                    provider = PostgisProvider(vLayer)
                 else:
-                    connection_info['column2'] = column2.split(" - ")[0]
-                    connection_info['column2Type'] = column2.split(" - ")[1]
-                    provider = PostgisProvider(**connection_info)
+                    info['column2'] = column2.split(" - ")[0]
+                    info['column2Type'] = column2.split(" - ")[1]
+                    vLayer = Layer(**info)
+                    vLayer.add_color(columnColor, layerColor)
+                    provider = PostgisProvider(vLayer)
                 ProviderManager.instance().add_vector_provider(provider)
 
     ## Create all providers for DEM and raster
@@ -251,11 +267,13 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         tileSize = self.get_size_tile()
         zoomLevel = self.cb_zoom.currentText()
         if self.has_dem():
+            self.hasData = True
             dem = self.cb_dem.itemData(self.cb_dem.currentIndex())
             demProvider = ProviderManager.instance().create_raster_provider(dem, str(self.sb_port.value()), 'dem', str(tileSize), zoomLevel)
             ProviderManager.instance().dem = demProvider
             dataSrcMnt = demProvider.source
         if self.has_texture():
+            self.hasData = True
             texture = self.cb_texture.itemData(self.cb_texture.currentIndex())
             textureProvider = ProviderManager.instance().create_raster_provider(texture, str(self.sb_port.value()), 'img', str(tileSize), zoomLevel)
             ProviderManager.instance().texture = textureProvider
