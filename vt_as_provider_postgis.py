@@ -25,10 +25,11 @@ class PostgisProvider:
         self.db.setPort(layer._port)
         self.db.setUserName(layer._user)
         self.db.setPassword(layer._password)
+        self._layer = layer
         self.table = layer._table
         self.column = layer._column
         self.column2 = layer._column2
-        self.column2Type = layer._column2Type
+        self.column2Type = layer._typeColumn2
         self.srid = layer._srid
         self.geometry1 = None
         self.geometry2 = None
@@ -39,15 +40,15 @@ class PostgisProvider:
         if not self.db.open():
             raise Exception('Connection to database cannot be established')
 
-        print "Connection established to database %s -> %s" % (host, dbname)
+        print "Connection established to database %s -> %s" % (self._layer._host, self._layer._dbname)
 
         query = QSqlQuery(self.db)
 
         if self.column2Type == 'geometry':
             getGeometry = """SELECT GeometryType({column_}), GeometryType({column2_}) FROM {table_} LIMIT 1
-            """.format(column_=column,
-                       column2_=column2,
-                       table_=table)
+            """.format(column_=self.column,
+                       column2_=self.column2,
+                       table_=self.table)
             if query.exec_(getGeometry):
                 query.next()
                 self.geometry1 = query.value(0)
@@ -59,8 +60,8 @@ class PostgisProvider:
 
         else:
             getGeometry = """SELECT GeometryType({column_}) FROM {table_} LIMIT 1
-            """.format(column_=column,
-                       table_=table)
+            """.format(column_=self.column,
+                       table_=self.table)
             if query.exec_(getGeometry):
                 query.next()
                 self.geometry1 = query.value(0)
@@ -207,7 +208,7 @@ class PostgisProvider:
         db.setPassword(layer._password)
         if db.open():
             query = QSqlQuery(db)
-            st = table.split('.')
+            st = layer._table.split('.')
             st[0] = re.sub('"', '\'', st[0])
             st[1] = re.sub('"', '\'', st[1])
             getInfo = """

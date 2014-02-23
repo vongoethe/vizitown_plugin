@@ -19,7 +19,6 @@ class Layer:
         self._columnColor = None
         self._color = []
 
-    #
     # columnColor is None if the layer has a plain color so color is an array with only one color in.
     # else columnColor is the field in db to color geometries with right color and color is an array with dict in
     # dict in array looks like that:
@@ -29,6 +28,6 @@ class Layer:
     #	"color"	: value
     # }
     def add_color(self, columnColor, color):
-        if colorColumn is not None:
+        if columnColor is not None:
             self._columnColor = columnColor
         self._color = color

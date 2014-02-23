@@ -82,7 +82,7 @@ class PostgisToJSON:
             else:
                 exchange = re.sub('{TYPE}', "2", exchange)
 
-        exchange = re.sub('{COLOR}', color, exchange)
+        exchange = re.sub('{COLOR}', color[0], exchange)
         exchange = re.sub('{GEOMETRY}', geometry, exchange)
 
         noHeight = "0"

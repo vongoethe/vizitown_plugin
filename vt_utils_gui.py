@@ -63,7 +63,7 @@ def get_color(layer):
     if layer.rendererV2().type() == "singleSymbol":
         tabColor = []
         tabColor.append(str(layer.rendererV2().symbol().color().name()))
-        return layerColor
+        return tabColor
     if layer.rendererV2().type() == "graduatedSymbol":
         tabColor = []
         color = []

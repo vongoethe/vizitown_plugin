@@ -45,6 +45,6 @@ class ProviderManager:
             result.append(self.vectors[uuid].request_tile(Xmin, Ymin, Xmax, Ymax))
             return result
 
-        for (uuid, p) in self.vectorsi.items():
+        for (uuid, p) in self.vectors.items():
             result.append(p.request_tile(Xmin, Ymin, Xmax, Ymax))
         return result
