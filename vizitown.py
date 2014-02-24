@@ -58,7 +58,7 @@ class Vizitown:
         QObject.connect(self.dlg.le_ymin, SIGNAL("valueChanged(double)"), self.dlg.calculate_size_extent)
         QObject.connect(self.dlg.le_xmax, SIGNAL("valueChanged(double)"), self.dlg.calculate_size_extent)
         QObject.connect(self.dlg.le_ymax, SIGNAL("valueChanged(double)"), self.dlg.calculate_size_extent)
-#        QObject.connect(QgsMapLayerRegistry().instance().mapLayers().items(), SIGNAL("rendererChanged()"), self.toto)
+
 
     def initGui(self):
         # Create action that will start plugin configuration
@@ -101,5 +101,8 @@ class Vizitown:
         self.dlg.init_zoom_level()
         self.dlg.init_layers()
         self.dlg.sb_port.setValue(8888)
+#        if self.iface.activeLayer():
+#            QObject.connect(self.iface.activeLayer(), SIGNAL("rendererChanged()"), self.toto)
+#            print "activeLayer"
         # show the dialog
         self.dlg.show()
