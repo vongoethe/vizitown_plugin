@@ -58,6 +58,7 @@ class Vizitown:
         QObject.connect(self.dlg.le_ymin, SIGNAL("valueChanged(double)"), self.dlg.calculate_size_extent)
         QObject.connect(self.dlg.le_xmax, SIGNAL("valueChanged(double)"), self.dlg.calculate_size_extent)
         QObject.connect(self.dlg.le_ymax, SIGNAL("valueChanged(double)"), self.dlg.calculate_size_extent)
+#        QObject.connect(QgsMapLayerRegistry().instance().mapLayers().items(), SIGNAL("rendererChanged()"), self.toto)
 
     def initGui(self):
         # Create action that will start plugin configuration
@@ -90,6 +91,9 @@ class Vizitown:
             'Ymax': yMax,
         }
         SyncManager.instance().notify_extent_change(extent)
+
+    def toto(self):
+        print "coucou"
 
     def run(self):
         self.dlg.init_extent(self.iface.mapCanvas().extent())
