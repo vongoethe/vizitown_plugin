@@ -61,11 +61,11 @@ def open_web_browser(port):
 ## Get the color of the vector layer. If is categorized symbol or graduate symbol, the color is white
 def get_color(layer):
     if layer.rendererV2().type() == "singleSymbol":
-        tabColor = {}
-        tabColor['color'] = str(layer.rendererV2().symbol().color().name())
+        tabColor = []
+        tabColor.append({'color' : str(layer.rendererV2().symbol().color().name())})
         return tabColor
     if layer.rendererV2().type() == "graduatedSymbol":
-        tabColor = {}
+        tabColor = []
         color = []
         lowerValue = []
         upperValue = []
@@ -73,14 +73,14 @@ def get_color(layer):
         for i in layer.rendererV2().symbols():
             color.append(str(i.color().name()))
             size = size + 1
-        for range in layer.rendererV2().ranges():
-            lowerValue.append(range.lowerValue())
-            upperValue.append(range.upperValue())
+        for j in layer.rendererV2().ranges():
+            lowerValue.append(j.lowerValue())
+            upperValue.append(j.upperValue())
         for nb in xrange(size):
-            tabColor[nb] = {'min' : lowerValue[nb] , 'max' : upperValue[nb], 'color' : color[nb]}
+            tabColor.append({'min' : lowerValue[nb] , 'max' : upperValue[nb], 'color' : color[nb]})
         return tabColor
     if layer.rendererV2().type() == "categorizedSymbol":
-        tabColor = {}
+        tabColor = []
         color = []
         value = []
         size = 0
@@ -89,8 +89,8 @@ def get_color(layer):
             size = size + 1
         for cat in layer.rendererV2().categories():
             value.append(cat.value())
-        for data in xrange(size):
-            tabColor[nb] = {'value' : value[nb], 'color' : color[nb]}
+        for nb in xrange(size):
+            tabColor.append({'value' : value[nb], 'color' : color[nb]})
         return tabColor
 
 
