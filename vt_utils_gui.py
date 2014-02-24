@@ -62,7 +62,7 @@ def open_web_browser(port):
 def get_color(layer):
     if layer.rendererV2().type() == "singleSymbol":
         tabColor = []
-        tabColor.append({'color' : str(layer.rendererV2().symbol().color().name())})
+        tabColor.append({'color'git: str(layer.rendererV2().symbol().color().name())})
         return tabColor
     if layer.rendererV2().type() == "graduatedSymbol":
         tabColor = []
@@ -77,7 +77,7 @@ def get_color(layer):
             lowerValue.append(j.lowerValue())
             upperValue.append(j.upperValue())
         for nb in xrange(size):
-            tabColor.append({'min' : lowerValue[nb] , 'max' : upperValue[nb], 'color' : color[nb]})
+            tabColor.append({'min': lowerValue[nb], 'max': upperValue[nb], 'color': color[nb]})
         return tabColor
     if layer.rendererV2().type() == "categorizedSymbol":
         tabColor = []
@@ -90,7 +90,7 @@ def get_color(layer):
         for cat in layer.rendererV2().categories():
             value.append(cat.value())
         for nb in xrange(size):
-            tabColor.append({'value' : value[nb], 'color' : color[nb]})
+            tabColor.append({'value': value[nb], 'color': color[nb]})
         return tabColor
 
 
