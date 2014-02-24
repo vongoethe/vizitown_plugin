@@ -53,15 +53,10 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
             return
         translator = PostgisToJSON()
         for v in vectors:
-            array = []
-            while v['it'].next():
-                if v['hasH']:
-                    array.append([v['it'].value(0), v['it'].value(1)])
-                else:
-                    array.append(v['it'].value(0))
-
-            json_ = translator.parse(array, v['geom'], v['hasH'], v['color'], v['uuid'])
-            self.sendMessage(json_)
+            for i in range(len(v['results'])):
+                if v['results'][i]:
+                    json_ = translator.parse(v['results'][i], v['geom'], v['hasH'], v['color'][i], v['uuid'])
+                    self.sendMessage(json_)
 
     ## Method call when the websocket is closed
     #  @param reason to indicate the reason of the closed instance

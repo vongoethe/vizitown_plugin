@@ -69,7 +69,6 @@ class PostgisToJSON:
     #  @param color to define the color of data
     #  @return a json
     def parse(self, resultArray, geometry, hasH, color, uuid):
-
         exchange = self._jsonExchange
         # geometry in 3 dimensions
         if (geometry == 'POLYHEDRALSURFACE' or
@@ -83,10 +82,9 @@ class PostgisToJSON:
             else:
                 exchange = re.sub('{TYPE}', "2", exchange)
 
-        exchange = re.sub('{COLOR}', color[0], exchange)
+        exchange = re.sub('{COLOR}', color, exchange)
         exchange = re.sub('{GEOMETRY}', geometry, exchange)
         exchange = re.sub('{UUID}', uuid, exchange)
-        print exchange
 
         noHeight = "0"
         geometries = ""

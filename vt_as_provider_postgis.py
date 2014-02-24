@@ -31,14 +31,15 @@ class PostgisProvider:
         self.retGeometry = None
         self.hasH = False
 
-        print layer._color
-
         if not self.db.open():
             raise Exception('Connection to database cannot be established')
 
         print "Connection established to database %s -> %s" % (self._layer._host, self._layer._dbname)
 
         query = QSqlQuery(self.db)
+
+        if self._layer._column2 is not None and self._layer._typeColumn2 != 'geometry':
+            self.hasH = True
 
         if self._layer._typeColumn2 == 'geometry':
             getGeometry = """SELECT GeometryType({column_}), GeometryType({column2_}) FROM {table_} LIMIT 1
@@ -100,29 +101,58 @@ class PostgisProvider:
             print query.lastError().text()
             raise Exception('DB request failed')
 
-        return {'it': query, 'geom': self.retGeometry, 'hasH': self.hasH, 'color': self._layer._color, 'uuid': self._layer._uuid}
+        results = self._sort_result(query)
+        colors = self._color_array()
+        return {'results': results, 'geom': self.retGeometry, 'hasH': self.hasH, 'color': colors, 'uuid': self._layer._uuid}
 
     def _sort_result(self, iterator):
         if (self._layer._colorType == "singleSymbol"):
             return self._get_result_single_symbol(iterator)
 
         elif (self._layer._colorType == "graduatedSymbol"):
-            pass
+            return self._get_result_graduated_symbol(iterator)
 
         elif (self._layer._colorType == "categorizedSymbol"):
-            pass
+            return self._get_result_categorized_symbol(iterator)
 
     def _get_result_single_symbol(self, iterator):
-        array = []
+        array = [[]]
         while iterator.next():
             if self.hasH:
-                array.append([iterator.value(0), iterator.value(1)])
+                array[0].append([iterator.value(0), iterator.value(1)])
             else:
-                array.append(iterator.value(0))
+                array[0].append(iterator.value(0))
         return array
 
     def _get_result_graduated_symbol(self, iterator):
-        pass
+        nbColor = len(self._layer._color)
+        array = [[] for i in range(nbColor)]
+
+        while iterator.next():
+            for i in range(nbColor):
+                if self.hasH:
+                    if (iterator.value(2) >= self._layer._color[i]['min'] and
+                            iterator.value(2) <= self._layer._color[i]['max']):
+                        array[i].append([iterator.value(0), iterator.value(1)])
+                else:
+                    if (iterator.value(1) >= self._layer._color[i]['min'] and
+                            iterator.value(1) <= self._layer._color[i]['max']):
+                        array[i].append(iterator.value(0))
+        return array
+
+    def _get_result_categorized_symbol(self, iterator):
+        nbColor = len(self._layer._color)
+        array = [[] for i in range(nbColor)]
+
+        while iterator.next():
+            for i in range(nbColor):
+                if self.hasH:
+                    if iterator.value(2) == self._layer._color[i]['value']:
+                        array[i].append([iterator.value(0), iterator.value(1)])
+                else:
+                    if iterator.value(1) == self._layer._color[i]['value']:
+                        array[i].append(iterator.value(0))
+        return array
 
     ## _get_request send a request to catch the type of the data
     #  @return the request
@@ -160,20 +190,18 @@ class PostgisProvider:
 
         if self._layer._columnColor is not None:
             request = re.sub("FROM", ", " + self._layer._columnColor + " FROM", request)
-            request += " ORDER BY " + self._layer._columnColor
 
         return request
 
     ## _request_point_line to request point or line data
     #  @return the request for data point or line
     def _request_point_line(self):
-        if self._layer._column2 is None or self._layer._column2Type == 'geometry':
+        if self._layer._column2 is None or self._layer._typeColumn2 == 'geometry':
             return """SELECT ST_AsX3D(ST_Force3D({column_})) FROM {table_}
             """.format(column_=self._layer._column,
                        table_=self._layer._table)
 
         else:
-            self.hasH = True
             return """SELECT ST_AsX3D(ST_Force3D({column_})), {hcolumn_} FROM {table_}
             """.format(column_=self._layer._column,
                        hcolumn_=self._layer._column2,
@@ -182,13 +210,12 @@ class PostgisProvider:
     ## _request_polygon to request polygon data
     #  @return the request for data polygon
     def _request_polygon(self):
-        if self._layer._column2 is None or self._layer._column2Type == 'geometry':
+        if self._layer._column2 is None or self._layer._typeColumn2 == 'geometry':
             return """SELECT ST_AsGeoJSON(ST_Force3D({column_})) FROM {table_}
             """.format(column_=self._layer._column,
                        table_=self._layer._table)
 
         else:
-            self.hasH = True
             return """SELECT ST_AsGeoJSON(ST_Force3D({column_})), {hcolumn_} FROM {table_}
             """.format(column_=self._layer._column,
                        hcolumn_=self._layer._column2,
@@ -216,6 +243,17 @@ class PostgisProvider:
         return """SELECT ST_AsX3D({column_}) FROM {table_}
         """.format(column_=col,
                    table_=self._layer._table)
+
+    def _color_array(self):
+        array = []
+        nbColor = len(self._layer._color)
+        if nbColor == 1:
+            array.append(self._layer._color[0]['color'])
+            return array
+        else:
+            for i in range(nbColor):
+                array.append(self._layer._color[i]['color'])
+            return array
 
     ## Return columns and types of a specific table
     #  @param host to define the host of the database
