@@ -62,7 +62,7 @@ def open_web_browser(port):
 def get_color(layer):
     if layer.rendererV2().type() == "singleSymbol":
         tabColor = []
-        tabColor.append({'color'git: str(layer.rendererV2().symbol().color().name())})
+        tabColor.append({'color': str(layer.rendererV2().symbol().color().name())})
         return tabColor
     if layer.rendererV2().type() == "graduatedSymbol":
         tabColor = []
