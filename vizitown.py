@@ -59,7 +59,6 @@ class Vizitown:
         QObject.connect(self.dlg.le_xmax, SIGNAL("valueChanged(double)"), self.dlg.calculate_size_extent)
         QObject.connect(self.dlg.le_ymax, SIGNAL("valueChanged(double)"), self.dlg.calculate_size_extent)
 
-
     def initGui(self):
         # Create action that will start plugin configuration
         self.action = QAction(
