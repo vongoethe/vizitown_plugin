@@ -60,7 +60,7 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
                 else:
                     array.append(v['it'].value(0))
 
-            json_ = translator.parse(array, v['geom'], v['hasH'], v['color'])
+            json_ = translator.parse(array, v['geom'], v['hasH'], v['color'], v['uuid'])
             self.sendMessage(json_)
 
     ## Method call when the websocket is closed

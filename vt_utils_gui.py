@@ -97,6 +97,6 @@ def get_color(layer):
 ## Get the name of the column where the analysis was perform. If there isn't analysis, the name is none
 def get_column_color(layer):
     if layer.rendererV2().type() == "singleSymbol":
-        return "None"
+        return None
     if layer.rendererV2().type() == "graduatedSymbol" or layer.rendererV2().type() == "categorizedSymbol":
         return layer.rendererV2().classAttribute()

@@ -26,16 +26,12 @@ class PostgisProvider:
         self.db.setUserName(layer._user)
         self.db.setPassword(layer._password)
         self._layer = layer
-        self.table = layer._table
-        self.column = layer._column
-        self.column2 = layer._column2
-        self.column2Type = layer._typeColumn2
-        self.srid = layer._srid
         self.geometry1 = None
         self.geometry2 = None
         self.retGeometry = None
         self.hasH = False
-        self.color = layer._color
+
+        print layer._color
 
         if not self.db.open():
             raise Exception('Connection to database cannot be established')
@@ -44,31 +40,32 @@ class PostgisProvider:
 
         query = QSqlQuery(self.db)
 
-        if self.column2Type == 'geometry':
+        if self._layer._typeColumn2 == 'geometry':
             getGeometry = """SELECT GeometryType({column_}), GeometryType({column2_}) FROM {table_} LIMIT 1
-            """.format(column_=self.column,
-                       column2_=self.column2,
-                       table_=self.table)
-            if query.exec_(getGeometry):
-                query.next()
-                self.geometry1 = query.value(0)
-                self.geometry2 = query.value(1)
-            else:
+            """.format(column_=self._layer._column,
+                       column2_=self._layer._column2,
+                       table_=self._layer._table)
+
+            if not query.exec_(getGeometry):
                 print query.lastQuery()
                 print query.lastError().text()
                 raise Exception('DB request failed')
 
+            query.next()
+            self.geometry1 = query.value(0)
+            self.geometry2 = query.value(1)
+
         else:
             getGeometry = """SELECT GeometryType({column_}) FROM {table_} LIMIT 1
-            """.format(column_=self.column,
-                       table_=self.table)
-            if query.exec_(getGeometry):
-                query.next()
-                self.geometry1 = query.value(0)
-            else:
+            """.format(column_=self._layer._column,
+                       table_=self._layer._table)
+            if not query.exec_(getGeometry):
                 print query.lastQuery()
                 print query.lastError().text()
                 raise Exception('DB request failed')
+
+            query.next()
+            self.geometry1 = query.value(0)
 
     ## Return all the result contains in the extent in param
     #  @param Xmin
@@ -91,9 +88,9 @@ class PostgisProvider:
                    Ymax_=Ymax)
 
         intersect = """ WHERE {column_} && ST_GeomFromText('{extent_}', {srid_})
-        """.format(column_=self.column,
+        """.format(column_=self._layer._column,
                    extent_=extent,
-                   srid_=self.srid)
+                   srid_=self._layer._srid)
 
         request = self._get_request()
         request += intersect
@@ -103,92 +100,122 @@ class PostgisProvider:
             print query.lastError().text()
             raise Exception('DB request failed')
 
-        return {'it': query, 'geom': self.retGeometry, 'hasH': self.hasH, 'color': self.color}
+        return {'it': query, 'geom': self.retGeometry, 'hasH': self.hasH, 'color': self._layer._color, 'uuid': self._layer._uuid}
+
+    def _sort_result(self, iterator):
+        if (self._layer._colorType == "singleSymbol"):
+            return self._get_result_single_symbol(iterator)
+
+        elif (self._layer._colorType == "graduatedSymbol"):
+            pass
+
+        elif (self._layer._colorType == "categorizedSymbol"):
+            pass
+
+    def _get_result_single_symbol(self, iterator):
+        array = []
+        while iterator.next():
+            if self.hasH:
+                array.append([iterator.value(0), iterator.value(1)])
+            else:
+                array.append(iterator.value(0))
+        return array
+
+    def _get_result_graduated_symbol(self, iterator):
+        pass
 
     ## _get_request send a request to catch the type of the data
     #  @return the request
     def _get_request(self):
+        # Request TIN geometry
         if (self.geometry1 == 'TIN' or
                 self.geometry2 == 'TIN'):
             self.retGeometry = 'TIN'
             request = self._request_tin()
 
+        # Request polyhedralsurface geometry
+        # Very long request because geometries need to be tesselated
         elif (self.geometry1 == 'POLYHEDRALSURFACE' or
                 self.geometry2 == 'POLYHEDRALSURFACE'):
             self.retGeometry = 'POLYHEDRALSURFACE'
             request = self._request_polyh()
 
+        # Request point, line or multiline geometry
         elif (self.geometry1 == 'POINT' or
                 self.geometry1 == 'LINESTRING' or
                 self.geometry1 == 'MULTILINESTRING'):
             self.retGeometry = self.geometry1
             request = self._request_point_line()
 
+        # Request polygon or multipolygon geometry
         elif (self.geometry1 == 'POLYGON' or
                 self.geometry1 == 'MULTIPOLYGON'):
             self.retGeometry = self.geometry1
             request = self._request_polygon()
 
+        # Can't request this kink of geometry
         else:
             pass
             #Multipoint, others...
-            #print self.geometry1
-            #raise Exception('Can\'t request this kind of geometry')
+
+        if self._layer._columnColor is not None:
+            request = re.sub("FROM", ", " + self._layer._columnColor + " FROM", request)
+            request += " ORDER BY " + self._layer._columnColor
 
         return request
 
     ## _request_point_line to request point or line data
     #  @return the request for data point or line
     def _request_point_line(self):
-        if self.column2 is None or self.column2Type == 'geometry':
+        if self._layer._column2 is None or self._layer._column2Type == 'geometry':
             return """SELECT ST_AsX3D(ST_Force3D({column_})) FROM {table_}
-            """.format(column_=self.column,
-                       table_=self.table)
+            """.format(column_=self._layer._column,
+                       table_=self._layer._table)
 
         else:
             self.hasH = True
             return """SELECT ST_AsX3D(ST_Force3D({column_})), {hcolumn_} FROM {table_}
-            """.format(column_=self.column,
-                       hcolumn_=self.column2,
-                       table_=self.table)
+            """.format(column_=self._layer._column,
+                       hcolumn_=self._layer._column2,
+                       table_=self._layer._table)
 
     ## _request_polygon to request polygon data
     #  @return the request for data polygon
     def _request_polygon(self):
-        if self.column2 is None or self.column2Type == 'geometry':
+        if self._layer._column2 is None or self._layer._column2Type == 'geometry':
             return """SELECT ST_AsGeoJSON(ST_Force3D({column_})) FROM {table_}
-            """.format(column_=self.column,
-                       table_=self.table)
+            """.format(column_=self._layer._column,
+                       table_=self._layer._table)
 
         else:
             self.hasH = True
             return """SELECT ST_AsGeoJSON(ST_Force3D({column_})), {hcolumn_} FROM {table_}
-            """.format(column_=self.column,
-                       hcolumn_=self.column2,
-                       table_=self.table)
+            """.format(column_=self._layer._column,
+                       hcolumn_=self._layer._column2,
+                       table_=self._layer._table)
 
-    ## _request_point_line to request polyhedral data
+    ## _request_polyh to request polyhedral data
     #  @return the request for data polyhedral
     def _request_polyh(self):
         # SHOULD BE PATIENT
         if self.geometry1 == 'POLYHEDRALSURFACE':
-            col = self.column
+            col = self._layer._column
         else:
-            col = self.column2
+            col = self._layer._column2
         return """SELECT ST_AsX3D(ST_Tesselate({column_})) FROM {table_}
         """.format(column_=col,
-                   table_=self.table)
+                   table_=self._layer._table)
 
-    ## _request_point_line to request tin data
+    ## _request_tin to request tin data
     #  @return the request for data tin
     def _request_tin(self):
         if self.geometry1 == 'TIN':
-            col = self.column
+            col = self._layer._column
         else:
-            col = self.column2
+            col = self._layer._column2
         return """SELECT ST_AsX3D({column_}) FROM {table_}
         """.format(column_=col,
-                   table_=self.table)
+                   table_=self._layer._table)
 
     ## Return columns and types of a specific table
     #  @param host to define the host of the database
@@ -197,8 +224,6 @@ class PostgisProvider:
     #  @param password to define the password of the user
     #  @param table to define the table in the database
     #  @return the result of the request
-
-    #  host, dbname, user, password, table
     @staticmethod
     def get_columns_info_table(layer):
         db = QSqlDatabase.addDatabase("QPSQL")

@@ -1,4 +1,4 @@
-
+import re
 
 class Layer:
 
@@ -15,8 +15,21 @@ class Layer:
         self._column2 = None
         self._typeColumn2 = None
 
+        # single id for a layer
+        self._uuid = re.sub("\"", "", str(dbname + table + column))
+
+        # singleSymbol
+        # graduatedSymbol
+        # categorizedSymbol
         self._colorType = colorType
+
+        # if self._colorType is singleSymbol equal None
+        # else is field in database to sort data
         self._columnColor = None
+
+        # if self_colorType is singleSymbol is an array of one with one color in index 0
+        # elif self.colorType is graduatedSymbol is an array of dict like that {"min":  value, "max": value, "color": color}
+        # elif self.colorType is categorizedSymbol is an array of dict like that {"value": value, "color": color}
         self._color = []
 
     # columnColor is None if the layer has a plain color so color is an array with only one color in.

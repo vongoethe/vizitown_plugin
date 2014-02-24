@@ -252,7 +252,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
                     provider = PostgisProvider(vLayer)
                 else:
                     info['column2'] = column2.split(" - ")[0]
-                    info['column2Type'] = column2.split(" - ")[1]
+                    info['typeColumn2'] = column2.split(" - ")[1]
                     vLayer = Layer(**info)
                     vLayer.add_color(columnColor, layerColor)
                     provider = PostgisProvider(vLayer)

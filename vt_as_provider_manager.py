@@ -19,8 +19,7 @@ class ProviderManager:
     ## Add a vector provider to the manager
     #  @param p the provider to add
     def add_vector_provider(self, p):
-        uuid = p.db.databaseName() + p.table + p.column
-        self.vectors[uuid] = p
+        self.vectors[p._layer._uuid] = p
 
     ## Create a raster provider to the manager
     #  @param raster add to the provider

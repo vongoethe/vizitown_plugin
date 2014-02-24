@@ -52,6 +52,7 @@ class PostgisToJSON:
     "dim"          : "{TYPE}",
     "color"        : "{COLOR}",
     "type"         : "{GEOMETRY}",
+    "uuid"         : "{UUID}",
     "geometries"   : [{JSON_GEOM}]
 }"""
 
@@ -67,7 +68,7 @@ class PostgisToJSON:
     #  @param hasH to define the representation of data
     #  @param color to define the color of data
     #  @return a json
-    def parse(self, resultArray, geometry, hasH, color):
+    def parse(self, resultArray, geometry, hasH, color, uuid):
 
         exchange = self._jsonExchange
         # geometry in 3 dimensions
@@ -84,6 +85,8 @@ class PostgisToJSON:
 
         exchange = re.sub('{COLOR}', color[0], exchange)
         exchange = re.sub('{GEOMETRY}', geometry, exchange)
+        exchange = re.sub('{UUID}', uuid, exchange)
+        print exchange
 
         noHeight = "0"
         geometries = ""
