@@ -13,8 +13,8 @@ class Layer:
         self._column = column
 
         self._srid = srid
-        self._column2 = None
-        self._typeColumn2 = None
+        self._column2 = column2
+        self._typeColumn2 = typeColumn2
 
         # single id for a layer
         self._uuid = re.sub("\"", "", str(dbname + table + column))
