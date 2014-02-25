@@ -64,6 +64,13 @@ class Raster(object):
 
         nBand = self.dataSource.RasterCount
         band = self.dataSource.GetRasterBand(1)
+        # Dem don't have values between 0 and 255
+        if (self.isDem):
+            demElevation = self.demElevation()
+            dfScale = (255 - 0) / (demElevation[1] - demElevation[0])
+            dfOffset = -1 * demElevation[0] * dfScale
+            band.SetScale(dfScale)
+            band.SetOffset(dfOffset)
 
         pixelSizeX = self.pixelSizeXForSize(extent.width())
         pixelSizeY = self.pixelSizeXForSize(extent.height())
@@ -97,25 +104,31 @@ class Raster(object):
         baseDestFile = os.path.join(destPath, fileName)
         print baseDestFile
         for (zoom, size) in sizes.items():
-            i = 0
-            j = 0
+            y = 0
+            x = 0
             tileMinX = minX
             tileMinY = minY
+            print tileMinX
+            print tileMinY
+            print maxX
+            print maxY
             while tileMinY < maxY:
                 tileMaxY = tileMinY + size
+                tileMinX = minX
+                x = 0
                 while tileMinX < maxX:
                     tileMaxX = tileMinX + size
-                    destFile = baseDestFile + "_" + str(zoom) + "_" + str(j) + "_" + str(i) + ".tiff"
+                    destFile = baseDestFile + "_" + str(zoom) + "_" + str(x) + "_" + str(y) + ".tiff"
                     print "Destination file:"
                     print destFile
 
-                    print self.path, size, tileMinX, tileMinY, tileMaxX, tileMaxY
+                    print tileMinX, tileMinY, tileMaxX, tileMaxY
                     self.createForExtent(Extent(tileMinX, tileMinY, tileMaxX, tileMaxY), destFile)
 
-                    j += 1
+                    x += 1
                     tileMinX += size
 
-                i += 1
+                y += 1
                 tileMinY += size
 
     def alreadyCreated(self, baseDestPath, tileSize, zoom):
@@ -129,12 +142,12 @@ class VTTiler(object):
     def __init__(self, extent, tileSize, zoom, dem=None, ortho=None):
         self.extent = extent
         self.tileSize = tileSize
-        self.zoom = zoom
+        self.zoom = int(zoom)
         self.dem = dem
         self.ortho = ortho
 
     def create(self, baseDestPath):
-        if hasattr(self, "ortho") and hasattr(self, "dem"):
+        if self.dem is not None and self.ortho is not None:
             ortho = Raster(self.ortho, self.tileSize)
             dem = Raster(self.dem, self.tileSize)
 
@@ -147,16 +160,16 @@ class VTTiler(object):
                 ortho.createForSizes(self.extent, sizes, baseDestPath, self.tileSize, self.zoom)
             return
 
-        if hasattr(self, DEM):
+        if self.dem is not None:
             dem = Raster(self.dem, self.tileSize)
             sizes = dem.sizes(self.extent, self.zoom)
             if not dem.alreadyCreated(baseDestPath, self.tileSize, self.zoom):
                 dem.createForSizes(self.extent, sizes, baseDestPath, self.tileSize, self.zoom)
             return
 
-        if hasattr(self, ORTHO):
+        if self.ortho is not None:
             ortho = Raster(self.ortho, self.tileSize)
-            sizes = self.ortho.sizes(self.extent, self.zoom)
+            sizes = ortho.sizes(self.extent, self.zoom)
             if not ortho.alreadyCreated(baseDestPath, self.tileSize, self.zoom):
                 ortho.createForSizes(self.extent, sizes, baseDestPath, self.tileSize, self.zoom)
             return
