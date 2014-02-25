@@ -273,7 +273,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
                 mp.set_executable(pythonPath)
                 sys.argv = [None]
             originExtent = Extent(extent[0], extent[1], extent[2], extent[3])
-            tiler = VTTiler(originExtent, tileSize, self.zoomLevel, dataSrcMnt, dataSrcImg)
+            tiler = VTTiler(originExtent, tileSize, self.zoomLevel, path, dataSrcMnt, dataSrcImg)
             self.GDALprocess = mp.Process(target=tiler.create(path))
             self.GDALprocess.start()
 
