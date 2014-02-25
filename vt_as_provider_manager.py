@@ -24,13 +24,13 @@ class ProviderManager:
     ## Create a raster provider to the manager
     #  @param raster add to the provider
     #  @param port to define the port of the connection
-    #  @param prefix define the type of the data
     #  @param tileSize indicate the size of the tile
     #  @param zoomLevel indicate the value of zoom levels
     #  @return a raster provider
-    def create_raster_provider(self, raster, port, prefix, tileSize, zoomLevel):
-        httpResource = 'http://localhost:' + port + '/rasters/' + '_'.join([prefix, raster.name(), tileSize, zoomLevel])
-        return RasterProvider(raster.name(), raster.extent(), raster.crs().postgisSrid(), raster.source(), httpResource)
+    def create_raster_provider(self, raster, port, tileSize, zoomLevel):
+        name = '_'.join([raster.name(), tileSize, zoomLevel])
+        httpResource = 'http://localhost:' + port + '/rasters/' + name
+        return RasterProvider(name, raster.extent(), raster.crs().postgisSrid(), raster.source(), httpResource)
 
     ## Request a tile for all his providers
     #  @param Xmin

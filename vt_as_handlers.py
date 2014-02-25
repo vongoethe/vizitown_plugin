@@ -2,6 +2,7 @@ import os
 import json
 import os
 import cyclone.websocket
+from multiprocessing import Queue
 from vt_utils_converter import PostgisToJSON
 from vt_as_provider_manager import ProviderManager
 from vt_as_sync import SyncManager
@@ -101,45 +102,34 @@ class TilesInfoHandler(cyclone.websocket.WebSocketHandler):
     ## Method to initialize the handler
     #  @param GDALprocess the process gdal
     #  @param tilesInfo the dictionnary with the information about the data
-    def initialize(self, GDALprocess, tilesInfo):
+    def initialize(self, GDALprocess, tilesInfo, queue):
         self.GDALprocess = GDALprocess
         self.tilesInfo = tilesInfo
+        self.queue = queue
 
     ## Method call when the websocket is opened
     def connectionMade(self):
+        print "WebSocket tiles_info opened"
+        result = self.queue.get()
         if self.GDALprocess and self.GDALprocess.is_alive():
             print "Wait GDAL tiling ..."
             self.GDALprocess.join()
             print "Send tiles info ..."
 
-        if self.tilesInfo['dem']:
-            demPixelSize = {}
-            demLocation = os.path.join(os.path.dirname(__file__), 'rasters', os.path.basename(ProviderManager.instance().dem.httpResource))
-            demPixelSize = self._list_pixel_size(0, demPixelSize, demLocation)
-            self.tilesInfo['demPixelSize'] = demPixelSize
+        # Add pixel Size in JSON and Min/Max height if have dem
+        if result:
+            self.tilesInfo['pixelSize'] = result[0]
+            if len(result) > 1:
+                self.tilesInfo['minHeight'] = result[1]
+                self.tilesInfo['maxHeight'] = result[2]
 
-        if self.tilesInfo['texture']:
-            texturePixelSize = {}
-            textureLocation = os.path.join(os.path.dirname(__file__), 'rasters', os.path.basename(ProviderManager.instance().texture.httpResource))
-            texturePixelSize = self._list_pixel_size(0, texturePixelSize, textureLocation)
-            self.tilesInfo['texturePixelSize'] = texturePixelSize
         js = json.dumps(self.tilesInfo, separators=(',', ':'))
         self.sendMessage(js)
 
-    ## Method to add the level and the pixel size of image in function of the zoom levels
-    #  @param index to indicate the zoom levels
-    #  @param pixelSize the dictionnary initial
-    #  @param path to indicate the data location
-    #  @result the dictionnary with the several zoom levels and the pixel size
-    def _list_pixel_size(self, index, pixelSize, path):
-        listDir = os.listdir(path)
-
-        for currentElem in listDir:
-            if os.path.isdir(os.path.join(path, currentElem)):
-                self._list_pixel_size(currentElem, pixelSize, os.path.join(path, currentElem))
-            else:
-                pixelSize[index] = self._get_pixel_size(os.path.join(path, currentElem))
-                return pixelSize
+    ## Method call when the websocket is closed
+    #  @param reason to indicate the reason of the closed instance
+    def connectionLost(self, reason):
+        print "WebSocket tiles_info closed"
 
     ## Method to get the pixel size in the image
     #  @param img to get the information

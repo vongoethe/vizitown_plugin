@@ -1,8 +1,13 @@
 import math
-import gdal
+try:
+    import gdal
+except:
+    from osgeo import gdal
 from gdalconst import *
+from multiprocessing import Queue
 import os
 import math
+import sys
 
 
 class Extent:
@@ -22,7 +27,7 @@ class Extent:
 class Raster(object):
     def __init__(self, path, size, isDem=False):
         self.size = size
-        self.basename = os.path.splitext(os.path.basename(os.path.abspath(path)))[0] + "_{zoom}_{x}_{y}.png"
+        self.basename = os.path.splitext(os.path.basename(os.path.abspath(path)))[0] + "_" + str(size) + "_1_{zoom}_{x}_{y}.png"
         self.dataSource = gdal.Open(path, GA_ReadOnly)
         self.geoTransform = self.dataSource.GetGeoTransform()
         self.isDem = isDem
@@ -132,8 +137,8 @@ class Raster(object):
         minY = extent.minY
         maxY = extent.maxY
 
-        fileName = os.path.splitext(os.path.basename(self.path))[0]
-        destPath = os.path.join(baseDestPath, fileName + "_" + str(tileSize) + "_" + str(zoom))
+        fileName = os.path.splitext(os.path.basename(self.path))[0] + "_" + str(tileSize) + "_" + str(zoom)
+        destPath = os.path.join(baseDestPath, fileName)
         print "Destination folder:"
         print destPath
         os.mkdir(destPath)
@@ -152,6 +157,7 @@ class Raster(object):
                 while tileMinX < maxX:
                     tileMaxX = tileMinX + size
                     outFilename = self.rasterName(destPath, zoom, x, y)
+                    print outFilename
                     self.createForExtent(Extent(tileMinX, tileMinY, tileMaxX, tileMaxY), outFilename)
                     #Next x tile
                     x += 1
@@ -174,31 +180,40 @@ class VTTiler(object):
         self.zoom = int(zoom)
         self.dem = dem
         self.ortho = ortho
+        self.RDem = None
+        self.ROrtho = None
 
-    def create(self, baseDestPath):
+    def create(self, baseDestPath, queue):
+        sys.stderr = open(os.path.join(os.path.dirname(__file__), "GDAL_Process.err"), "w")
+        sys.stdout = open(os.path.join(os.path.dirname(__file__), "GDAL_Process.out"), "w")
         if self.dem is not None and self.ortho is not None:
-            ortho = Raster(self.ortho, self.tileSize)
-            dem = Raster(self.dem, self.tileSize, True)
+            self.ROrtho = Raster(self.ortho, self.tileSize)
+            self.RDem = Raster(self.dem, self.tileSize, True)
 
-            sizes = ortho.sizes(self.extent, self.zoom)
-            if dem.pixelSizeX() < ortho.pixelSizeX():
-                sizes = dem.sizes(self.extent, self.zoom)
-            if not dem.alreadyCreated(baseDestPath, self.tileSize, self.zoom):
-                dem.createForSizes(self.extent, sizes, baseDestPath, self.tileSize, self.zoom)
-            if not ortho.alreadyCreated(baseDestPath, self.tileSize, self.zoom):
-                ortho.createForSizes(self.extent, sizes, baseDestPath, self.tileSize, self.zoom)
-            return
+            sizes = self.ROrtho.sizes(self.extent, self.zoom)
+            if self.RDem.pixelSizeX() < self.ROrtho.pixelSizeX():
+                sizes = self.RDem.sizes(self.extent, self.zoom)
+            if not self.RDem.alreadyCreated(baseDestPath, self.tileSize, self.zoom):
+                self.RDem.createForSizes(self.extent, sizes, baseDestPath, self.tileSize, self.zoom)
+            if not self.ROrtho.alreadyCreated(baseDestPath, self.tileSize, self.zoom):
+                self.ROrtho.createForSizes(self.extent, sizes, baseDestPath, self.tileSize, self.zoom)
+            
+            elevation = self.RDem.demElevation()
+            queue.put([self.ROrtho.pixelSizeX(), elevation[0], elevation[1]])
 
-        if self.dem is not None:
-            dem = Raster(self.dem, self.tileSize, True)
-            sizes = dem.sizes(self.extent, self.zoom)
-            if not dem.alreadyCreated(baseDestPath, self.tileSize, self.zoom):
-                dem.createForSizes(self.extent, sizes, baseDestPath, self.tileSize, self.zoom)
-            return
+        elif self.dem is not None:
+            self.RDem = Raster(self.dem, self.tileSize, True)
+            sizes = self.RDem.sizes(self.extent, self.zoom)
+            if not self.RDem.alreadyCreated(baseDestPath, self.tileSize, self.zoom):
+                self.RDem.createForSizes(self.extent, sizes, baseDestPath, self.tileSize, self.zoom)
+            
+            elevation = self.RDem.demElevation()
+            queue.put([self.RDem.pixelSizeX(), elevation[0], elevation[1]])
 
-        if self.ortho is not None:
-            ortho = Raster(self.ortho, self.tileSize)
+        elif self.ortho is not None:
+            self.ROrtho = Raster(self.ortho, self.tileSize)
             sizes = self.ortho.sizes(self.extent)
-            if not ortho.alreadyCreated(baseDestPath, self.tileSize, self.zoom):
-                ortho.createForSizes(self.extent, sizes, baseDestPath, self.tileSize, self.zoom)
-            return
+            if not self.ROrtho.alreadyCreated(baseDestPath, self.tileSize, self.zoom):
+                self.ROrtho.createForSizes(self.extent, sizes, baseDestPath, self.tileSize, self.zoom)
+            
+            queue.put([self.ROrtho.pixelSizeX()])
