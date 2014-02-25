@@ -24,6 +24,7 @@ import os
 import re
 import sys
 import multiprocessing as mp
+from multiprocessing import Queue
 import shutil
 
 from ui_vizitown import Ui_Vizitown
@@ -205,7 +206,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
                 if self.has_texture():
                     textureResource = ProviderManager.instance().texture.httpResource
                 tilingParam = build_tiling_param(self.zoomLevel, self.get_size_tile(), demResource, textureResource)
-                self.appServer = AppServer(self, viewerParam, self.GDALprocess, tilingParam)
+                self.appServer = AppServer(self, viewerParam, self.GDALprocess, tilingParam, self.queue)
             else:
                 self.appServer = AppServer(self, viewerParam)
             self.appServer.start()
@@ -258,13 +259,13 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         if self.has_dem():
             self.hasData = True
             dem = self.cb_dem.itemData(self.cb_dem.currentIndex())
-            demProvider = ProviderManager.instance().create_raster_provider(dem, str(self.sb_port.value()), 'dem', str(tileSize), self.zoomLevel)
+            demProvider = ProviderManager.instance().create_raster_provider(dem, str(self.sb_port.value()), str(tileSize), self.zoomLevel)
             ProviderManager.instance().dem = demProvider
             dataSrcMnt = demProvider.source
         if self.has_texture():
             self.hasData = True
             texture = self.cb_texture.itemData(self.cb_texture.currentIndex())
-            textureProvider = ProviderManager.instance().create_raster_provider(texture, str(self.sb_port.value()), 'img', str(tileSize), self.zoomLevel)
+            textureProvider = ProviderManager.instance().create_raster_provider(texture, str(self.sb_port.value()), str(tileSize), self.zoomLevel)
             ProviderManager.instance().texture = textureProvider
             dataSrcImg = textureProvider.source
         if self.has_raster():
@@ -273,8 +274,9 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
                 mp.set_executable(pythonPath)
                 sys.argv = [None]
             originExtent = Extent(extent[0], extent[1], extent[2], extent[3])
+            self.queue = Queue()
             tiler = VTTiler(originExtent, tileSize, self.zoomLevel, dataSrcMnt, dataSrcImg)
-            self.GDALprocess = mp.Process(target=tiler.create(path))
+            self.GDALprocess = mp.Process(target=tiler.create, args=(path, self.queue))
             self.GDALprocess.start()
 
     ## Behavior whit a close event
