@@ -56,7 +56,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.appServerRunning = False
         self.GDALprocess = None
         self.hasData = False
-        self.zoomLevel = 1
+        self.zoomLevel = "1"
 
     ## Set the default extent
     #  @param extent the extent to init the parameter
