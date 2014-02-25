@@ -46,6 +46,8 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
     #  '{"Xmin": 0, "Ymin": 0, "Xmax": 50, "Ymax": 50}' for request all vectors
     #  '{"Xmin": 0, "Ymin": 0, "Xmax": 50, "Ymax": 50, uuid: "my_uuid"}' for a request only a specific vector
     def messageReceived(self, message):
+        if message == "{}":
+            return
         d = json.loads(message)
         vectors = ProviderManager.instance().request_tile(**d)
         if not vectors:
@@ -121,8 +123,8 @@ class TilesInfoHandler(cyclone.websocket.WebSocketHandler):
             textureLocation = os.path.join(os.path.dirname(__file__), 'rasters', os.path.basename(ProviderManager.instance().texture.httpResource))
             texturePixelSize = self._list_pixel_size(0, texturePixelSize, textureLocation)
             self.tilesInfo['texturePixelSize'] = texturePixelSize
-
-        self.sendMessage(json.dumps(self.tilesInfo, separators=(',', ':')))
+        js = json.dumps(self.tilesInfo, separators=(',', ':'))
+        self.sendMessage(js)
 
     ## Method to add the level and the pixel size of image in function of the zoom levels
     #  @param index to indicate the zoom levels
