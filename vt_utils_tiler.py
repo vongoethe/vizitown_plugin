@@ -197,7 +197,7 @@ class VTTiler(object):
                 self.RDem.createForSizes(self.extent, sizes, baseDestPath, self.tileSize, self.zoom)
             if not self.ROrtho.alreadyCreated(baseDestPath, self.tileSize, self.zoom):
                 self.ROrtho.createForSizes(self.extent, sizes, baseDestPath, self.tileSize, self.zoom)
-            
+
             elevation = self.RDem.demElevation()
             queue.put([self.ROrtho.pixelSizeX(), elevation[0], elevation[1]])
 
@@ -206,7 +206,7 @@ class VTTiler(object):
             sizes = self.RDem.sizes(self.extent, self.zoom)
             if not self.RDem.alreadyCreated(baseDestPath, self.tileSize, self.zoom):
                 self.RDem.createForSizes(self.extent, sizes, baseDestPath, self.tileSize, self.zoom)
-            
+
             elevation = self.RDem.demElevation()
             queue.put([self.RDem.pixelSizeX(), elevation[0], elevation[1]])
 
@@ -215,5 +215,5 @@ class VTTiler(object):
             sizes = self.ortho.sizes(self.extent)
             if not self.ROrtho.alreadyCreated(baseDestPath, self.tileSize, self.zoom):
                 self.ROrtho.createForSizes(self.extent, sizes, baseDestPath, self.tileSize, self.zoom)
-            
+
             queue.put([self.ROrtho.pixelSizeX()])
