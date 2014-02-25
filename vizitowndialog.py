@@ -56,6 +56,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.appServerRunning = False
         self.GDALprocess = None
         self.hasData = False
+        self.zoomLevel = 1
 
     ## Set the default extent
     #  @param extent the extent to init the parameter
@@ -88,16 +89,6 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.cb_tile.addItem('2048 x 2048')
         self.cb_tile.addItem('4096 x 4096')
         self.cb_tile.setCurrentIndex(1)
-
-    ## Set the value of the zoom level
-    def init_zoom_level(self):
-        self.cb_zoom.clear()
-        self.cb_zoom.addItem('1')
-        self.cb_zoom.addItem('2')
-        self.cb_zoom.addItem('3')
-        self.cb_zoom.addItem('4')
-        self.cb_zoom.addItem('5')
-        self.cb_zoom.setCurrentIndex(1)
 
     ## Init combobox and table layers
     def init_layers(self):
@@ -191,7 +182,6 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     def on_btn_default_released(self):
         self.sb_port.setValue(8888)
         self.cb_tile.setCurrentIndex(1)
-        self.cb_zoom.setCurrentIndex(1)
         self.tw_layers.clear()
         self.tw_layers.setHorizontalHeaderLabels(('Display', 'Layer', 'Field'))
 
@@ -214,7 +204,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
                     demResource = ProviderManager.instance().dem.httpResource
                 if self.has_texture():
                     textureResource = ProviderManager.instance().texture.httpResource
-                tilingParam = build_tiling_param(int(self.cb_zoom.currentText()), self.get_size_tile(), demResource, textureResource)
+                tilingParam = build_tiling_param(self.zoomLevel, self.get_size_tile(), demResource, textureResource)
                 self.appServer = AppServer(self, viewerParam, self.GDALprocess, tilingParam)
             else:
                 self.appServer = AppServer(self, viewerParam)
@@ -265,17 +255,16 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         path = os.path.join(os.path.dirname(__file__), "rasters")
         extent = self.get_gui_extent()
         tileSize = self.get_size_tile()
-        zoomLevel = self.cb_zoom.currentText()
         if self.has_dem():
             self.hasData = True
             dem = self.cb_dem.itemData(self.cb_dem.currentIndex())
-            demProvider = ProviderManager.instance().create_raster_provider(dem, str(self.sb_port.value()), 'dem', str(tileSize), zoomLevel)
+            demProvider = ProviderManager.instance().create_raster_provider(dem, str(self.sb_port.value()), 'dem', str(tileSize), self.zoomLevel)
             ProviderManager.instance().dem = demProvider
             dataSrcMnt = demProvider.source
         if self.has_texture():
             self.hasData = True
             texture = self.cb_texture.itemData(self.cb_texture.currentIndex())
-            textureProvider = ProviderManager.instance().create_raster_provider(texture, str(self.sb_port.value()), 'img', str(tileSize), zoomLevel)
+            textureProvider = ProviderManager.instance().create_raster_provider(texture, str(self.sb_port.value()), 'img', str(tileSize), self.zoomLevel)
             ProviderManager.instance().texture = textureProvider
             dataSrcImg = textureProvider.source
         if self.has_raster():
@@ -284,7 +273,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
                 mp.set_executable(pythonPath)
                 sys.argv = [None]
             originExtent = Extent(extent[0], extent[1], extent[2], extent[3])
-            tiler = VTTiler(originExtent, tileSize, int(zoomLevel), dataSrcMnt, dataSrcImg)
+            tiler = VTTiler(originExtent, tileSize, self.zoomLevel, dataSrcMnt, dataSrcImg)
             self.GDALprocess = mp.Process(target=tiler.create(path))
             self.GDALprocess.start()
 

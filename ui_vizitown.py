@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_vizitown.ui'
 #
-# Created: Thu Feb 20 21:19:46 2014
+# Created: Tue Feb 25 09:04:25 2014
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -107,12 +107,6 @@ class Ui_Vizitown(object):
         self.cb_tile = QtGui.QComboBox(self.groupBox_5)
         self.cb_tile.setObjectName(_fromUtf8("cb_tile"))
         self.gridLayout.addWidget(self.cb_tile, 0, 1, 1, 1)
-        self.label_9 = QtGui.QLabel(self.groupBox_5)
-        self.label_9.setObjectName(_fromUtf8("label_9"))
-        self.gridLayout.addWidget(self.label_9, 1, 0, 1, 1)
-        self.cb_zoom = QtGui.QComboBox(self.groupBox_5)
-        self.cb_zoom.setObjectName(_fromUtf8("cb_zoom"))
-        self.gridLayout.addWidget(self.cb_zoom, 1, 1, 1, 1)
         self.verticalLayout_3.addWidget(self.groupBox_5)
         self.btn_default = QtGui.QPushButton(self.Opt)
         self.btn_default.setObjectName(_fromUtf8("btn_default"))
@@ -213,7 +207,6 @@ class Ui_Vizitown(object):
         self.label_7.setText(_translate("Vizitown", "Port number", None))
         self.groupBox_5.setTitle(_translate("Vizitown", "Scene", None))
         self.label_8.setText(_translate("Vizitown", "Tile size", None))
-        self.label_9.setText(_translate("Vizitown", "Zoom level", None))
         self.btn_default.setText(_translate("Vizitown", "By default", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Opt), _translate("Vizitown", "Preferences", None))
         self.label_14.setText(_translate("Vizitown", "Ymax", None))
