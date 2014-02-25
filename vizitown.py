@@ -92,17 +92,10 @@ class Vizitown:
         }
         SyncManager.instance().notify_extent_change(extent)
 
-    def toto(self):
-        print "coucou"
-
     def run(self):
         self.dlg.init_extent(self.iface.mapCanvas().extent())
         self.dlg.init_tile_size()
-        self.dlg.init_zoom_level()
         self.dlg.init_layers()
         self.dlg.sb_port.setValue(8888)
-#        if self.iface.activeLayer():
-#            QObject.connect(self.iface.activeLayer(), SIGNAL("rendererChanged()"), self.toto)
-#            print "activeLayer"
         # show the dialog
         self.dlg.show()
