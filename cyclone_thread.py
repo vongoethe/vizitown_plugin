@@ -20,11 +20,12 @@ class CycloneThread(QThread):
     #  @param debug if True add two default handlers,
     #  '/test/echo' a echo server in websocket and
     #  '/test/ping' handle HTTP GET request and return "pong"
-    def __init__(self, parentObject, initParam, GDALprocess, tilesInfo, debug=True):
+    def __init__(self, parentObject, initParam, GDALprocess, tilesInfo, queue, debug=True):
         QThread.__init__(self, parentObject.thread())
         self.debug = debug
         self.initParam = initParam
         self.GDALprocess = GDALprocess
+        self.queue = queue
         self.tilesInfo = tilesInfo
 
     ## run method launch the cyclone server
@@ -40,7 +41,7 @@ class CycloneThread(QThread):
         ]
 
         if self.tilesInfo:
-            handlers.append((r'/tiles_info', TilesInfoHandler, dict(GDALprocess=self.GDALprocess, tilesInfo=self.tilesInfo)))
+            handlers.append((r'/tiles_info', TilesInfoHandler, dict(GDALprocess=self.GDALprocess, tilesInfo=self.tilesInfo, queue=self.queue)))
         if self.debug:
             handlers.append((r'/test/echo', EchoHandler))
             handlers.append((r'/test/ping', PingHandler))
