@@ -7,5 +7,7 @@ from vt_utils_tiler import VTTiler, Extent
 
 if __name__ == "__main__":
     originExtent = Extent(839724, 6511958, 861463, 6529147)
-    tiler = VTTiler(originExtent, 4096, 1, '/Users/Gui/Documents/Plugin_ViziTown/Data/Mnt_L93.tiff', '/Users/Gui/Documents/Plugin_ViziTown/Data/GrandLyon2m_L93_RGB.tif')
-    tiler.create('/Users/Gui/.qgis2/python/plugins/pluginappserver/rasters/test')
+    sourceDem = '/Users/Louis/Desktop/Data/Mnt/MNT2009_Altitude_10m_RGF93.tif'
+    sourceOrtho = '/Users/Louis/Desktop/Data/GrandLyon_L93.png'
+    tiler = VTTiler(originExtent, 4096, 1, sourceDem, sourceOrtho)
+    tiler.create('/Users/Louis/Documents/Cours/3eme_Annee/Last_project/Vizitown_LP/DEV/GitAppServer/rasters')
