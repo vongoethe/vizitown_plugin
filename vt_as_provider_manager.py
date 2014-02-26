@@ -30,6 +30,7 @@ class ProviderManager:
     def request_tile(self, Xmin, Ymin, Xmax, Ymax, uuid=None):
         result = []
         if uuid is not None:
+            self.vectors[uuid]._layer.update_color()
             result.append(self.vectors[uuid].request_tile(Xmin, Ymin, Xmax, Ymax))
             return result
 
