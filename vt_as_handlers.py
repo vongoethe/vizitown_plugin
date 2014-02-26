@@ -47,7 +47,9 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
     #  '{"Xmin": 0, "Ymin": 0, "Xmax": 50, "Ymax": 50}' for request all vectors
     #  '{"Xmin": 0, "Ymin": 0, "Xmax": 50, "Ymax": 50, uuid: "my_uuid"}' for a request only a specific vector
     def messageReceived(self, message):
-        if message == "{}":
+        # Keep alive connection
+        if message == "ping":
+            self.sendMessage("pong")
             return
         d = json.loads(message)
         vectors = ProviderManager.instance().request_tile(**d)
@@ -82,6 +84,10 @@ class SyncHandler(cyclone.websocket.WebSocketHandler):
     ## Method call when a message is received
     #  @param message received
     def messageReceived(self, message):
+        # Keep alive connection
+        if message == "ping":
+            self.sendMessage("pong")
+            return
         pass  # Do nothing, simplex communication
 
     ## Method call when the websocket is closed

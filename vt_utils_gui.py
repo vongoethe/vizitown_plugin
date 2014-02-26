@@ -19,7 +19,7 @@ def is_dem(layer):
 
 ## Return True if the layer is a Texture which come from a database
 def is_texture(layer):
-    return is_raster(layer) and layer.bandCount() == 3
+    return is_raster(layer) and layer.bandCount() >= 3
 
 
 ## Return True if the layer is a Vector which come from a database
