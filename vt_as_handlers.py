@@ -6,7 +6,7 @@ from multiprocessing import Queue
 from vt_utils_converter import PostgisToJSON
 from vt_as_provider_manager import ProviderManager
 from vt_as_sync import SyncManager
-from osgeo import gdal
+from vt_utils_result_vttiler import ResultVTTiler
 
 
 ## A static file handler which authorize cross origin
@@ -106,22 +106,30 @@ class TilesInfoHandler(cyclone.websocket.WebSocketHandler):
         self.GDALprocess = GDALprocess
         self.tilesInfo = tilesInfo
         self.queue = queue
+        self.result = ResultVTTiler.instance()
 
     ## Method call when the websocket is opened
     def connectionMade(self):
         print "WebSocket tiles_info opened"
-        result = self.queue.get()
+        print self.result
+        print self.result.is_define()
+        print self.result.is_dem()
+
+        if not self.result.is_define():
+            self.result.set_result(self.queue.get())
+            self.queue.close()
+
         if self.GDALprocess and self.GDALprocess.is_alive():
             print "Wait GDAL tiling ..."
             self.GDALprocess.join()
             print "Send tiles info ..."
 
         # Add pixel Size in JSON and Min/Max height if have dem
-        if result:
-            self.tilesInfo['pixelSize'] = result[0]
-            if len(result) > 1:
-                self.tilesInfo['minHeight'] = result[1]
-                self.tilesInfo['maxHeight'] = result[2]
+        if self.result.is_define():
+            self.tilesInfo['pixelSize'] = self.result.pixelSize
+            if self.result.is_dem():
+                self.tilesInfo['minHeight'] = self.result.minHeight
+                self.tilesInfo['maxHeight'] = self.result.maxHeight
 
         js = json.dumps(self.tilesInfo, separators=(',', ':'))
         self.sendMessage(js)
