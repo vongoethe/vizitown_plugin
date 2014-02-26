@@ -38,7 +38,7 @@ from vt_as_provider_postgis import PostgisProvider
 from vt_as_provider_raster import RasterProvider
 from vt_as_sync import SyncManager
 from vt_utils_layer import Layer
-
+from vt_utils_provider_factory import ProviderFactory
 
 import vt_utils_parser
 from vt_utils_tiler import VTTiler, Extent
@@ -57,6 +57,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.appServerRunning = False
         self.GDALprocess = None
         self.hasData = False
+        self.providerManager = ProviderManager.instance()
         self.zoomLevel = "1"
 
     ## Set the default extent
@@ -95,22 +96,20 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     def init_layers(self):
         self.reset_all_fields()
         layerListIems = QgsMapLayerRegistry().instance().mapLayers().items()
-        for id, layer in layerListIems:
-            if is_dem(layer):
-                self.cb_dem.addItem(layer.name(), layer)
-            if is_vector(layer):
-                colorType = layer.rendererV2().type()
-                srid = layer.crs().postgisSrid()
-                d = vt_utils_parser.parse_vector(layer.source(), srid, colorType)
-                vLayer = Layer(**d)
-                dic = PostgisProvider.get_columns_info_table(vLayer)
-                name = layer.name() + ' ' + re.search("(\(.*\)+)", layer.source()).group(0)
-                item = QtGui.QTableWidgetItem(name)
-                item.setData(QtCore.Qt.UserRole, layer)
+        for id, qgisLayer in layerListIems:
+            if is_dem(qgisLayer):
+                self.cb_dem.addItem(qgisLayer.name(), qgisLayer)
+
+            if is_vector(qgisLayer):
+                vLayer = Layer(qgisLayer)
+                columnInfoLayer = PostgisProvider.get_columns_info_table(vLayer)
+                item = QtGui.QTableWidgetItem(vLayer._displayName)
+                item.setData(QtCore.Qt.UserRole, vLayer)
                 item.setFlags(QtCore.Qt.ItemIsEnabled)
-                self.add_vector_layer(item, dic)
-            if is_texture(layer):
-                self.cb_texture.addItem(layer.name(), layer)
+                self.add_vector_layer(item, columnInfoLayer)
+
+            if is_texture(qgisLayer):
+                self.cb_texture.addItem(qgisLayer.name(), qgisLayer)
 
     ## Reset all widgets
     def reset_all_fields(self):
@@ -135,17 +134,28 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     def has_raster(self):
         return self.has_dem() or self.has_texture()
 
+    def has_vector(self):
+        for row_index in range(self.tw_layers.rowCount()):
+            if self.tw_layers.item(row_index, 0).checkState() == QtCore.Qt.Checked:
+                return True
+        return False
+
+    def has_data(self):
+        if self.has_raster() or self.has_vector():
+            return True
+        return False
+
     ## Add vector layer in QTableWidget
     #  @param item the new layer
     #  @param dic the dic with the fields and their types
-    def add_vector_layer(self, item, dic):
+    def add_vector_layer(self, item, columnInfoLayer):
         self.tw_layers.insertRow(0)
         checkBox = QtGui.QTableWidgetItem()
         checkBox.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
         checkBox.setCheckState(QtCore.Qt.Unchecked)
         comboBox = QtGui.QComboBox()
         comboBox.addItem("None")
-        for nameColumn, type in dic.items():
+        for nameColumn, type in columnInfoLayer.items():
             comboBox.addItem(nameColumn + ' - ' + type)
         comboBox.model().sort(0)
         self.tw_layers.setItem(0, 0, checkBox)
@@ -190,29 +200,34 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     def on_btn_generate_released(self):
         if self.appServerRunning:
             self.closeEvent(None)
+            return
+
+        if not self.hasData:
+            QtGui.QMessageBox.warning(self, "Warning", ("No data !"), QtGui.QMessageBox.Ok)
+            return
+        self.pb_loading.show()
+
+        self.instantiate_providers()
+
+        viewerParam = build_viewer_param(self.get_gui_extent(), str(self.sb_port.value()), self.has_raster())
+        if self.has_raster():
+            demResource = None
+            textureResource = None
+            if self.has_dem():
+                demResource = self.providerManager.dem.httpResource
+            if self.has_texture():
+                textureResource = self.providerManager.texture.httpResource
+            tilingParam = build_tiling_param(self.zoomLevel, self.get_size_tile(), demResource, textureResource)
+            self.appServer = AppServer(self, viewerParam, self.GDALprocess, tilingParam, self.queue)
         else:
-            self.create_vector_providers()
-            self.create_raster_providers()
-            if not self.hasData:
-                QtGui.QMessageBox.warning(self, "Warning", ("No data !"), QtGui.QMessageBox.Ok)
-                return
-            self.pb_loading.show()
-            viewerParam = build_viewer_param(self.get_gui_extent(), str(self.sb_port.value()), self.has_raster())
-            if self.has_raster():
-                demResource = None
-                textureResource = None
-                if self.has_dem():
-                    demResource = ProviderManager.instance().dem.httpResource
-                if self.has_texture():
-                    textureResource = ProviderManager.instance().texture.httpResource
-                tilingParam = build_tiling_param(self.zoomLevel, self.get_size_tile(), demResource, textureResource)
-                self.appServer = AppServer(self, viewerParam, self.GDALprocess, tilingParam, self.queue)
-            else:
-                self.appServer = AppServer(self, viewerParam)
-            self.appServer.start()
-            self.btn_generate.setText("Server is running")
-            open_web_browser(self.sb_port.value())
-            self.appServerRunning = True
+            self.appServer = AppServer(self, viewerParam)
+        self.appServer.start()
+        self.btn_generate.setText("Server is running")
+        open_web_browser(self.sb_port.value())
+        self.appServerRunning = True
+
+    def instantiate_providers(self):
+        factory = ProviderFactory()
 
     ## Calculate the width and the height in kilometers
     def calculate_size_extent(self):
@@ -221,64 +236,6 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         height = extent2[3] - extent2[1]
         self.lb_width.setValue(width / 1000)
         self.lb_height.setValue(height / 1000)
-
-    ## Create all providers with the selected layers in the GUI
-    def create_vector_providers(self):
-        for row_index in range(self.tw_layers.rowCount()):
-            # if the layer is checked
-            if self.tw_layers.item(row_index, 0).checkState() == QtCore.Qt.Checked:
-                self.hasData = True
-                vectorLayer = self.tw_layers.item(row_index, 1).data(QtCore.Qt.UserRole)
-
-                colorType = vectorLayer.rendererV2().type()
-                columnColor = get_column_color(vectorLayer)
-                layerColor = get_color(vectorLayer)
-                srid = vectorLayer.crs().postgisSrid()
-                info = vt_utils_parser.parse_vector(vectorLayer.source(), srid, colorType)
-                column2 = self.tw_layers.cellWidget(row_index, 2).currentText()
-
-                if column2 == "None":
-                    vLayer = Layer(**info)
-                    vLayer.add_color(columnColor, layerColor)
-                    provider = PostgisProvider(vLayer)
-                else:
-                    info['column2'] = column2.split(" - ")[0]
-                    info['typeColumn2'] = column2.split(" - ")[1]
-                    vLayer = Layer(**info)
-                    vLayer.add_color(columnColor, layerColor)
-                    provider = PostgisProvider(vLayer)
-                ProviderManager.instance().add_vector_provider(provider)
-
-    ## Create all providers for DEM and raster
-    def create_raster_providers(self):
-        dataSrcImg = None
-        dataSrcMnt = None
-        path = os.path.join(os.path.dirname(__file__), "rasters")
-        extent = self.get_gui_extent()
-        tileSize = self.get_size_tile()
-        if self.has_dem():
-            self.hasData = True
-            dem = self.cb_dem.itemData(self.cb_dem.currentIndex())
-            demProvider = ProviderManager.instance().create_raster_provider(dem, str(self.sb_port.value()), str(tileSize), self.zoomLevel)
-            ProviderManager.instance().dem = demProvider
-            dataSrcMnt = demProvider.source
-        if self.has_texture():
-            self.hasData = True
-            texture = self.cb_texture.itemData(self.cb_texture.currentIndex())
-            textureProvider = ProviderManager.instance().create_raster_provider(texture, str(self.sb_port.value()), str(tileSize), self.zoomLevel)
-            ProviderManager.instance().texture = textureProvider
-            dataSrcImg = textureProvider.source
-        if self.has_raster():
-            if os.name is 'nt':
-                pythonPath = os.path.abspath(os.path.join(sys.exec_prefix, '../../bin/pythonw.exe'))
-                mp.set_executable(pythonPath)
-                sys.argv = [None]
-            originExtent = Extent(extent[0], extent[1], extent[2], extent[3])
-            self.queue = Queue()
-            self.clear_rasters_directory(path)
-            tiler = VTTiler(originExtent, tileSize, self.zoomLevel, dataSrcMnt, dataSrcImg)
-            self.GDALprocess = mp.Process(target=tiler.create, args=(path, self.queue))
-            self.GDALprocess.start()
 
     ## Behavior whit a close event
     #  @override QtGui.QDialog
@@ -290,32 +247,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.btn_generate.setText("Generate")
             self.appServerRunning = False
             SyncManager.instance().remove_all_listener()
-        if self.GDALprocess and self.GDALprocess.is_alive():
-            GDALDialog = QtGui.QMessageBox()
-            GDALDialog.setIcon(QtGui.QMessageBox.Warning)
-            GDALDialog.setText("The tiling process is not complete. Would you like to run the process in background to use the generated tile later ?")
-            GDALDialog.setStandardButtons(QtGui.QMessageBox.Discard | QtGui.QMessageBox.Save)
-            ret = GDALDialog.exec_()
-            if ret == QtGui.QMessageBox.Save:
-                print "GDALprocess continue"
-            if ret == QtGui.QMessageBox.Discard:
-                self.kill_gdal_process()
-
-    ## Kill GDAL process and remove unfinished tiled files
-    def kill_gdal_process(self):
-        if self.GDALprocess and self.GDALprocess.is_alive():
-            self.GDALprocess.terminate()
-            self.GDALprocess = None
-            mergeSuffix = '_merge.tif'
-            demLocation = os.path.join(os.path.dirname(__file__), 'rasters', os.path.basename(ProviderManager.instance().dem.httpResource))
-            textureLocation = os.path.join(os.path.dirname(__file__), 'rasters', os.path.basename(ProviderManager.instance().texture.httpResource))
-            shutil.rmtree(demLocation, True)
-            shutil.rmtree(textureLocation, True)
-            try:
-                os.remove(textureLocation + mergeSuffix)
-                os.remove(demLocation + mergeSuffix)
-            except OSError:
-                pass
+            self.providerManager.clear()
 
     def clear_rasters_directory(self, path):
         for root, dirs, files in os.walk(path, topdown=False):

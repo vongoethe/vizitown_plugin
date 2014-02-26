@@ -47,3 +47,12 @@ class ProviderManager:
         for (uuid, p) in self.vectors.items():
             result.append(p.request_tile(Xmin, Ymin, Xmax, Ymax))
         return result
+
+    def clear(self):
+        self.vectors = {}
+        self.dem = None
+        self.texture = None
+
+    def add_rasters(self, demProvider=None, textureProvider=None):
+        self.dem = demProvider
+        self.texture = textureProvider
