@@ -4,7 +4,7 @@ from vt_utils
 
 class Layer:
 
-    def __init__(self, QgsMapLayer, column2=None, typeColumn2=None):
+    def __init__(self, QgsMapLayer):
         self.qgisLayer = QgsMapLayer
         source = self.parse_vector(QgsMapLayer.source())
 
@@ -17,18 +17,14 @@ class Layer:
         self._column = source['column']
 
         self._srid = QgsMapLayer.crs().postgisSrid()
-        self._column2 = column2
-        self._typeColumn2 = typeColumn2
+        self._column2 = None
+        self._typeColumn2 = None
 
         self._displayName = QgsMapLayer.name() + ' ' + self._column
 
         # single id for a layer
         self._uuid = re.sub("\"", "", str(dbname + table + column))
 
-        # singleSymbol
-        # graduatedSymbol
-        # categorizedSymbol
-        self._colorType = QgsMapLayer.rendererV2().type()
 
         # if self._colorType is singleSymbol equal None
         # else is field in database to sort data
@@ -73,3 +69,56 @@ class Layer:
             'table': m.group('table'),
             'column': m.group('column'),
         }
+
+    def update_color(self)
+        self._columnColor = self.get_column_color()
+        self._color = self.get_color()
+
+    ## Get the color of the vector layer. If is categorized symbol or graduate symbol, the color is white
+    def get_color(self):
+        renderer = self.qgisLayer.rendererV2()
+        if self.get_color_type() == "singleSymbol":
+            tabColor = []
+            tabColor.append({'color': str(renderer.symbol().color().name())})
+            return tabColor
+        if self.get_color_type() == "graduatedSymbol":
+            tabColor = []
+            color = []
+            lowerValue = []
+            upperValue = []
+            size = 0
+            for i in renderer.symbols():
+                color.append(str(i.color().name()))
+                size = size + 1
+            for j in renderer.ranges():
+                lowerValue.append(j.lowerValue())
+                upperValue.append(j.upperValue())
+            for nb in xrange(size):
+                tabColor.append({'min': lowerValue[nb], 'max': upperValue[nb], 'color': color[nb]})
+            return tabColor
+        if self.get_color_type() == "categorizedSymbol":
+            tabColor = []
+            color = []
+            value = []
+            size = 0
+            for i in renderer.symbols():
+                color.append(str(i.color().name()))
+                size = size + 1
+            for cat in renderer.categories():
+                value.append(cat.value())
+            for nb in xrange(size):
+                tabColor.append({'value': value[nb], 'color': color[nb]})
+            return tabColor
+
+    # singleSymbol
+    # graduatedSymbol
+    # categorizedSymbol
+    def get_color_type(self):
+        return self.qgisLayer.rendererV2().type()
+
+    ## Get the name of the column where the analysis was perform. If there isn't analysis, the name is none
+    def get_column_color(self):
+        if self.get_color_type() == "singleSymbol":
+            return None
+        if self.get_color_type() == "graduatedSymbol" or self.get_color_type() == "categorizedSymbol":
+            return renderer.classAttribute()

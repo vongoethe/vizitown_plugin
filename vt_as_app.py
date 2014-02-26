@@ -40,7 +40,7 @@ class AppServer(QObject):
     #  @param GDALprocess  the GDAL process if exist
     #  @param tilesInfo  the tiles informations if imagery data is include
     #  @queue queue Queue to communicate with process
-    def __init__(self, parent, initParam, GDALprocess=None, tilesInfo=None, queue=None):
+    def __init__(self, parent):
         QObject.__init__(self, parent)
         self.rollbackImporter = None
         self.appThread = None
@@ -48,9 +48,6 @@ class AppServer(QObject):
         self.queue = queue
         self.saveStdout = sys.stdout
         self.saveStderr = sys.stderr
-        self.initParam = initParam
-        self.GDALprocess = GDALprocess
-        self.tilesInfo = tilesInfo
 
     ## Start the application server
     def start(self):
@@ -58,9 +55,9 @@ class AppServer(QObject):
         self.stop()
 
         self.rollbackImporter = RollbackImporter()
-        from cyclone_thread import CycloneThread
+        from vt_as_cyclone import CycloneThread
 
-        self.appThread = CycloneThread(self.parent(), self.initParam, self.GDALprocess, self.tilesInfo, self.queue)
+        self.appThread = CycloneThread(self.parent())
 
         # Use this signal from the thread to indicate the thread exited
         QObject.connect(self.appThread, SIGNAL("runFinished(PyQt_PyObject)"),

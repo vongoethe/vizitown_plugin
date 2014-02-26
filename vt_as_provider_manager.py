@@ -21,17 +21,6 @@ class ProviderManager:
     def add_vector_provider(self, p):
         self.vectors[p._layer._uuid] = p
 
-    ## Create a raster provider to the manager
-    #  @param raster add to the provider
-    #  @param port to define the port of the connection
-    #  @param tileSize indicate the size of the tile
-    #  @param zoomLevel indicate the value of zoom levels
-    #  @return a raster provider
-    def create_raster_provider(self, raster, port, tileSize, zoomLevel):
-        name = '_'.join([raster.name(), tileSize, zoomLevel])
-        httpResource = 'http://localhost:' + port + '/rasters/' + name
-        return RasterProvider(name, raster.extent(), raster.crs().postgisSrid(), raster.source(), httpResource)
-
     ## Request a tile for all his providers
     #  @param Xmin
     #  @param Ymin
@@ -56,3 +45,6 @@ class ProviderManager:
     def add_rasters(self, demProvider=None, textureProvider=None):
         self.dem = demProvider
         self.texture = textureProvider
+    
+    def get_all_uuids(self):
+        return self.vectors.keys();

@@ -1,3 +1,4 @@
+from vt_utils_parameters import Parameters
 
 
 ## Raster provider
@@ -5,14 +6,11 @@
 class RasterProvider:
 
     ## Constructor
-    #  @param name of the raster
-    #  @param extent of the raster
-    #  @param srid of the raster
-    #  @param source local path of the raster
-    #  @param httpResource URL location
-    def __init__(self, name, extent, srid, source, httpResource):
-        self.name = name
-        self.extent = extent
-        self.srid = srid
-        self.source = source
-        self.httpResource = httpResource
+    #  @param raster A Qgsmaplayer
+    def __init__(self, raster):
+        parameters = Parameters.instance()
+        self.name = '_'.join([raster.name(), parameters.tileSize, parameters.zoomLevel])
+        self.extent = raster.extent()
+        self.srid = raster.crs().postgisSrid()
+        self.source = raster.source()
+        self.httpResource = 'http://localhost:' + Parameters.instance().port + '/rasters/' + self.name

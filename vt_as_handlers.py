@@ -1,12 +1,14 @@
 import os
 import json
-import os
-import cyclone.websocket
 from multiprocessing import Queue
+
+import cyclone.websocket
+
 from vt_utils_converter import PostgisToJSON
 from vt_as_provider_manager import ProviderManager
 from vt_as_sync import SyncManager
 from vt_utils_result_vttiler import ResultVTTiler
+from vt_utils_parameters import Parameters
 
 
 ## A static file handler which authorize cross origin
@@ -20,8 +22,8 @@ class CorsStaticFileHandler(cyclone.web.StaticFileHandler):
 ## A handler give initial parameters to the browser
 class InitHandler(cyclone.web.RequestHandler):
     ## Method to initialize the handler
-    def initialize(self, initParam):
-        self.initParam = initParam
+    def initialize(self):
+        self.parameters = Parameters.instance()
 
     def set_default_headers(self):
         self.set_header('Access-Control-Allow-Origin', '*')
@@ -30,7 +32,7 @@ class InitHandler(cyclone.web.RequestHandler):
 
     ## Handle GET HTTP
     def get(self):
-        self.write(json.dumps(self.initParam, separators=(',', ':')))
+        self.write(json.dumps(self.parameters.get_viewer_param(), separators=(',', ':')))
 
 
 ## Data Handler
@@ -106,48 +108,35 @@ class SyncHandler(cyclone.websocket.WebSocketHandler):
 class TilesInfoHandler(cyclone.websocket.WebSocketHandler):
 
     ## Method to initialize the handler
-    #  @param GDALprocess the process gdal
-    #  @param tilesInfo the dictionnary with the information about the data
-    def initialize(self, GDALprocess, tilesInfo, queue):
-        self.GDALprocess = GDALprocess
-        self.tilesInfo = tilesInfo
-        self.queue = queue
+    def initialize(self):
+        self.parameters = Parameters.instance()
         self.result = ResultVTTiler.instance()
 
     ## Method call when the websocket is opened
     def connectionMade(self):
         print "WebSocket tiles_info opened"
-        print self.result
-        print self.result.is_define()
-        print self.result.is_dem()
 
         if not self.result.is_define():
-            self.result.set_result(self.queue.get())
-            self.queue.close()
+            self.result.set_result(self.parameters.GDALqueue.get())
+            self.parameters.GDALqueue.close()
 
-        if self.GDALprocess and self.GDALprocess.is_alive():
+        if self.parameters.GDALprocess and self.parameters.GDALprocess.is_alive():
             print "Wait GDAL tiling ..."
-            self.GDALprocess.join()
+            self.parameters.GDALprocess.join()
             print "Send tiles info ..."
 
+        tilesInfo = self.parameters.get_tiling_param()
         # Add pixel Size in JSON and Min/Max height if have dem
         if self.result.is_define():
-            self.tilesInfo['pixelSize'] = self.result.pixelSize
+            tilesInfo['pixelSize'] = self.result.pixelSize
             if self.result.is_dem():
-                self.tilesInfo['minHeight'] = self.result.minHeight
-                self.tilesInfo['maxHeight'] = self.result.maxHeight
+                tilesInfo['minHeight'] = self.result.minHeight
+                tilesInfo['maxHeight'] = self.result.maxHeight
 
-        js = json.dumps(self.tilesInfo, separators=(',', ':'))
+        js = json.dumps(tilesInfo, separators=(',', ':'))
         self.sendMessage(js)
 
     ## Method call when the websocket is closed
     #  @param reason to indicate the reason of the closed instance
     def connectionLost(self, reason):
         print "WebSocket tiles_info closed"
-
-    ## Method to get the pixel size in the image
-    #  @param img to get the information
-    #  @return the pixel size
-    def _get_pixel_size(self, img):
-        ds = gdal.Open(img, gdal.GA_ReadOnly)
-        return ds.GetGeoTransform()[1]

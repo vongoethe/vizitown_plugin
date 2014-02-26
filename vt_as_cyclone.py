@@ -7,6 +7,7 @@ from cyclone.bottle import run, route, unrun
 
 from vt_test_handlers import PingHandler, EchoHandler
 from vt_as_handlers import *
+from vt_utils_parameters import Parameters
 
 
 ## CycloneThread
@@ -20,28 +21,23 @@ class CycloneThread(QThread):
     #  @param debug if True add two default handlers,
     #  '/test/echo' a echo server in websocket and
     #  '/test/ping' handle HTTP GET request and return "pong"
-    def __init__(self, parentObject, initParam, GDALprocess, tilesInfo, queue, debug=True):
+    def __init__(self, parentObject, debug=True):
         QThread.__init__(self, parentObject.thread())
         self.debug = debug
-        self.initParam = initParam
-        self.GDALprocess = GDALprocess
-        self.queue = queue
-        self.tilesInfo = tilesInfo
+        self.parameters = Parameters.instance()
 
     ## run method launch the cyclone server
     def run(self):
-        rastersPath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "rasters")
-        viewerPath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "vt_viewer")
         handlers = [
-            (r'/app/(.*)', CorsStaticFileHandler, {"path": viewerPath}),
-            (r'/init', InitHandler, dict(initParam=self.initParam)),
+            (r'/app/(.*)', CorsStaticFileHandler, {"path": parameters.viewerPath}),
+            (r'/init', InitHandler),
             (r'/data', DataHandler),
             (r'/sync', SyncHandler),
-            (r'/rasters/(.*)', CorsStaticFileHandler, {"path": rastersPath}),
+            (r'/rasters/(.*)', CorsStaticFileHandler, {"path": parameters.rasterPath}),
         ]
 
-        if self.tilesInfo:
-            handlers.append((r'/tiles_info', TilesInfoHandler, dict(GDALprocess=self.GDALprocess, tilesInfo=self.tilesInfo, queue=self.queue)))
+        if self.parameters.get_viewer_param()['hasRaster']:
+            handlers.append((r'/tiles_info', TilesInfoHandler))
         if self.debug:
             handlers.append((r'/test/echo', EchoHandler))
             handlers.append((r'/test/ping', PingHandler))

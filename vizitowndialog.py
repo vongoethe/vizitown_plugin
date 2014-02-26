@@ -21,11 +21,7 @@
     """
 
 import os
-import re
 import sys
-import multiprocessing as mp
-from multiprocessing import Queue
-import shutil
 
 from ui_vizitown import Ui_Vizitown
 from PyQt4 import QtCore, QtGui
@@ -33,15 +29,10 @@ from qgis.core import *
 from qgis.gui import *
 
 from vt_as_app import AppServer
-from vt_as_provider_manager import ProviderManager
-from vt_as_provider_postgis import PostgisProvider
-from vt_as_provider_raster import RasterProvider
 from vt_as_sync import SyncManager
 from vt_utils_layer import Layer
 from vt_utils_provider_factory import ProviderFactory
 
-import vt_utils_parser
-from vt_utils_tiler import VTTiler, Extent
 from vt_utils_gui import *
 
 
@@ -57,8 +48,10 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.appServerRunning = False
         self.GDALprocess = None
         self.hasData = False
-        self.providerManager = ProviderManager.instance()
         self.zoomLevel = "1"
+
+        self.parameters = Parameters.instance()
+        self.providerManager = ProviderManager.instance()
 
     ## Set the default extent
     #  @param extent the extent to init the parameter
@@ -188,6 +181,20 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             return [float(xmin), float(ymin), float(xmax), float(ymax)]
         return [float(self.extent.xMinimum()), float(self.extent.yMinimum()), float(self.extent.xMaximum()), float(self.extent.yMaximum())]
 
+
+    def get_selected_layers(self):
+        selectedLayers = []
+        for row_index in range(self.tw_layers.rowCount()):
+            # if the layer is checked
+            if self.tw_layers.item(row_index, 0).checkState() == QtCore.Qt.Checked:
+                layer = self.tw_layers.item(row_index, 1).data(QtCore.Qt.UserRole)
+                column2 = self.tw_layers.cellWidget(row_index, 2).currentText()
+                if column2 != "None":
+                    layer._column2 = column2.split(" - ")[0]
+                    layer._typeColumn2 = column2.split(" - ")[1]
+                selectedLayers.append(layer)
+        return selectedLayers
+
     ## Set the tab advanced option by default
     #  @override QtGui.QDialog
     def on_btn_default_released(self):
@@ -207,27 +214,28 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             return
         self.pb_loading.show()
 
+        self.parameters.set_viewer_param(self.get_gui_extent(), self.sb_port.value(), self.has_raster())
+        self.parameters.set_tiling_param(self.zoomLevel, self.get_size_tile())
         self.instantiate_providers()
 
-        viewerParam = build_viewer_param(self.get_gui_extent(), str(self.sb_port.value()), self.has_raster())
-        if self.has_raster():
-            demResource = None
-            textureResource = None
-            if self.has_dem():
-                demResource = self.providerManager.dem.httpResource
-            if self.has_texture():
-                textureResource = self.providerManager.texture.httpResource
-            tilingParam = build_tiling_param(self.zoomLevel, self.get_size_tile(), demResource, textureResource)
-            self.appServer = AppServer(self, viewerParam, self.GDALprocess, tilingParam, self.queue)
-        else:
-            self.appServer = AppServer(self, viewerParam)
+        self.appServer = AppServer(self)
         self.appServer.start()
         self.btn_generate.setText("Server is running")
-        open_web_browser(self.sb_port.value())
+        url = 'http://localhost:' + str(self.sb_port.value()) + '/app/index.html'
+        webbrowser.open(url)
         self.appServerRunning = True
 
     def instantiate_providers(self):
         factory = ProviderFactory()
+        factory.create_vector_providers(self.get_selected_layers())
+        dem = None
+        texture = None
+        if self.has_raster():
+            if self.has_dem():
+                dem = self.cb_dem.itemData(self.cb_dem.currentIndex())
+            if self.has_texture():
+                texture = self.cb_texture.itemData(self.cb_texture.currentIndex())
+            factory.create_raster_providers(dem, texture)
 
     ## Calculate the width and the height in kilometers
     def calculate_size_extent(self):
@@ -248,8 +256,3 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.appServerRunning = False
             SyncManager.instance().remove_all_listener()
             self.providerManager.clear()
-
-    def clear_rasters_directory(self, path):
-        for root, dirs, files in os.walk(path, topdown=False):
-            for name in dirs:
-                shutil.rmtree(os.path.join(root, name))
