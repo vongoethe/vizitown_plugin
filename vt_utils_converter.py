@@ -131,17 +131,16 @@ class PostgisToJSON:
         if geometry == 'POINT':
             geom = 'point'
         elif (geometry == 'LINESTRING' or
-                    geometry == 'MULTILINESTRING'):
+                geometry == 'MULTILINESTRING'):
             geom = 'line'
         elif (geometry == 'POLYGON' or
-                    geometry == 'MULTIPOLYGON' or
-                    geometry == 'POLYHEDRALSURFACE' or
-                    geometry == 'TIN'):
+                geometry == 'MULTIPOLYGON' or
+                geometry == 'POLYHEDRALSURFACE' or
+                geometry == 'TIN'):
             geom = 'polygon'
         else:
             geometry = 'undefined'
         return re.sub('{GEOMETRY}', geometry, exchange)
-
 
     ## _parse_point method to parse a point data
     #  @param message to stock the data
