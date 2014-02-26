@@ -275,6 +275,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
                 sys.argv = [None]
             originExtent = Extent(extent[0], extent[1], extent[2], extent[3])
             self.queue = Queue()
+            self.clear_rasters_directory(path)
             tiler = VTTiler(originExtent, tileSize, self.zoomLevel, dataSrcMnt, dataSrcImg)
             self.GDALprocess = mp.Process(target=tiler.create, args=(path, self.queue))
             self.GDALprocess.start()
@@ -315,3 +316,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
                 os.remove(demLocation + mergeSuffix)
             except OSError:
                 pass
+
+    def clear_rasters_directory(self, path):
+        for root, dirs, files in os.walk(path, topdown=False):
+            for name in dirs:
+                shutil.rmtree(os.path.join(root, name))
