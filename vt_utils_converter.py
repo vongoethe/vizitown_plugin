@@ -210,7 +210,7 @@ class PostgisToJSON:
     ## _get_vertices Getter of vertex data
     #  @param xmldoc to stock the data
     #  @return a specific vertex
-    def _get_vertices(sef, xmldoc):
+    def _get_vertices(self, xmldoc):
         nodeVertice = xmldoc.getElementsByTagName('Coordinate')
         vertices = nodeVertice[0].getAttribute('point')
         vertices = re.sub(' ', ',', vertices)
