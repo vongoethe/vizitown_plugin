@@ -1,9 +1,9 @@
-    
+
 
 class ProviderFactory():
 
     ## Create all providers with the selected layers in the GUI
-    def create_vector_providers(self):
+    def create_vector_providers(self, arrayLayer):
         for row_index in range(self.tw_layers.rowCount()):
             # if the layer is checked
             if self.tw_layers.item(row_index, 0).checkState() == QtCore.Qt.Checked:
