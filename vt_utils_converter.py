@@ -83,7 +83,7 @@ class PostgisToJSON:
                 exchange = re.sub('{TYPE}', "2", exchange)
 
         exchange = re.sub('{COLOR}', color, exchange)
-        exchange = re.sub('{GEOMETRY}', geometry, exchange)
+        exchange = self._replace_geometry(geometry, exchange)
         exchange = re.sub('{UUID}', uuid, exchange)
 
         noHeight = "0"
@@ -125,6 +125,23 @@ class PostgisToJSON:
         geometries = PostgisToJSON.remove_comma(geometries)
         exchange = re.sub('{JSON_GEOM}', geometries, exchange)
         return exchange
+
+    def _replace_geometry(self, geometry, exchange):
+        geom = ''
+        if geometry == 'POINT':
+            geom = 'point'
+        elif (geometry == 'LINESTRING' or
+                    geometry == 'MULTILINESTRING'):
+            geom = 'line'
+        elif (geometry == 'POLYGON' or
+                    geometry == 'MULTIPOLYGON' or
+                    geometry == 'POLYHEDRALSURFACE' or
+                    geometry == 'TIN'):
+            geom = 'polygon'
+        else:
+            geometry = 'undefined'
+        return re.sub('{GEOMETRY}', geometry, exchange)
+
 
     ## _parse_point method to parse a point data
     #  @param message to stock the data
