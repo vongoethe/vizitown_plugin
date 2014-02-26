@@ -45,6 +45,6 @@ class ProviderManager:
     def add_rasters(self, demProvider=None, textureProvider=None):
         self.dem = demProvider
         self.texture = textureProvider
-    
+
     def get_all_uuids(self):
-        return self.vectors.keys();
+        return self.vectors.keys()

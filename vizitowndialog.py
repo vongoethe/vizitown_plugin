@@ -181,7 +181,6 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             return [float(xmin), float(ymin), float(xmax), float(ymax)]
         return [float(self.extent.xMinimum()), float(self.extent.yMinimum()), float(self.extent.xMaximum()), float(self.extent.yMaximum())]
 
-
     def get_selected_layers(self):
         selectedLayers = []
         for row_index in range(self.tw_layers.rowCount()):

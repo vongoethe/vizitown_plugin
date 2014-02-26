@@ -3,6 +3,7 @@ import webbrowser
 from qgis.core import *
 from qgis.gui import *
 
+
 ## Return True if the layer is a Raster which come from a database
 def is_raster(layer):
     return layer.type() == QgsMapLayer.RasterLayer and layer.providerType() == "gdal" and not layer.source().startswith('dbname')

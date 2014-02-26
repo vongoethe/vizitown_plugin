@@ -3,7 +3,7 @@ from multiprocessing import Queue
 
 @Singleton
 class Parameters:
-    def __init__(self): 
+    def __init__(self):
         self.rastersPath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "rasters")
         self.viewerPath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "vt_viewer")
         self.GDALqueue = Queue()
@@ -26,7 +26,6 @@ class Parameters:
             'hasRaster': self.hasRaster,
             'vectors': ProviderManager.instance().get_all_uuids(),
         }
-
 
     def set_tiling_resources(self, dem=None, texture=None):
         self.dem = dem

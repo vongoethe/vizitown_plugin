@@ -25,7 +25,6 @@ class Layer:
         # single id for a layer
         self._uuid = re.sub("\"", "", str(dbname + table + column))
 
-
         # if self._colorType is singleSymbol equal None
         # else is field in database to sort data
         self._columnColor = None
@@ -70,7 +69,7 @@ class Layer:
             'column': m.group('column'),
         }
 
-    def update_color(self)
+    def update_color(self):
         self._columnColor = self.get_column_color()
         self._color = self.get_color()
 
