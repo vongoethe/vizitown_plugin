@@ -62,4 +62,4 @@ class Parameters:
         self.hasRaster = None
         self.all_vectors = None
         self.zommLevel = None
-        self..tileSize = None
+        self.tileSize = None
