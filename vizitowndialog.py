@@ -218,7 +218,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.parameters.set_viewer_param(self.get_gui_extent(), self.sb_port.value(), self.has_raster())
         self.parameters.set_tiling_param(self.zoomLevel, self.get_size_tile())
         self.instantiate_providers()
-        self.parameters.set_all_uuids(self.providerManager.get_all_uuids())
+        self.parameters.set_all_vectors(self.providerManager.get_all_vectors())
 
         self.appServer = AppServer(self)
         self.appServer.start()

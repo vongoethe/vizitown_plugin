@@ -47,5 +47,8 @@ class ProviderManager:
         self.dem = demProvider
         self.texture = textureProvider
 
-    def get_all_uuids(self):
-        return self.vectors.keys()
+    def get_all_vectors(self):
+        vectors = []
+        for (uuid, p) in self.vectors.items():
+            vectors.append({'uuid': uuid, 'name': p._layer._displayName})
+        return vectors
