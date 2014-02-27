@@ -42,7 +42,7 @@ class ProviderFactory():
             self.parameters.set_resources_texture(textureProvider.httpResource)
             self.providerManager.texture = textureProvider
 
-        if os.name is 'nt':
+        if os.name == 'nt':
             pythonPath = os.path.abspath(os.path.join(sys.exec_prefix, '../../bin/pythonw.exe'))
             mp.set_executable(pythonPath)
             sys.argv = [None]
