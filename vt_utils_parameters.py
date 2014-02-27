@@ -34,7 +34,7 @@ class Parameters:
 
     def set_resources_dem(self, dem):
         self.dem = dem
-    
+
     def set_resources_texture(self, texture):
         self.texture = texture
 
