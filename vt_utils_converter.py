@@ -76,7 +76,6 @@ class PostgisToJSON:
 
         exchange = self._jsonExchange
         exchange = self._replace_metadata(exchange)
-        print exchange
 
         geometries = ""
         for r in resultArray:
@@ -155,6 +154,7 @@ class PostgisToJSON:
             return self._get_json_geom(vertice, str(dataArray[1]))
         except:
             # dataArray[1] NaN probably a json
+            pass
 
     # def _is_json(self):
     #     if self.hasH:
