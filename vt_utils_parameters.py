@@ -53,3 +53,13 @@ class Parameters:
             'dem': self.dem,
             'texture': self.texture
         }
+
+    def clear(self):
+        self.dem = None
+        self.texture = None
+        self.extent = None
+        self.port = None
+        self.hasRaster = None
+        self.all_vectors = None
+        self.zommLevel = None
+        self..tileSize = None

@@ -258,3 +258,4 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.appServerRunning = False
             SyncManager.instance().remove_all_listener()
             self.providerManager.clear()
+            self.parameters.clear()
