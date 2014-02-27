@@ -1,8 +1,8 @@
 import math
 try:
-    import gdal
-except:
     from osgeo import gdal
+except:
+    import gdal
 from gdalconst import *
 from multiprocessing import Queue
 import os
