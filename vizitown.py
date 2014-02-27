@@ -96,5 +96,6 @@ class Vizitown:
         self.dlg.init_tile_size()
         self.dlg.init_layers()
         self.dlg.sb_port.setValue(8888)
+        self.dlg.tabWidget.setCurrentIndex(0)
         # show the dialog
         self.dlg.show()

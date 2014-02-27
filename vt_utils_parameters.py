@@ -1,3 +1,6 @@
+import os
+
+from vt_utils_singleton import Singleton
 from multiprocessing import Queue
 
 
@@ -7,6 +10,8 @@ class Parameters:
         self.rastersPath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "rasters")
         self.viewerPath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "vt_viewer")
         self.GDALqueue = Queue()
+        self.dem = None
+        self.texture = None
 
     def set_viewer_param(self, extent, port, hasRaster):
         self.extent = extent
@@ -24,12 +29,17 @@ class Parameters:
             },
             'port': self.port,
             'hasRaster': self.hasRaster,
-            'vectors': ProviderManager.instance().get_all_uuids(),
+            'vectors': self.all_uuids,
         }
 
-    def set_tiling_resources(self, dem=None, texture=None):
+    def set_resources_dem(self, dem):
         self.dem = dem
+    
+    def set_resources_texture(self, texture):
         self.texture = texture
+
+    def set_all_uuids(self, arrayUuid):
+        self.all_uuids = arrayUuid
 
     def set_tiling_param(self, zoomLevel, tileSize):
         self.zoomLevel = zoomLevel

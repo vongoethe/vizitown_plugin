@@ -6,6 +6,8 @@ import multiprocessing as mp
 from vt_utils_tiler import VTTiler, Extent
 from vt_as_provider_manager import ProviderManager
 from vt_utils_parameters import Parameters
+from vt_as_provider_postgis import PostgisProvider
+from vt_as_provider_raster import RasterProvider
 
 
 class ProviderFactory():
@@ -21,7 +23,7 @@ class ProviderFactory():
             self.providerManager.add_vector_provider(provider)
 
     ## Create all providers for DEM and raster
-    def create_raster_providers(self, ):
+    def create_raster_providers(self, dem, texture):
         dataSrcImg = None
         dataSrcMnt = None
         extent = self.parameters.extent
@@ -32,19 +34,19 @@ class ProviderFactory():
         if dem is not None:
             demProvider = RasterProvider(dem)
             dataSrcMnt = demProvider.source
-            self.parameters.set_tiling_resources(dem=demProvider.httpResource)
+            self.parameters.set_resources_dem(demProvider.httpResource)
             self.providerManager.dem = demProvider
         if texture is not None:
             textureProvider = RasterProvider(texture)
             dataSrcImg = textureProvider.source
-            self.parameters.set_tiling_resources(texture=textureProvider.httpResource)
+            self.parameters.set_resources_texture(textureProvider.httpResource)
             self.providerManager.texture = textureProvider
 
         if os.name is 'nt':
             pythonPath = os.path.abspath(os.path.join(sys.exec_prefix, '../../bin/pythonw.exe'))
             mp.set_executable(pythonPath)
             sys.argv = [None]
-        self.clear_rasters_directory(path)
+
         tiler = VTTiler(originExtent, tileSize, zoomLevel, dataSrcMnt, dataSrcImg)
         self.parameters.GDALprocess = mp.Process(target=tiler.create, args=(path, self.parameters.GDALqueue))
         self.parameters.GDALprocess.start()

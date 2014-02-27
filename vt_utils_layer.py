@@ -1,5 +1,6 @@
 import re
-from vt_utils
+
+from qgis.core import *
 
 
 class Layer:
@@ -23,7 +24,7 @@ class Layer:
         self._displayName = QgsMapLayer.name() + ' ' + self._column
 
         # single id for a layer
-        self._uuid = re.sub("\"", "", str(dbname + table + column))
+        self._uuid = re.sub("\"", "", str(self._dbname + self._table + self._column))
 
         # if self._colorType is singleSymbol equal None
         # else is field in database to sort data
@@ -120,4 +121,4 @@ class Layer:
         if self.get_color_type() == "singleSymbol":
             return None
         if self.get_color_type() == "graduatedSymbol" or self.get_color_type() == "categorizedSymbol":
-            return renderer.classAttribute()
+            return self.qgisLayer.rendererV2().classAttribute()

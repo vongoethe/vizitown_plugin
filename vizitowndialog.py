@@ -30,8 +30,11 @@ from qgis.gui import *
 
 from vt_as_app import AppServer
 from vt_as_sync import SyncManager
+from vt_as_provider_manager import ProviderManager
+from vt_as_provider_postgis import PostgisProvider
 from vt_utils_layer import Layer
 from vt_utils_provider_factory import ProviderFactory
+from vt_utils_parameters import Parameters
 
 from vt_utils_gui import *
 
@@ -47,7 +50,6 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.appServer = None
         self.appServerRunning = False
         self.GDALprocess = None
-        self.hasData = False
         self.zoomLevel = "1"
 
         self.parameters = Parameters.instance()
@@ -208,7 +210,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             self.closeEvent(None)
             return
 
-        if not self.hasData:
+        if not self.has_data():
             QtGui.QMessageBox.warning(self, "Warning", ("No data !"), QtGui.QMessageBox.Ok)
             return
         self.pb_loading.show()
@@ -216,6 +218,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.parameters.set_viewer_param(self.get_gui_extent(), self.sb_port.value(), self.has_raster())
         self.parameters.set_tiling_param(self.zoomLevel, self.get_size_tile())
         self.instantiate_providers()
+        self.parameters.set_all_uuids(self.providerManager.get_all_uuids())
 
         self.appServer = AppServer(self)
         self.appServer.start()

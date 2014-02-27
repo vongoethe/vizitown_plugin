@@ -36,16 +36,11 @@ class AppServer(QObject):
 
     ## Constructor.
     #  @param parent  the QObject parent
-    #  @param initParam  dict to define initial parameter for GDAL process (zoomLevel, tileSize, dem, texture)
-    #  @param GDALprocess  the GDAL process if exist
-    #  @param tilesInfo  the tiles informations if imagery data is include
-    #  @queue queue Queue to communicate with process
     def __init__(self, parent):
         QObject.__init__(self, parent)
         self.rollbackImporter = None
         self.appThread = None
         self.timer = None
-        self.queue = queue
         self.saveStdout = sys.stdout
         self.saveStderr = sys.stderr
 

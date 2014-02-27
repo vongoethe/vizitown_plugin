@@ -29,11 +29,11 @@ class CycloneThread(QThread):
     ## run method launch the cyclone server
     def run(self):
         handlers = [
-            (r'/app/(.*)', CorsStaticFileHandler, {"path": parameters.viewerPath}),
+            (r'/app/(.*)', CorsStaticFileHandler, {"path": self.parameters.viewerPath}),
             (r'/init', InitHandler),
             (r'/data', DataHandler),
             (r'/sync', SyncHandler),
-            (r'/rasters/(.*)', CorsStaticFileHandler, {"path": parameters.rasterPath}),
+            (r'/rasters/(.*)', CorsStaticFileHandler, {"path": self.parameters.rastersPath}),
         ]
 
         if self.parameters.get_viewer_param()['hasRaster']:
@@ -41,7 +41,7 @@ class CycloneThread(QThread):
         if self.debug:
             handlers.append((r'/test/echo', EchoHandler))
             handlers.append((r'/test/ping', PingHandler))
-        run(host="127.0.0.1", port=int(self.initParam['port']), more_handlers=handlers)
+        run(host="127.0.0.1", port=self.parameters.port, more_handlers=handlers)
 
     ## stop method stop the cyclone server
     def stop(self):

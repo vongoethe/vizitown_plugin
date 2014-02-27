@@ -106,13 +106,14 @@ class PostgisProvider:
         return {'results': results, 'geom': self.retGeometry, 'hasH': self.hasH, 'color': colors, 'uuid': self._layer._uuid}
 
     def _sort_result(self, iterator):
-        if (self._layer._colorType == "singleSymbol"):
+        colorType = self._layer.get_color_type()
+        if (colorType == "singleSymbol"):
             return self._get_result_single_symbol(iterator)
 
-        elif (self._layer._colorType == "graduatedSymbol"):
+        elif (colorType == "graduatedSymbol"):
             return self._get_result_graduated_symbol(iterator)
 
-        elif (self._layer._colorType == "categorizedSymbol"):
+        elif (ccolorType == "categorizedSymbol"):
             return self._get_result_categorized_symbol(iterator)
 
     def _get_result_single_symbol(self, iterator):

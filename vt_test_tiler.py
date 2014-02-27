@@ -9,5 +9,5 @@ if __name__ == "__main__":
     originExtent = Extent(839724, 6511958, 861463, 6529147)
     sourceDem = '/Users/Louis/Desktop/Data/Mnt/MNT2009_Altitude_10m_RGF93.tif'
     sourceOrtho = '/Users/Louis/Desktop/Data/GrandLyon_L93.png'
-    tiler = VTTiler(originExtent, 4096, 1, sourceDem, sourceOrtho)
+    tiler = VTTiler(originExtent, 4096, 1, sourceDem, None)
     tiler.create('/Users/Louis/Documents/Cours/3eme_Annee/Last_project/Vizitown_LP/DEV/GitAppServer/rasters')
