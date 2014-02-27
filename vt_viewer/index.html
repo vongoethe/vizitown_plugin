@@ -1,0 +1,67 @@
+<html>
+<head>
+	<meta charset="UTF-8" />
+	<title>Viewer VIZITOWN</title>
+	<link rel="icon" href="favicon.ico" />
+	<link rel="stylesheet" href="/app/libs/css/viewer.css"/>
+	<link rel="stylesheet" href="/app/libs/css/main.css"/>
+</head>
+
+<body>
+
+<div id="container">
+</div>
+
+<div id="layers-column">
+	<ol id="layer-list">
+	</ol>
+	<a class="call-modal" href="#!" onclick="refreshLayers()">Refresh</a>
+
+	<div id="settings-button">
+		<a class="call-modal" href="#modal-text">^</a>
+	</div>
+</div>
+
+<!-- <input id="vertical-slider" type="range" class="vertical" orient="vertical"/> -->
+<section class="semantic-content" id="modal-text" tabindex="-1"
+        role="dialog" aria-labelledby="modal-label" aria-hidden="true">
+
+    <div class="modal-inner">
+	    <header id="modal-label"><h2>Parameters</h2></header>
+        <div class="modal-content">
+            <div class="field">
+                <label for="deep">Field of view</label>
+                <input type="text" name="deep" id="deepInput"/>
+            </div>
+            <div class="field">
+                <label for="angle">Camera angle</label>
+                <input type="text" name="angle" id="angleInput"/>
+            </div>
+            <div class="field">
+                <label for="ssao1">SSAO 1</label>
+	        <input type="checkbox" name="ssao1" value="ssao1"/>
+            </div>
+            <div class="field">
+                <label for="ssao2">SSAO 2</label>
+	        <input type="checkbox" name="ssao2" value="ssao2"/>
+            </div>
+            <div class="field">
+                <label for="shadow">Shadow</label>
+	        <input type="checkbox" name="shadow" value="shadow"/>
+            </div>
+	</div>
+        <footer>
+            <a href="#!" class="call-modal" data-close="Close"
+                data-dismiss="modal" onclick="saveParameters()">Save and refresh</a>
+	</footer>
+    </div>
+
+    <a href="#!" class="modal-close" title="Close this modal" data-close="Close"
+        data-dismiss="modal">×</a>
+</section>
+<script type="text/javascript" src="/app/Vizitown.js"></script>
+<script type="text/javascript" src="/app/libs/js/modal.js"></script>
+<script type="text/javascript" src="/app/libs/js/gui.js"></script>
+<script type="text/javascript" src="/app/libs/js/scene.js"></script>
+</body>
+</html>
