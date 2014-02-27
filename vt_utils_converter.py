@@ -69,123 +69,121 @@ class PostgisToJSON:
     #  @param color to define the color of data
     #  @return a json
     def parse(self, resultArray, geometry, hasH, color, uuid):
+        self.geometry = geometry
+        self.hasH = hasH
+        self.color = color
+        self.uuid = uuid
+
         exchange = self._jsonExchange
-        # geometry in 3 dimensions
-        if (geometry == 'POLYHEDRALSURFACE' or
-                geometry == 'TIN'):
-            exchange = re.sub('{TYPE}', "3", exchange)
-        else:
-            # geometry in 2.5 dimensions (geometry with height)
-            if hasH:
-                exchange = re.sub('{TYPE}', "2.5", exchange)
-            # geometry in 2 dimensions
-            else:
-                exchange = re.sub('{TYPE}', "2", exchange)
+        exchange = self._replace_metadata(exchange)
 
-        exchange = re.sub('{COLOR}', color, exchange)
-        exchange = self._replace_geometry(geometry, exchange)
-        exchange = re.sub('{UUID}', uuid, exchange)
-
-        noHeight = "0"
         geometries = ""
-        for g in resultArray:
+        for r in resultArray:
             # geometry has height
-            if hasH:
-                if geometry == 'POINT':
-                    geometries += self._parse_point(str(g[0]), str(g[1])) + ','
+            data = self._get_data(r, hasH)
+            if geometry == 'POINT':
+                geometries += self._parse_point(data) + ','
 
-                elif (geometry == 'LINESTRING' or
-                        geometry == 'MULTILINESTRING'):
-                    geometries += self._parse_line(str(g[0]), str(g[1])) + ','
+            elif (geometry == 'LINESTRING' or
+                    geometry == 'MULTILINESTRING'):
+                geometries += self._parse_line(data) + ','
 
-                elif (geometry == 'POLYGON' or
-                        geometry == 'MULTIPOLYGON'):
-                    geometries += self._parse_polygon(str(g[0]), str(g[1])) + ','
+            elif (geometry == 'POLYGON' or
+                    geometry == 'MULTIPOLYGON'):
+                geometries += self._parse_polygon(data) + ','
 
-                elif (geometry == 'POLYHEDRALSURFACE' or
-                        geometry == 'TIN'):
-                    geometries += self._parse_triangle(str(g[0])) + ','
-
-            else:
-                if geometry == 'POINT':
-                    geometries += self._parse_point(str(g), noHeight) + ','
-
-                elif (geometry == 'LINESTRING' or
-                        geometry == 'MULTILINESTRING'):
-                    geometries += self._parse_line(str(g), noHeight) + ','
-
-                elif (geometry == 'POLYGON' or
-                        geometry == 'MULTIPOLYGON'):
-                    geometries += self._parse_polygon(str(g), noHeight) + ','
-
-                elif (geometry == 'POLYHEDRALSURFACE' or
-                        geometry == 'TIN'):
-                    geometries += self._parse_triangle(str(g)) + ','
+            elif (geometry == 'POLYHEDRALSURFACE' or
+                    geometry == 'TIN'):
+                geometries += self._parse_triangle(data) + ','
 
         geometries = PostgisToJSON.remove_comma(geometries)
         exchange = re.sub('{JSON_GEOM}', geometries, exchange)
         return exchange
 
-    def _replace_geometry(self, geometry, exchange):
+    def _replace_metadata(self, exchange):
+        exchange = re.sub('{COLOR}', self.color, exchange)
+        exchange = re.sub('{UUID}', self.uuid, exchange)
+        # geometry in 3 dimensions
+        if (self.geometry == 'POLYHEDRALSURFACE' or
+                self.geometry == 'TIN'):
+            exchange = re.sub('{TYPE}', "3", exchange)
+        else:
+            # geometry in 2.5 dimensions (geometry with height)
+            if self.hasH:
+                exchange = re.sub('{TYPE}', "2.5", exchange)
+            # geometry in 2 dimensions
+            else:
+                exchange = re.sub('{TYPE}', "2", exchange)
+
         geom = ''
-        if geometry == 'POINT':
+        if self.geometry == 'POINT':
             geom = 'point'
-        elif (geometry == 'LINESTRING' or
-                geometry == 'MULTILINESTRING'):
+        elif (self.geometry == 'LINESTRING' or
+                self.geometry == 'MULTILINESTRING'):
             geom = 'line'
-        elif (geometry == 'POLYGON' or
-                geometry == 'MULTIPOLYGON' or
-                geometry == 'POLYHEDRALSURFACE' or
-                geometry == 'TIN'):
+        elif (self.geometry == 'POLYGON' or
+                self.geometry == 'MULTIPOLYGON' or
+                self.geometry == 'POLYHEDRALSURFACE' or
+                self.geometry == 'TIN'):
             geom = 'polygon'
         else:
-            geometry = 'undefined'
-        return re.sub('{GEOMETRY}', geometry, exchange)
+            geom = 'undefined'
+        return re.sub('{GEOMETRY}', geom, exchange)
+
+    def _get_data(self, result, hasH):
+        data = []
+        if hasH:
+            data.append(str(result[0]))
+            data.append(result[1])
+            return data
+        else:
+            data.append(result)
+            data.append(self.noHeight)
+            return data
 
     ## _parse_point method to parse a point data
     #  @param message to stock the data
     #  @param height to add an information of elevation
     #  @return a json file
-    def _parse_point(self, message, height):
-        vertice = message.split(' ')
-        vertice.pop()
-        return self._get_json_geom(vertice, height)
+    def _parse_point(self, dataArray):
+        try:
+            # dataArray[1] is a number and its a normal point
+            float(dataArray[1])
+            vertice = dataArray[0].split(' ')
+            vertice.pop()
+            return self._get_json_geom(vertice, str(dataArray[1]))
+        except:
+            # dataArray[1] NaN probably a json
+            pass
 
-    #def _parse_point(self, result, hasH):
-    #    if hasH:
-    #        vertice = str(result[0])
-    #        height = str(result[1])
-    #    else:
-    #        vertice = str(result)
-    #        height = self.noHeight
-    #    vertice.pop()
-    #    return self._get_json_geom(vertice, height)
-
+    # def _is_json(self):
+    #     if self.hasH:
+    #         if
     ## _parse_line method to parse a line data
     #  @param message to stock the data
     #  @param height to add an information of elevation
     #  @return a json file
-    def _parse_line(self, message, height):
-        xmldoc = minidom.parseString(message)
+    def _parse_line(self, dataArray):
+        xmldoc = minidom.parseString(dataArray[0])
         vertices = self._get_vertices(xmldoc)
         vertices = vertices.split(',')
         for i in range(len(vertices) - 1, 0, -self.nbPointVertice):
             vertices.pop(i)
-        return self._get_json_geom(vertices, height)
+        return self._get_json_geom(vertices, str(dataArray[1]))
 
     ## _parse_polygon method to parse a polygon or multipolygon data
     #  @param message to stock the data
     #  @param height to add an information of elevation
     #  @return a json file
-    def _parse_polygon(self, message, height):
-        js = json.loads(message)
+    def _parse_polygon(self, dataArray):
+        js = json.loads(dataArray[0])
         if js['type'] == 'Polygon':
-            return self._get_json_geom(self._get_polygon_point(js['coordinates'][0]), height)
+            return self._get_json_geom(self._get_polygon_point(js['coordinates'][0]), str(dataArray[1]))
 
         elif js['type'] == 'MultiPolygon':
             geometries = ""
             for i in range(len(js['coordinates'])):
-                geometries += self._get_json_geom(self._get_polygon_point(js['coordinates'][i][0]), height) + ','
+                geometries += self._get_json_geom(self._get_polygon_point(js['coordinates'][i][0]), str(dataArray[1])) + ','
             return PostgisToJSON.remove_comma(geometries)
         else:
             return ""
@@ -205,10 +203,10 @@ class PostgisToJSON:
     ## _parse_triangle method to parse a triangle data
     #  @param string to stock the data
     #  @return a json file
-    def _parse_triangle(self, string):
+    def _parse_triangle(self, dataArray):
         nbIndexFace = 3
         bitMask = 0
-        xmldoc = minidom.parseString(string)
+        xmldoc = minidom.parseString(dataArray[0])
         vertices = self._get_vertices(xmldoc)
         nbVertice = self._count_vertice(vertices)
 
