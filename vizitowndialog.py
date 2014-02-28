@@ -39,10 +39,13 @@ from vt_utils_parameters import Parameters
 from vt_utils_gui import *
 
 
-## Vizitown dialog in QGIS GUI
+## Class VizitownDialog
+#  Vizitown dialog in QGIS GUI and
+#  Unherited QtGui.QDialog and Ui_Vizitown
 class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
 
-    ## The Constructor
+    ## Constructor
+    #  @param extent the initial extent
     def __init__(self, extent):
         QtGui.QDialog.__init__(self)
         self.setupUi(self)
@@ -55,7 +58,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.parameters = Parameters.instance()
         self.providerManager = ProviderManager.instance()
 
-    ## Set the default extent
+    ## init_extent method
+    #  Set the default extent
     #  @param extent the extent to init the parameter
     def init_extent(self, extent):
         self.extent = extent
@@ -66,7 +70,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.le_ymax.setValue(extent.yMaximum())
         self.calculate_size_extent()
 
-    ## Set the limit of the doublespinbox in the tab extent
+    ## set_limit_sb method
+    #  Set the limit of the doublespinbox in the tab extent
     def set_limit_sb(self):
         self.le_xmin.setMaximum(sys.maxint)
         self.le_xmin.setMinimum(-sys.maxint)
@@ -77,7 +82,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.le_ymax.setMaximum(sys.maxint)
         self.le_ymax.setMinimum(-sys.maxint)
 
-    ## Set the values of the taile by default
+    ## init_tile_size method
+    #  Set the values of the tile by default
     def init_tile_size(self):
         self.cb_tile.clear()
         self.cb_tile.addItem('256 x 256')
@@ -87,7 +93,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.cb_tile.addItem('4096 x 4096')
         self.cb_tile.setCurrentIndex(1)
 
-    ## Init combobox and table layers
+    ## init_layers method
+    #  Init combobox and table layers
     def init_layers(self):
         self.reset_all_fields()
         layerListIems = QgsMapLayerRegistry().instance().mapLayers().items()
@@ -106,7 +113,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             if is_texture(qgisLayer):
                 self.cb_texture.addItem(qgisLayer.name(), qgisLayer)
 
-    ## Reset all widgets
+    ## reset_all_fields method
+    #  Reset all widgets
     def reset_all_fields(self):
         self.cb_dem.clear()
         self.cb_texture.clear()
@@ -117,32 +125,45 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.tw_layers.setColumnWidth(1, 150)
         self.pb_loading.hide()
 
-    ## Return true if there is a DEM to generate
+    ## has_dem method
+    #  Check if a dem is generate
+    #  @return true if there is a DEM to generate
     def has_dem(self):
         return self.cb_dem.currentIndex() != 0
 
-    ## Return true if there is a texture to generate
+    ## has_texture method
+    #  Check if a texture is generate
+    #  @return true if there is a texture to generate
     def has_texture(self):
         return self.cb_texture.currentIndex() != 0
 
-    ## Return true if there is a least one raster to generate
+    ## has_raster method
+    #  Check if a raster is generate
+    #  @return true if there is a least one raster to generate
     def has_raster(self):
         return self.has_dem() or self.has_texture()
 
+    ## has_vector method
+    #  Check if a vector is existing
+    #  @return true if there is a least one vector to exist
     def has_vector(self):
         for row_index in range(self.tw_layers.rowCount()):
             if self.tw_layers.item(row_index, 0).checkState() == QtCore.Qt.Checked:
                 return True
         return False
 
+    ## has_data method
+    #  Check if a data is generate or existing
+    #  @return true if there is a least one data to generate or exist
     def has_data(self):
         if self.has_raster() or self.has_vector():
             return True
         return False
 
-    ## Add vector layer in QTableWidget
+    ## add_vector_layer method
+    #  Add vector layer in QTableWidget
     #  @param item the new layer
-    #  @param dic the dic with the fields and their types
+    #  @param columnInfoLayer a dictionnary with the fields and their types
     def add_vector_layer(self, item, columnInfoLayer):
         self.tw_layers.insertRow(0)
         checkBox = QtGui.QTableWidgetItem()
@@ -157,7 +178,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.tw_layers.setItem(0, 1, item)
         self.tw_layers.setCellWidget(0, 2, comboBox)
 
-    ## Get the size tile selected by the user
+    ## get_size_tile method
+    #  Get the size tile selected by the user
     #  @return the size tile
     def get_size_tile(self):
         index = self.cb_tile.currentIndex()
@@ -172,7 +194,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         if index == 4:
             return 4096
 
-    ## Get the extent specified in the GUI or if the fields filled by the user are incoherent it's the extent of current view of QGIS
+    ## get_gui_extent method
+    #  Get the extent specified in the GUI or if the fields filled by the user are incoherent it's the extent of current view of QGIS
     #  @return the extent
     def get_gui_extent(self):
         xmin = self.le_xmin.value()
@@ -183,6 +206,9 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             return [float(xmin), float(ymin), float(xmax), float(ymax)]
         return [float(self.extent.xMinimum()), float(self.extent.yMinimum()), float(self.extent.xMaximum()), float(self.extent.yMaximum())]
 
+    ## get_selected_layers method
+    #  Get all layers checked in the GUI and the associated informations
+    #  @return the list of selected layers
     def get_selected_layers(self):
         selectedLayers = []
         for row_index in range(self.tw_layers.rowCount()):
@@ -196,7 +222,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
                 selectedLayers.append(layer)
         return selectedLayers
 
-    ## Set the tab advanced option by default
+    ## on_btn_default_released method
+    #  Set the tab advanced option by default
     #  @override QtGui.QDialog
     def on_btn_default_released(self):
         self.sb_port.setValue(8888)
@@ -204,7 +231,9 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.tw_layers.clear()
         self.tw_layers.setHorizontalHeaderLabels(('Display', 'Layer', 'Field'))
 
-    ## Generate and launch the rendering of the 3D scene
+    ## on_btn_generate_released method
+    #  Generate and launch the rendering of the 3D scene
+    #  @override QtGui.QDialog
     def on_btn_generate_released(self):
         if self.appServerRunning:
             self.closeEvent(None)
@@ -227,6 +256,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         webbrowser.open(url)
         self.appServerRunning = True
 
+    ## instantiate_providers method
+    #  Create providers in function of the existed data
     def instantiate_providers(self):
         factory = ProviderFactory()
         factory.create_vector_providers(self.get_selected_layers())
@@ -239,7 +270,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
                 texture = self.cb_texture.itemData(self.cb_texture.currentIndex())
             factory.create_raster_providers(dem, texture)
 
-    ## Calculate the width and the height in kilometers
+    ## calculate_size_extent method
+    #  Calculate the width and the height in kilometers
     def calculate_size_extent(self):
         extent2 = self.get_gui_extent()
         width = extent2[2] - extent2[0]
@@ -247,8 +279,10 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.lb_width.setValue(width / 1000)
         self.lb_height.setValue(height / 1000)
 
-    ## Behavior whit a close event
+    ## closeEvent method
+    #  Behavior whit a close event
     #  @override QtGui.QDialog
+    #  @param QCloseEvent
     def closeEvent(self, QCloseEvent):
         if self.appServer:
             self.pb_loading.hide()

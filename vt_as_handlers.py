@@ -11,43 +11,65 @@ from vt_utils_result_vttiler import ResultVTTiler
 from vt_utils_parameters import Parameters
 
 
-## A static file handler which authorize cross origin
+## Class CorsStaticFileHandler
+#  A static file handler which authorize cross origin
+#  Unherited cyclone.web.StaticFileHandler
 class CorsStaticFileHandler(cyclone.web.StaticFileHandler):
+
+    ## set_default_headers method
+    #  Define the headers for the default handler
+    #  @override cyclone.web.StaticFileHandler
     def set_default_headers(self):
         self.set_header('Access-Control-Allow-Origin', '*')
         self.set_header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
         self.set_header('Access-Control-Allow-Headers', 'X-Requested-With')
 
 
-## A handler give initial parameters to the browser
+## Class InitHandler
+#  A handler give initial parameters to the browser
+#  Unherited cyclone.web.RequestHandler
 class InitHandler(cyclone.web.RequestHandler):
-    ## Method to initialize the handler
+
+    ## initialize method
+    #  Initialize the handler for the init parameter
+    #  @override cyclone.web.RequestHandler
     def initialize(self):
         self.parameters = Parameters.instance()
 
+    ## set_default_headers method
+    #  Define the headers for the default handler
+    #  @override cyclone.web.RequestHandler
     def set_default_headers(self):
         self.set_header('Access-Control-Allow-Origin', '*')
         self.set_header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
         self.set_header('Access-Control-Allow-Headers', 'X-Requested-With')
 
-    ## Handle GET HTTP
+    ## get method
+    #  Handle GET HTTP
+    #  @override cyclone.web.RequestHandler
     def get(self):
         self.write(json.dumps(self.parameters.get_viewer_param(), separators=(',', ':')))
 
 
-## Data Handler
+## Class Data Handler
 #  Use to handle the transmission of the data
 #  retreived from postgis to the web browser
+#  Unherited cyclone.websocket.WebSocketHandler
 class DataHandler(cyclone.websocket.WebSocketHandler):
-    ## Method call when the websocket is opened
+
+    ## connectionMade method
+    #  Method call when the websocket is opened
+    #  @override cyclone.websocket.WebSocketHandler
     def connectionMade(self):
         print "WebSocket data opened"
 
-    ## Method call when a message is received
+    ## messageReceived method
+    #  Method call when a message is received
     #  Request all content in the extent specified in the message
     #  @param message in JSON format like:
-    #  '{"Xmin": 0, "Ymin": 0, "Xmax": 50, "Ymax": 50}' for request all vectors
-    #  '{"Xmin": 0, "Ymin": 0, "Xmax": 50, "Ymax": 50, uuid: "my_uuid"}' for a request only a specific vector
+    #   '{"Xmin": 0, "Ymin": 0, "Xmax": 50, "Ymax": 50}' for request all vectors
+    #   '{"Xmin": 0, "Ymin": 0, "Xmax": 50, "Ymax": 50, uuid: "my_uuid"}' for a request only a specific vector
+    #  @override cyclone.websocket.WebSocketHandler
     def messageReceived(self, message):
         # Keep alive connection
         if message == "ping":
@@ -65,8 +87,10 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
                     json_ = translator.parse(v['results'][i], v['geom'], v['hasH'], v['color'][i], v['uuid'])
                     self.sendMessage(json_)
 
-    ## Method call when the websocket is closed
+    ## connectionLost method
+    #  Method call when the websocket is closed
     #  @param reason to indicate the reason of the closed instance
+    #  @override cyclone.websocket.WebSocketHandler
     def connectionLost(self, reason):
         print "WebSocket data closed"
 
@@ -74,17 +98,25 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
 ## Synchronisation Handler
 #  Use to handle the synchronisation of the view
 #  from QGIS to the web browser
+#  Unherited cyclone.websocket.WebSocketHandler
 class SyncHandler(cyclone.websocket.WebSocketHandler):
-    ## Method to initialize the handler
+
+    ## initialize method
+    #  Method to initialize the handler
+    #  @override cyclone.websocket.WebSocketHandler
     def initialize(self):
         SyncManager.instance().add_listener(self)
 
-    ## Method call when the websocket is opened
+    ## connectionMade method
+    #  Method call when the websocket is opened
+    #  @override cyclone.websocket.WebSocketHandler
     def connectionMade(self):
         print "WebSocket sync opened"
 
-    ## Method call when a message is received
+    ## meassageReceived method
+    #  Method call when a message is received
     #  @param message received
+    #  @override cyclone.websocket.WebSocketHandler
     def messageReceived(self, message):
         # Keep alive connection
         if message == "ping":
@@ -92,11 +124,16 @@ class SyncHandler(cyclone.websocket.WebSocketHandler):
             return
         pass  # Do nothing, simplex communication
 
-    ## Method call when the websocket is closed
+    ## connectionLost method
+    #  Method call when the websocket is closed
     #  @param reason to indicate the reason of the closed instance
+    #  @override cyclone.websocket.WebSocketHandler
     def connectionLost(self, reason):
         print "WebSocket sync closed"
 
+    ## on_finish method
+    #  Method remove the listener
+    #  @override cyclone.websocket.WebSocketHandler
     def on_finish(self):
         print "WebSocket finished"
         SyncManager.instance().remove_listener(self)
@@ -105,14 +142,19 @@ class SyncHandler(cyclone.websocket.WebSocketHandler):
 ## Tiles information handler
 #  Use to give the information related to the tiles generated
 #  when the GDAL tiling is finished
+#  Unherited cyclone.websocket.WebSocketHandler
 class TilesInfoHandler(cyclone.websocket.WebSocketHandler):
 
-    ## Method to initialize the handler
+    ## initialize method
+    #  Method to initialize the handler
+    #  @override cyclone.websocket.WebSocketHandler
     def initialize(self):
         self.parameters = Parameters.instance()
         self.result = ResultVTTiler.instance()
 
-    ## Method call when the websocket is opened
+    ## connectionMade method
+    #  Method call when the websocket is opened
+    #  @override cyclone.websocket.WebSocketHandler
     def connectionMade(self):
         print "WebSocket tiles_info opened"
 
@@ -136,7 +178,9 @@ class TilesInfoHandler(cyclone.websocket.WebSocketHandler):
         js = json.dumps(tilesInfo, separators=(',', ':'))
         self.sendMessage(js)
 
-    ## Method call when the websocket is closed
+    ## connectionLost method
+    #  Method call when the websocket is closed
     #  @param reason to indicate the reason of the closed instance
+    #  @override cyclone.websocket.WebSocketHandler
     def connectionLost(self, reason):
         print "WebSocket tiles_info closed"

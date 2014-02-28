@@ -19,10 +19,13 @@ from PyQt4.QtCore import *
 #     # import some modules
 class RollbackImporter(object):
 
+    ## Constructor
     def __init__(self):
         """Init the RollbackImporter and setup the import proxy."""
         self.oldmodules = sys.modules.copy()
 
+    ## uninstall method
+    #  unload all the module
     def uninstall(self):
         """Unload all modules since __init__ and restore the original import."""
         for module in sys.modules.keys():
@@ -32,6 +35,7 @@ class RollbackImporter(object):
 
 ## ViziTown Application Server
 #  Use a cyclone server as backend
+#  Unherited QObject
 class AppServer(QObject):
 
     ## Constructor.
@@ -44,11 +48,14 @@ class AppServer(QObject):
         self.saveStdout = sys.stdout
         self.saveStderr = sys.stderr
 
-    ## Start the application server
+    ## start method
+    #  Launch the application server
+    #  @override QObject
     def start(self):
         # Unload cyclone
         self.stop()
 
+        # Stock the current state of python import and rollback it if try to restart the AppServer
         self.rollbackImporter = RollbackImporter()
         from vt_as_cyclone import CycloneThread
 
@@ -69,7 +76,9 @@ class AppServer(QObject):
                         self.yield_thread)
         self.timer.start(10)
 
-    ## Stop the application server
+    ## stop method
+    #  Stop the application server and clean the import modules
+    #  @override QObject
     def stop(self):
         if self.appThread:
             while (self.appThread.isRunning()):
@@ -85,7 +94,9 @@ class AppServer(QObject):
         sys.stdout = self.saveStdout
         sys.stderr = self.saveStderr
 
-    ## Yied application server thread to not hang the GUI
+    ## yield_thread method
+    #  Yied application server thread to not hang the GUI
+    #  @override QObject
     def yield_thread(self):
         if self.appThread:
             self.appThread.msleep(1)

@@ -36,8 +36,13 @@ from vizitowndialog import VizitownDialog
 from vt_as_sync import SyncManager
 
 
+## Class Vizitown
+#  This class manage the plugin in QGIS and instanciate the service
 class Vizitown:
 
+    ## Constructor
+    #  Initialize the plugin interface and load it in QGIS.
+    #  Create the reference between the canvas and the plugin to dialog
     def __init__(self, iface):
         # Save reference to the QGIS interface
         self.iface = iface
@@ -59,6 +64,8 @@ class Vizitown:
         QObject.connect(self.dlg.le_xmax, SIGNAL("valueChanged(double)"), self.dlg.calculate_size_extent)
         QObject.connect(self.dlg.le_ymax, SIGNAL("valueChanged(double)"), self.dlg.calculate_size_extent)
 
+    ## initGui method
+    #  Integrate the plugin starter and button in the Qgis Menu
     def initGui(self):
         # Create action that will start plugin configuration
         self.action = QAction(
@@ -70,13 +77,17 @@ class Vizitown:
         self.iface.addToolBarIcon(self.action)
         self.iface.addPluginToMenu(u"&ViziTown", self.action)
 
+    ## unload method
+    #  Remove the plugin of the Qgis Menu
     def unload(self):
         # Remove the plugin menu item and icon
         self.iface.removePluginMenu(u"&ViziTown", self.action)
         self.iface.removeToolBarIcon(self.action)
         # run method that performs all the real work
 
-    ## Sent the extent of QGIS. Enables synchronization between the viewer and qgis
+    ## info method
+    #  Sent the extent of QGIS.
+    #  Enables synchronization between the viewer and qgis
     def info(self):
         self.dlg.init_extent(self.iface.mapCanvas().extent())
         xMin = self.iface.mapCanvas().extent().xMinimum()
@@ -91,6 +102,8 @@ class Vizitown:
         }
         SyncManager.instance().notify_extent_change(extent)
 
+    ## run method
+    #  Launch the plugin and initialize the value of fields.
     def run(self):
         self.dlg.init_extent(self.iface.mapCanvas().extent())
         self.dlg.init_tile_size()

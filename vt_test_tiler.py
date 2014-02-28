@@ -5,6 +5,7 @@ import shutil
 
 from vt_utils_tiler import VTTiler, Extent
 
+## Test is the VTTiler class apply process on image data
 if __name__ == "__main__":
     originExtent = Extent(839724, 6511958, 861463, 6529147)
     sourceDem = '/Users/Louis/Desktop/Data/Mnt/MNT2009_Altitude_10m_RGF93.tif'

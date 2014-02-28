@@ -3,10 +3,11 @@ from xml.dom import minidom
 import json
 
 
-## PostgisToJSON class to converts an X3D formats in a json
+## Class PostgisToJSON
+#  Converts an X3D formats in a json
 class PostgisToJSON:
 
-    ## The Constructor
+    ## Constructor
     def __init__(self):
         self.nbPointVertice = 3
         self.noHeight = "0"
@@ -61,12 +62,13 @@ class PostgisToJSON:
         "coordinates"   : [{COORDINATES}]
     }"""
 
-    ## parse method to manage the process in the class and
-    #  use the appropriate process in function of the data
+    ## parse method
+    #  Manage the process in the class and use the appropriate process in function of the data
     #  @param resultArray to stock the data
     #  @param geometry to check the type of geometry
     #  @param hasH to define the representation of data
     #  @param color to define the color of data
+    #  @param uuid to define the identifiant of data
     #  @return a json
     def parse(self, resultArray, geometry, hasH, color, uuid):
         self.geometry = geometry
@@ -99,6 +101,10 @@ class PostgisToJSON:
         exchange = re.sub('{JSON_GEOM}', geometries, exchange)
         return exchange
 
+    ## _replace_metadata method
+    #  Change the metadata by another information
+    #  @param exchange the new information
+    #  @return the new metadata
     def _replace_metadata(self, exchange):
         exchange = re.sub('{COLOR}', self.color, exchange)
         exchange = re.sub('{UUID}', self.uuid, exchange)
@@ -129,6 +135,11 @@ class PostgisToJSON:
             geom = 'undefined'
         return re.sub('{GEOMETRY}', geom, exchange)
 
+    ## _get_data method
+    #  Getter to access to the data and associated information
+    #  @param result
+    #  @param hasH
+    #  @return the data
     def _get_data(self, result, hasH):
         data = []
         if hasH:
@@ -139,9 +150,9 @@ class PostgisToJSON:
             data.append(self.noHeight)
         return data
 
-    ## _parse_point method to parse a point data
-    #  @param message to stock the data
-    #  @param height to add an information of elevation
+    ## _parse_point method
+    #  Parse a point data
+    #  @param dataArray to stock the data
     #  @return a json file
     def _parse_point(self, dataArray):
         try:
@@ -154,12 +165,9 @@ class PostgisToJSON:
             self.geometry = 'TIN'
             return dataArray[1]
 
-    # def _is_json(self):
-    #     if self.hasH:
-    #         if
-    ## _parse_line method to parse a line data
-    #  @param message to stock the data
-    #  @param height to add an information of elevation
+    ## _parse_line method
+    #  Parse a line data
+    #  @param dataArray to stock the data
     #  @return a json file
     def _parse_line(self, dataArray):
         xmldoc = minidom.parseString(dataArray[0])
@@ -169,9 +177,9 @@ class PostgisToJSON:
             vertices.pop(i)
         return self._get_json_geom(vertices, dataArray[1])
 
-    ## _parse_polygon method to parse a polygon or multipolygon data
-    #  @param message to stock the data
-    #  @param height to add an information of elevation
+    ## _parse_polygon method
+    #  Parse a polygon or multipolygon data
+    #  @param dataArray to stock the data
     #  @return a json file
     def _parse_polygon(self, dataArray):
         js = json.loads(dataArray[0])
@@ -186,7 +194,8 @@ class PostgisToJSON:
         else:
             return ""
 
-    ## _get_polygon_point method to select a points with a polygon
+    ## _get_polygon_point method
+    #  Select a points with a polygon
     #  @polygon to define a polygon
     #  @return an array with the vertices of the polygon
     def _get_polygon_point(self, polygon):
@@ -198,7 +207,8 @@ class PostgisToJSON:
             array.append(polygon[i][Y])
         return array
 
-    ## _parse_triangle method to parse a triangle data
+    ## _parse_triangle method
+    #  Parse a triangle data
     #  @param string to stock the data
     #  @return a json file
     def _parse_triangle(self, dataArray):
@@ -219,7 +229,8 @@ class PostgisToJSON:
         nbFace = nbVertice / nbIndexFace
         return self._get_json_threejs(nbFace, nbVertice, faces, vertices)
 
-    ## _get_vertices Getter of vertex data
+    ## _get_vertices method
+    #  Getter of vertex data
     #  @param xmldoc to stock the data
     #  @return a specific vertex
     def _get_vertices(self, xmldoc):
@@ -228,14 +239,16 @@ class PostgisToJSON:
         vertices = re.sub(' ', ',', vertices)
         return PostgisToJSON.remove_comma(vertices)
 
-    ## _count_vertice method to count the number of vertex
+    ## _count_vertice method
+    #  Count the number of vertex
     #  @param vertices stock a vertex number
     #  @return a number of vertex
     def _count_vertice(self, vertices):
         verticesTab = vertices.split(',')
         return len(verticesTab) / self.nbPointVertice
 
-    ## _get_json_geom Getter of a geo json data
+    ## _get_json_geom method
+    #  Getter of a geo json data
     #  @param pointArray with the several point with coordinates
     #  @param height to add an information of elevation
     #  @return a geojson file
@@ -250,7 +263,8 @@ class PostgisToJSON:
         gjson = re.sub('{HEIGHT}', height, gjson)
         return gjson
 
-    ## _get_json_threejs Getter a threejs json data
+    ## _get_json_threejs method
+    #  Getter a threejs json data
     #  @param nbFaces to define the number of faces
     #  @param nbVertices to define the number of vertex
     #  @param faces stock a faces values
@@ -270,7 +284,8 @@ class PostgisToJSON:
 
         return js
 
-    ## remove_comma to delete the comma in a string
+    ## remove_comma static method
+    #  Delete the comma in a string
     #  @string the string to transform
     #  @return the string after the process
     @staticmethod

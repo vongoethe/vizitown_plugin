@@ -10,21 +10,42 @@ import math
 import sys
 
 
+## Class Extent
+#  Manage the extent
 class Extent:
+
+    ## Constructor
+    #  @param minX
+    #  @param minY
+    #  @param maxX
+    #  @param maxY
     def __init__(self, minX, minY, maxX, maxY):
         self.minX = minX
         self.minY = minY
         self.maxX = maxX
         self.maxY = maxY
 
+    ## width method
+    #  Calculate the width of the extent
+    #  @return the width
     def width(self):
         return self.maxX - self.minX
 
+    ## height method
+    #  Calculate the height of the extent
+    #  @return the height
     def height(self):
         return self.maxY - self.minY
 
 
+## Class Raster
+#  Unherited object class
 class Raster(object):
+
+    ## Constructor
+    #  @param path the path where the data are stock
+    #  @param size the size of the tile
+    #  @param isDem if a dem exists
     def __init__(self, path, size, isDem=False):
         self.size = size
         self.basename = os.path.splitext(os.path.basename(os.path.abspath(path)))[0] + "_" + str(size) + "_1_{zoom}_{x}_{y}.png"
@@ -33,7 +54,8 @@ class Raster(object):
         self.isDem = isDem
         self.path = path
 
-    ## formatRasterName format the name of the raster like this : nameWithoutExtension_zoomLevel_tileX_tileY
+    ## rasterName method
+    #  Format the name of the raster like this : nameWithoutExtension_zoomLevel_tileX_tileY
     #  @param tileZoomLevelthe zoomLevel of the tile
     #  @param tileX the X value of the tile
     #  @param tileY the Y value of the tile
@@ -41,17 +63,28 @@ class Raster(object):
     def rasterName(self, destDir, zoom, x, y):
         return destDir + os.sep + self.basename.format(zoom=zoom, x=x, y=y)
 
+    ## pixelSizeX method
+    #  Get the X pixel size
+    #  @return the x pixel size
     def pixelSizeX(self):
         # GDAL constant specified in the API
         return self.geoTransform[1]
 
+    ## initialTileSize method
+    #  Get the initial tile size
+    #  @return the initial tile size
     def initialTileSize(self):
         return self.size * self.pixelSizeX()
 
+    ## pixelSizeXForSize method
+    #  Calculate the new pixel size
+    #  @param size the size demand by the user
+    #  @return the new pixel size
     def pixelSizeXForSize(self, size):
         return size / float(self.size)
 
-    ## demElevation provides the min and max data contained by the raster
+    ## demElevation method
+    #  Provides the min and max data contained by the raster
     #  @return tuple (minimum value, maximum value)
     def demElevation(self):
         nBand = self.dataSource.RasterCount
@@ -61,7 +94,8 @@ class Raster(object):
         # GDal constants
         return (stats[0], stats[1])
 
-    ## getNbTilesByZoomLevel provides the number of tiles for each zoom level
+    ## getNbTilesByZoomLevel method
+    #  Provides the number of tiles for each zoom level
     #  @param globalExtent the extent provided
     #  @param dicSizes a dictionnary of {zoomLevel : size of the tiles in meters for this zoom level}
     #  @return nbTilesByZoomLevel a dictionnary of {zoomLevel : number of tiles for this zoomLevel}
@@ -81,6 +115,11 @@ class Raster(object):
 
         return nbTilesByZoomLevel
 
+    ## sizes method
+    #  Calculate the size of the pixel size for each zoom level
+    #  @param extent the extent of the view
+    #  @param zoomLevel the zoom level
+    #  @return the array of pixel size for each zoom level
     def sizes(self, extent, zoomLevel):
         initialTileSize = self.initialTileSize()
         sizes = {}
@@ -106,6 +145,11 @@ class Raster(object):
 
         return sizes
 
+    ## createForExtent method
+    #  Produce the tile of data about the extent and reproject it if necessary
+    #  The result is png image
+    #  @param extent the extent of the image
+    #  @param outFilename the name of the tile
     def createForExtent(self, extent, outFilename):
         nBand = self.dataSource.RasterCount
         band = self.dataSource.GetRasterBand(1)
@@ -131,6 +175,13 @@ class Raster(object):
         pngDriver = gdal.GetDriverByName("PNG")
         pngDriver.CreateCopy(outFilename, dataDest, 0)
 
+    ## createForSizes method
+    #  Create data about the array of pixel size
+    #  @param extent the extent to produce data
+    #  @param sizes the array of pixel size to produce data
+    #  @param baseDestPath the directory to stock the produce data
+    #  @param tileSize the tile size of the data
+    #  @param zoom the number of zoom level
     def createForSizes(self, extent, sizes, baseDestPath, tileSize, zoom):
         minX = extent.minX
         maxX = extent.maxX
@@ -167,8 +218,17 @@ class Raster(object):
                 tileMinY += size
 
 
+## Class VTTiler
+#  Produce the tile
+#  Unherited object class
 class VTTiler(object):
 
+    ## Constructor
+    #  @param extent the extent of the view
+    #  @param tileSize the size of the tile
+    #  @param zoom the zoom level to produce the data
+    #  @param dem if a dem exists
+    #  @param ortho if a ortho exists
     def __init__(self, extent, tileSize, zoom, dem=None, ortho=None):
         self.extent = extent
         self.tileSize = tileSize
@@ -178,6 +238,10 @@ class VTTiler(object):
         self.RDem = None
         self.ROrtho = None
 
+    ## create method
+    #  Produce the tile for the data exists
+    #  @param baseDestPath the repository where the data is produce
+    #  @param queue the list where the name of data is stock
     def create(self, baseDestPath, queue):
         sys.stderr = open(os.path.join(os.path.dirname(__file__), "GDAL_Process.err"), "w")
         sys.stdout = open(os.path.join(os.path.dirname(__file__), "GDAL_Process.out"), "w")
