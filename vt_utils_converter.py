@@ -171,7 +171,7 @@ class PostgisToJSON:
             for i in range(0, len(verticesArray), 3):
                 verticesArray[i] += X
                 verticesArray[i + 1] += Y
-            js['vertices'] =  verticesArray
+            js['vertices'] = verticesArray
             return json.dumps(js)
 
     ## _parse_line method
