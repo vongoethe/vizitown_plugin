@@ -137,11 +137,11 @@ class PostgisProvider:
         while iterator.next():
             for i in range(nbColor):
                 if self.hasH:
-                    if (iterator.value(2) >= self._layer._color[i]['min'] and
+                    if (iterator.value(2) > self._layer._color[i]['min'] and
                             iterator.value(2) <= self._layer._color[i]['max']):
                         array[i].append([iterator.value(0), iterator.value(1)])
                 else:
-                    if (iterator.value(1) >= self._layer._color[i]['min'] and
+                    if (iterator.value(1) > self._layer._color[i]['min'] and
                             iterator.value(1) <= self._layer._color[i]['max']):
                         array[i].append(iterator.value(0))
         return array
