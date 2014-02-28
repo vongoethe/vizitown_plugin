@@ -1,7 +1,6 @@
 var searchData=
 [
   ['test_5fconnection',['test_connection',['../class_git_app_server_1_1vt__test__providers_1_1_test_postgis_provider.html#a4daa5db14fce454f71cd3e9135a72383',1,'GitAppServer::vt_test_providers::TestPostgisProvider']]],
-  ['test_5fimg_5fonly',['test_img_only',['../class_git_app_server_1_1vt__test__tiler_1_1_test_tiler.html#a9d16366a17e3ca9bb7088e92bceb4c09',1,'GitAppServer::vt_test_tiler::TestTiler']]],
   ['test_5finit',['test_init',['../class_git_app_server_1_1vt__test__providers_1_1_test_raster_provider.html#a79d32f7b9d981ade8fdb9a59ce14cca7',1,'GitAppServer::vt_test_providers::TestRasterProvider']]],
   ['test_5fjson_5fline_5fcheck_5fcoordinates',['test_json_line_check_coordinates',['../class_git_app_server_1_1vt__test__converter_1_1translate_j_s_o_n.html#a9eb447857bcd75e96c18b122f6a766f9',1,'GitAppServer::vt_test_converter::translateJSON']]],
   ['test_5fjson_5fline_5fcheck_5fheight',['test_json_line_check_height',['../class_git_app_server_1_1vt__test__converter_1_1translate_j_s_o_n.html#aae6369d17bd6dbb48b668a90139be733',1,'GitAppServer::vt_test_converter::translateJSON']]],
@@ -30,11 +29,6 @@ var searchData=
   ['test_5fjson_5ftwo_5fpoints_5fcheck_5fheight_5fpoint2',['test_json_two_points_check_height_point2',['../class_git_app_server_1_1vt__test__converter_1_1translate_j_s_o_n.html#a0071476d0b8656feeab2400f658e98c5',1,'GitAppServer::vt_test_converter::translateJSON']]],
   ['test_5fjson_5ftwo_5fpoints_5fcheck_5fnb_5fgeometry',['test_json_two_points_check_nb_geometry',['../class_git_app_server_1_1vt__test__converter_1_1translate_j_s_o_n.html#a500deae86cae6f26891e8453cc46de40',1,'GitAppServer.vt_test_converter.translateJSON.test_json_two_points_check_nb_geometry'],['../class_git_app_server_1_1vt__test__converter_1_1translate_j_s_o_n.html#a500deae86cae6f26891e8453cc46de40',1,'GitAppServer.vt_test_converter.translateJSON.test_json_two_points_check_nb_geometry']]],
   ['test_5fjson_5ftwo_5fpoints_5fcheck_5ftype',['test_json_two_points_check_type',['../class_git_app_server_1_1vt__test__converter_1_1translate_j_s_o_n.html#a38cb11c9ecfeea19e1efe48a68fe778b',1,'GitAppServer::vt_test_converter::translateJSON']]],
-  ['test_5fmnt_5fonly',['test_mnt_only',['../class_git_app_server_1_1vt__test__tiler_1_1_test_tiler.html#ac31e27a4d4195f98a503fd38a63972a1',1,'GitAppServer::vt_test_tiler::TestTiler']]],
-  ['test_5fnominal_5fcase',['test_nominal_case',['../class_git_app_server_1_1vt__test__tiler_1_1_test_tiler.html#a33f253cd19fe2607dd692c5733e28a2c',1,'GitAppServer::vt_test_tiler::TestTiler']]],
-  ['test_5fparse_5fvector',['test_parse_vector',['../class_git_app_server_1_1vt__test__parser_1_1_test_parser.html#a6c3a5ee3efd89165c341a3aceb909001',1,'GitAppServer::vt_test_parser::TestParser']]],
   ['test_5frequest',['test_request',['../class_git_app_server_1_1vt__test__providers_1_1_test_postgis_provider.html#aafd4ccc63cacebf23704e18ada38e3a7',1,'GitAppServer::vt_test_providers::TestPostgisProvider']]],
-  ['test_5fsingleton',['test_singleton',['../class_git_app_server_1_1vt__test__providers_1_1_test_provider_manager.html#ab920aff5268840928510fff668421122',1,'GitAppServer::vt_test_providers::TestProviderManager']]],
-  ['test_5funknown_5fpath',['test_unknown_path',['../class_git_app_server_1_1vt__test__tiler_1_1_test_tiler.html#a7760b9786e581661e9b88ed87b41be22',1,'GitAppServer::vt_test_tiler::TestTiler']]],
-  ['tileimage',['tileImage',['../namespace_git_app_server_1_1gdal__retile.html#ad81ab69390777eda8249d222bbcae812',1,'GitAppServer::gdal_retile']]]
+  ['test_5fsingleton',['test_singleton',['../class_git_app_server_1_1vt__test__providers_1_1_test_provider_manager.html#ab920aff5268840928510fff668421122',1,'GitAppServer::vt_test_providers::TestProviderManager']]]
 ];

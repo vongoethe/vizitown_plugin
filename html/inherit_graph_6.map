@@ -1,4 +1,6 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node2" href="$class_git_app_server_1_1ui__vizitown_1_1_ui___vizitown.html" title="GitAppServer.ui_vizitown.\lUi_Vizitown" alt="" coords="113,5,287,46"/>
-<area shape="rect" id="node3" href="$class_git_app_server_1_1vt__as__app_1_1_rollback_importer.html" title="RollbackImporter. " alt="" coords="122,70,278,111"/>
+<area shape="rect" id="node2" href="$class_git_app_server_1_1vt__as__handlers_1_1_data_handler.html" title="Class Data Handler Use to handle the transmission of the data retreived from postgis to the web brows..." alt="" coords="203,5,362,46"/>
+<area shape="rect" id="node3" href="$class_git_app_server_1_1vt__as__handlers_1_1_sync_handler.html" title="Synchronisation Handler Use to handle the synchronisation of the view from QGIS to the web browser Un..." alt="" coords="203,70,363,111"/>
+<area shape="rect" id="node4" href="$class_git_app_server_1_1vt__as__handlers_1_1_tiles_info_handler.html" title="Tiles information handler Use to give the information related to the tiles generated when the GDAL ti..." alt="" coords="192,135,373,177"/>
+<area shape="rect" id="node5" href="$class_git_app_server_1_1vt__test__handlers_1_1_echo_handler.html" title="Echo handler Basic HTTP request handler which return &quot;pong&quot; to a GET HTTP. " alt="" coords="202,201,363,242"/>
 </map>

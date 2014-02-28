@@ -1,3 +1,6 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node2" href="$class_git_app_server_1_1cyclone__thread_1_1_cyclone_thread.html" title="CycloneThread A specific thread to run cyclone in it. " alt="" coords="129,5,290,46"/>
+<area shape="rect" id="node2" href="$class_git_app_server_1_1ui__vizitown_1_1_ui___vizitown.html" title="GitAppServer.ui_vizitown.\lUi_Vizitown" alt="" coords="113,5,287,46"/>
+<area shape="rect" id="node3" href="$class_git_app_server_1_1vt__as__app_1_1_rollback_importer.html" title="RollbackImporter. " alt="" coords="122,70,278,111"/>
+<area shape="rect" id="node4" href="$class_git_app_server_1_1vt__utils__tiler_1_1_raster.html" title="Class Raster Unherited object class. " alt="" coords="127,135,273,177"/>
+<area shape="rect" id="node5" href="$class_git_app_server_1_1vt__utils__tiler_1_1_v_t_tiler.html" title="Class VTTiler Produce the tile Unherited object class. " alt="" coords="127,201,273,242"/>
 </map>
