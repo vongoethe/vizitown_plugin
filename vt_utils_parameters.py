@@ -12,6 +12,7 @@ class Parameters:
         self.GDALqueue = Queue()
         self.dem = None
         self.texture = None
+        self.GDALprocess = None
 
     def set_viewer_param(self, extent, port, hasRaster):
         self.extent = extent
@@ -63,3 +64,5 @@ class Parameters:
         self.all_vectors = None
         self.zommLevel = None
         self.tileSize = None
+        if self.GDALprocess.is_alive():
+            self.GDALprocess.terminate()
