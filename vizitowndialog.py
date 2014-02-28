@@ -22,6 +22,8 @@
 
 import os
 import sys
+import webbrowser
+import time
 
 from ui_vizitown import Ui_Vizitown
 from PyQt4 import QtCore, QtGui
@@ -223,9 +225,11 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.appServer = AppServer(self)
         self.appServer.start()
         self.btn_generate.setText("Server is running")
+        self.appServerRunning = True
+
+        time.sleep(1);
         url = 'http://localhost:' + str(self.sb_port.value()) + '/app/index.html'
         webbrowser.open(url)
-        self.appServerRunning = True
 
     def instantiate_providers(self):
         factory = ProviderFactory()
