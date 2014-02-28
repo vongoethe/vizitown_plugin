@@ -144,16 +144,24 @@ class PostgisToJSON:
     #  @param height to add an information of elevation
     #  @return a json file
     def _parse_point(self, dataArray):
+        vertice = dataArray[0].split(' ')
+        vertice.pop()
         try:
             # dataArray[1] is a number and its a normal point
             float(dataArray[1])
-            vertice = dataArray[0].split(' ')
-            vertice.pop()
             return self._get_json_geom(vertice, dataArray[1])
         except:
             # dataArray[1] NaN probably a json
             self.geometry = 'TIN'
-            return dataArray[1]
+            X = float(vertice[0])
+            Y = float(vertice[1])
+            js = json.loads(dataArray[1])
+            verticesArray = js['vertices']
+            for i in range(0, len(verticesArray), 3):
+                verticesArray[i] += X
+                verticesArray[i + 1] += Y
+            js['vertices'] =  verticesArray
+            return json.dumps(js)
 
     ## _parse_line method to parse a line data
     #  @param message to stock the data
