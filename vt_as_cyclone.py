@@ -16,8 +16,8 @@ from vt_utils_parameters import Parameters
 class CycloneThread(QThread):
 
     ## Constructor
-    #  @param parentObject the parent QObject
     #  @param init a dictionary with the parameters for the browser
+    #  @param parentObject the parent QThread
     #  @param debug if True add two default handlers,
     #  '/test/echo' a echo server in websocket and
     #  '/test/ping' handle HTTP GET request and return "pong"
@@ -26,7 +26,9 @@ class CycloneThread(QThread):
         self.debug = debug
         self.parameters = Parameters.instance()
 
-    ## run method launch the cyclone server
+    ## run method
+    #  Launch the cyclone server and create the handler
+    #  @override QThread
     def run(self):
         handlers = [
             (r'/app/(.*)', CorsStaticFileHandler, {"path": self.parameters.viewerPath}),
@@ -43,7 +45,9 @@ class CycloneThread(QThread):
             handlers.append((r'/test/ping', PingHandler))
         run(host="127.0.0.1", port=self.parameters.port, more_handlers=handlers)
 
-    ## stop method stop the cyclone server
+    ## stop method
+    #  Stop the cyclone server
+    #  @override QThread
     def stop(self):
         try:
             unrun()

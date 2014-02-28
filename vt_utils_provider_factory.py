@@ -10,19 +10,28 @@ from vt_as_provider_postgis import PostgisProvider
 from vt_as_provider_raster import RasterProvider
 
 
+## Class ProviderFactory
+#  Create the provider in function of the data
 class ProviderFactory():
+
+    ## Constructor
     def __init__(self):
         self.providerManager = ProviderManager.instance()
         self.parameters = Parameters.instance()
 
-    ## Create all providers with the selected layers in the GUI
+    ## create_vector_providers method
+    #  Create all providers with the selected layers in the GUI
+    #  @param arrayLayer list of hte selected layers
     def create_vector_providers(self, arrayLayer):
         for layer in arrayLayer:
             layer.update_color()
             provider = PostgisProvider(layer)
             self.providerManager.add_vector_provider(provider)
 
-    ## Create all providers for DEM and raster
+    ## create_raster_providers method
+    #  Create all providers for DEM and raster
+    #  @param dem the Data Elevation Model
+    #  @param texture the texture image
     def create_raster_providers(self, dem, texture):
         dataSrcImg = None
         dataSrcMnt = None
@@ -52,6 +61,9 @@ class ProviderFactory():
         self.parameters.GDALprocess = mp.Process(target=tiler.create, args=(path, self.parameters.GDALqueue))
         self.parameters.GDALprocess.start()
 
+    ## clear_rasters_directory method
+    #  Clean the rasters directory where the tile of data image are created
+    #  @path the path to the repository
     def clear_rasters_directory(self, path):
         for root, dirs, files in os.walk(path, topdown=False):
             for name in dirs:

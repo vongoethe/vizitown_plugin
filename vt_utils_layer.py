@@ -3,8 +3,12 @@ import re
 from qgis.core import *
 
 
+## Class Layer
+#  Manage the layer to catch the information and send it
 class Layer:
 
+    ## Constructor
+    #  @param QgsMapLayer the layer managed
     def __init__(self, QgsMapLayer):
         self.qgisLayer = QgsMapLayer
         source = self.parse_vector(QgsMapLayer.source())
@@ -35,25 +39,27 @@ class Layer:
         # elif self.colorType is categorizedSymbol is an array of dict like that {"value": value, "color": color}
         self._color = []
 
-    # columnColor is None if the layer has a plain color so color is an array with only one color in.
-    # else columnColor is the field in db to color geometries with right color and color is an array with dict in
-    # dict in array looks like that:
-    # {
-    # 	"min" 	: value,
-    #	"max" 	: value,
-    #	"color"	: value
-    # }
+    ## add_color method
+    #  Column Color is None if the layer has a plain color so color is an array with only one color in.
+    #  else columnColor is the field in db to color geometries with right color and color is an array with dict in
+    #  dict in array looks like that:
+    #  {
+    # 	 "min" 	: value,
+    #	 "max" 	: value,
+    #	 "color": value
+    #  }
+    #  @param columnColor
+    #  @param color
     def add_color(self, columnColor, color):
         if columnColor is not None:
             self._columnColor = columnColor
         self._color = color
 
-    ## parseVector to recuperate vector information in QGIS
+    ## parse_vector method
+    #  Recuperate vector information in QGIS
     #  This function give the query to ask the database and
     #  return vectors informations into QGIS
     #  @param source String information to query the database
-    #  @param srid of the vector layer
-    #  @param color of the vector layer
     #  @return String with vectors informations
     def parse_vector(self, source):
         m = re.match(r"""
@@ -70,11 +76,15 @@ class Layer:
             'column': m.group('column'),
         }
 
+    ## update_color method
+    #  Get the color when the user change the color of a data
     def update_color(self):
         self._columnColor = self.get_column_color()
         self._color = self.get_color()
 
-    ## Get the color of the vector layer. If is categorized symbol or graduate symbol, the color is white
+    ## get_color method
+    #  Get the color of the vector layer. If is categorized symbol or graduate symbol, the color is white
+    #  @return the color table of the layer
     def get_color(self):
         renderer = self.qgisLayer.rendererV2()
         if self.get_color_type() == "singleSymbol":
@@ -110,13 +120,15 @@ class Layer:
                 tabColor.append({'value': value[nb], 'color': color[nb]})
             return tabColor
 
-    # singleSymbol
-    # graduatedSymbol
-    # categorizedSymbol
+    ## get_color_type method
+    #  Get the type color of the layer and return singleSymbol, graduatedSymbol or categorizedSymbol
+    #  @return the type of color of the layer
     def get_color_type(self):
         return self.qgisLayer.rendererV2().type()
 
-    ## Get the name of the column where the analysis was perform. If there isn't analysis, the name is none
+    ## get_column_color method
+    #  Get the name of the column where the analysis was perform. If there isn't analysis, the name is none
+    #  @return the color column
     def get_column_color(self):
         if self.get_color_type() == "singleSymbol":
             return None

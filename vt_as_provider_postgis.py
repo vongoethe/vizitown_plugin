@@ -9,15 +9,7 @@ from PyQt4.QtSql import *
 class PostgisProvider:
 
     ## Constructor
-    #  @param host database host
-    #  @param dbname database name
-    #  @param user database user
-    #  @param password database user password
-    #  @param srid of the resource
-    #  @param table of the resource
-    #  @param color of the resource
-    #  @param column of the resource
-    #  @param column2 representing a height of column or another geometry (TinZ)
+    #  @param _layer
     def __init__(self, layer):
         self.db = QSqlDatabase.addDatabase("QPSQL", layer._uuid)
         self.db.setHostName(layer._host)
@@ -68,7 +60,8 @@ class PostgisProvider:
             query.next()
             self.geometry1 = query.value(0)
 
-    ## Return all the result contains in the extent in param
+    ## request_tile method
+    #  Return all the result contains in the extent in param
     #  @param Xmin
     #  @param Ymin
     #  @param Xmax
@@ -105,6 +98,10 @@ class PostgisProvider:
         colors = self._color_array()
         return {'results': results, 'geom': self.retGeometry, 'hasH': self.hasH, 'color': colors, 'uuid': self._layer._uuid}
 
+    ## sort_result method
+    #  Sort the request result in function of the type of symbology apply on the data
+    #  @param iterator
+    #  @return the table with the data and associated symbol
     def _sort_result(self, iterator):
         colorType = self._layer.get_color_type()
         if (colorType == "singleSymbol"):
@@ -113,9 +110,13 @@ class PostgisProvider:
         elif (colorType == "graduatedSymbol"):
             return self._get_result_graduated_symbol(iterator)
 
-        elif (ccolorType == "categorizedSymbol"):
+        elif (colorType == "categorizedSymbol"):
             return self._get_result_categorized_symbol(iterator)
 
+    ## _get_result_single_symbol method
+    #  Run through the iterator to check the associated symbol
+    #  @param iterator
+    #  @return the table with the data and associated symbol
     def _get_result_single_symbol(self, iterator):
         array = [[]]
         while iterator.next():
@@ -125,6 +126,10 @@ class PostgisProvider:
                 array[0].append(iterator.value(0))
         return array
 
+    ## _get_result_graduated_symbol method
+    #  Run through the iterator to check the associated symbol and sorted it
+    #  @param iterator
+    #  @return the table with the data and associated symbol
     def _get_result_graduated_symbol(self, iterator):
         nbColor = len(self._layer._color)
         array = [[] for i in range(nbColor)]
@@ -141,6 +146,10 @@ class PostgisProvider:
                         array[i].append(iterator.value(0))
         return array
 
+    ## _get_result_categorized_symbol method
+    #  Run through the iterator to check the associated symbol and sorted it
+    #  @param iterator
+    #  @return the table with the data and associated symbol
     def _get_result_categorized_symbol(self, iterator):
         nbColor = len(self._layer._color)
         array = [[] for i in range(nbColor)]
@@ -155,7 +164,8 @@ class PostgisProvider:
                         array[i].append(iterator.value(0))
         return array
 
-    ## _get_request send a request to catch the type of the data
+    ## _get_request method
+    #  Send a request to catch the type of the data
     #  @return the request
     def _get_request(self):
         # Request TIN geometry
@@ -194,7 +204,8 @@ class PostgisProvider:
 
         return request
 
-    ## _request_point_line to request point or line data
+    ## _request_point_line method
+    #  Request point or line data
     #  @return the request for data point or line
     def _request_point_line(self):
         if self._layer._column2 is None or self._layer._typeColumn2 == 'geometry':
@@ -208,7 +219,8 @@ class PostgisProvider:
                        hcolumn_=self._layer._column2,
                        table_=self._layer._table)
 
-    ## _request_polygon to request polygon data
+    ## _request_polygon method
+    #  Request polygon data
     #  @return the request for data polygon
     def _request_polygon(self):
         if self._layer._column2 is None or self._layer._typeColumn2 == 'geometry':
@@ -222,7 +234,8 @@ class PostgisProvider:
                        hcolumn_=self._layer._column2,
                        table_=self._layer._table)
 
-    ## _request_polyh to request polyhedral data
+    ## _request_polyh method
+    #  Request polyhedral data
     #  @return the request for data polyhedral
     def _request_polyh(self):
         # SHOULD BE PATIENT
@@ -234,7 +247,8 @@ class PostgisProvider:
         """.format(column_=col,
                    table_=self._layer._table)
 
-    ## _request_tin to request tin data
+    ## _request_tin
+    #  Request tin data
     #  @return the request for data tin
     def _request_tin(self):
         if self.geometry1 == 'TIN':
@@ -245,6 +259,9 @@ class PostgisProvider:
         """.format(column_=col,
                    table_=self._layer._table)
 
+    ## _color_array method
+    #  Create an arry with all color of the layer
+    #  @return the array
     def _color_array(self):
         array = []
         nbColor = len(self._layer._color)
@@ -256,12 +273,9 @@ class PostgisProvider:
                 array.append(self._layer._color[i]['color'])
             return array
 
-    ## Return columns and types of a specific table
-    #  @param host to define the host of the database
-    #  @param dbname to define the database
-    #  @param user to define the user of the database
-    #  @param password to define the password of the user
-    #  @param table to define the table in the database
+    ## get_columns_info_table static method
+    #  Return columns and types of a specific table
+    #  @param layer to access at the table
     #  @return the result of the request
     @staticmethod
     def get_columns_info_table(layer):
