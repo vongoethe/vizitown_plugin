@@ -166,11 +166,6 @@ class Raster(object):
                 y += 1
                 tileMinY += size
 
-    def alreadyCreated(self, baseDestPath, tileSize, zoom):
-        fileName = os.path.splitext(os.path.basename(self.path))[0]
-        destPath = os.path.join(baseDestPath, fileName + "_" + str(tileSize) + "_" + str(zoom))
-        return os.path.exists(destPath)
-
 
 class VTTiler(object):
 
@@ -193,10 +188,8 @@ class VTTiler(object):
             sizes = self.ROrtho.sizes(self.extent, self.zoom)
             if self.RDem.pixelSizeX() < self.ROrtho.pixelSizeX():
                 sizes = self.RDem.sizes(self.extent, self.zoom)
-            if not self.RDem.alreadyCreated(baseDestPath, self.tileSize, self.zoom):
-                self.RDem.createForSizes(self.extent, sizes, baseDestPath, self.tileSize, self.zoom)
-            if not self.ROrtho.alreadyCreated(baseDestPath, self.tileSize, self.zoom):
-                self.ROrtho.createForSizes(self.extent, sizes, baseDestPath, self.tileSize, self.zoom)
+            self.RDem.createForSizes(self.extent, sizes, baseDestPath, self.tileSize, self.zoom)
+            self.ROrtho.createForSizes(self.extent, sizes, baseDestPath, self.tileSize, self.zoom)
 
             elevation = self.RDem.demElevation()
             queue.put([self.ROrtho.pixelSizeX(), elevation[0], elevation[1]])
@@ -204,16 +197,14 @@ class VTTiler(object):
         elif self.dem is not None:
             self.RDem = Raster(self.dem, self.tileSize, True)
             sizes = self.RDem.sizes(self.extent, self.zoom)
-            if not self.RDem.alreadyCreated(baseDestPath, self.tileSize, self.zoom):
-                self.RDem.createForSizes(self.extent, sizes, baseDestPath, self.tileSize, self.zoom)
+            self.RDem.createForSizes(self.extent, sizes, baseDestPath, self.tileSize, self.zoom)
 
             elevation = self.RDem.demElevation()
             queue.put([self.RDem.pixelSizeX(), elevation[0], elevation[1]])
 
         elif self.ortho is not None:
             self.ROrtho = Raster(self.ortho, self.tileSize)
-            sizes = self.ortho.sizes(self.extent)
-            if not self.ROrtho.alreadyCreated(baseDestPath, self.tileSize, self.zoom):
-                self.ROrtho.createForSizes(self.extent, sizes, baseDestPath, self.tileSize, self.zoom)
+            sizes = self.ROrtho.sizes(self.extent, self.zoom)
+            self.ROrtho.createForSizes(self.extent, sizes, baseDestPath, self.tileSize, self.zoom)
 
             queue.put([self.ROrtho.pixelSizeX()])
