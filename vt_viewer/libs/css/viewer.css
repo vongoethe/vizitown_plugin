@@ -1,0 +1,67 @@
+body {
+	margin: 0px;
+	width: 100%;
+	height: 100%;
+	background-color: #000000;
+	overflow: hidden;
+	position: fixed;
+}
+
+#container {
+	position: relative;
+}
+
+#layers-column {
+	overflow: hidden;
+	position: fixed;
+	top: 0%;
+	left: 0%;
+	height: 100%;
+	width: 15%;
+	background-color: #dddddd;
+	z-index: 1;
+} 
+
+#layers-column ol {
+	margin: 0px;
+	padding: 0px;
+	padding-top: 10%;
+	padding-bottom: 10%;
+	list-style: none outside none;
+} 
+
+#settings-button {
+	font-style: bold;
+	position: fixed;
+	bottom: 3%;
+	left: 2%;
+	z-index: 1;
+} 
+
+#spinner {
+	display: none;
+	position: fixed;
+	top: 5%;
+	right: 2%;
+	z-index: 1;
+}
+
+#vertical-slider {
+	position: fixed;
+	top: 15%;
+	right: 2%;
+	height: 50%;
+	z-index: 1;
+}
+
+input[type=range].vertical {
+	writing-mode: bt-lr; /* IE */
+	-webkit-appearance: slider-vertical; /* WebKit */
+	width: 8px;
+	height: 200px;
+	padding: 0 5px;
+}
+
+.row {
+	margin:2%;
+}
