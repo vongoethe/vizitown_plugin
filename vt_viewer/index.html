@@ -3,6 +3,7 @@
 	<meta charset="UTF-8" />
 	<title>Viewer VIZITOWN</title>
 	<link rel="icon" href="favicon.ico" />
+	<link rel="stylesheet" href="/app/libs/css/spinner.css"/>
 	<link rel="stylesheet" href="/app/libs/css/viewer.css"/>
 	<link rel="stylesheet" href="/app/libs/css/main.css"/>
 </head>
@@ -15,10 +16,30 @@
 <div id="layers-column">
 	<ol id="layer-list">
 	</ol>
-	<a class="call-modal" href="#!" onclick="refreshLayers()">Refresh</a>
 
 	<div id="settings-button">
 		<a class="call-modal" href="#modal-text">^</a>
+	</div>
+</div>
+
+<div id="spinner">
+	<div id="floatingBarsG">
+		<div class="blockG" id="rotateG_01">
+		</div>
+		<div class="blockG" id="rotateG_02">
+		</div>
+		<div class="blockG" id="rotateG_03">
+		</div>
+		<div class="blockG" id="rotateG_04">
+		</div>
+		<div class="blockG" id="rotateG_05">
+		</div>
+		<div class="blockG" id="rotateG_06">
+		</div>
+		<div class="blockG" id="rotateG_07">
+		</div>
+		<div class="blockG" id="rotateG_08">
+		</div>
 	</div>
 </div>
 
@@ -37,18 +58,12 @@
                 <label for="angle">Camera angle</label>
                 <input type="text" name="angle" id="angleInput"/>
             </div>
-            <div class="field">
-                <label for="ssao1">SSAO 1</label>
-	        <input type="checkbox" name="ssao1" value="ssao1"/>
-            </div>
-            <div class="field">
-                <label for="ssao2">SSAO 2</label>
-	        <input type="checkbox" name="ssao2" value="ssao2"/>
-            </div>
+	    <!-- NOT IMPLEMENTED YET => Need shader change and refresh all view
             <div class="field">
                 <label for="shadow">Shadow</label>
 	        <input type="checkbox" name="shadow" value="shadow"/>
             </div>
+	    -->
 	</div>
         <footer>
             <a href="#!" class="call-modal" data-close="Close"
