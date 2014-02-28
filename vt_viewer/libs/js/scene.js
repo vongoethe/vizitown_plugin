@@ -39,7 +39,7 @@ var refreshLayer = function(uuid) {
     }
 };
 
-scene.vectors.forEach(function(vector) {
+scene.layers.forEach(function(vector) {
     var entry = document.createElement('li');
     var btnRefresh = document.createElement('input');
     var inputTimer = document.createElement('input');
@@ -76,9 +76,9 @@ var saveParameters = function() {
     scene._scene.fog.far = document.getElementById('deepInput').value;
 };
 
-document.getElementById('angleInput').value = scene._camera.fov;
-document.getElementById('deepInput').value = scene._camera.far;
-document.getElementById('deepInput').value = scene._scene.fog.far;
+// document.getElementById('angleInput').value = scene._camera.fov;
+// document.getElementById('deepInput').value = scene._camera.far;
+// document.getElementById('deepInput').value = scene._scene.fog.far;
 
 document.addEventListener("loading", function(event) {
     if(event.detail) {

@@ -2382,6 +2382,434 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 THREE.TrackballControls.prototype = Object.create( THREE.EventDispatcher.prototype );
 
+/**
+ * @author alteredq / http://alteredqualia.com/
+ *
+ * Full-screen textured quad shader
+ */
+
+THREE.CopyShader = {
+
+	uniforms: {
+
+		"tDiffuse": { type: "t", value: null },
+		"opacity":  { type: "f", value: 1.0 }
+
+	},
+
+	vertexShader: [
+
+		"varying vec2 vUv;",
+
+		"void main() {",
+
+			"vUv = uv;",
+			"gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+
+		"}"
+
+	].join("\n"),
+
+	fragmentShader: [
+
+		"uniform float opacity;",
+
+		"uniform sampler2D tDiffuse;",
+
+		"varying vec2 vUv;",
+
+		"void main() {",
+
+			"vec4 texel = texture2D( tDiffuse, vUv );",
+			"gl_FragColor = opacity * texel;",
+
+		"}"
+
+	].join("\n")
+
+};
+
+/**
+ * @author alteredq / http://alteredqualia.com/
+ */
+
+THREE.EffectComposer = function ( renderer, renderTarget ) {
+
+	this.renderer = renderer;
+
+	if ( renderTarget === undefined ) {
+
+		var width = window.innerWidth || 1;
+		var height = window.innerHeight || 1;
+		var parameters = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat, stencilBuffer: false };
+
+		renderTarget = new THREE.WebGLRenderTarget( width, height, parameters );
+
+	}
+
+	this.renderTarget1 = renderTarget;
+	this.renderTarget2 = renderTarget.clone();
+
+	this.writeBuffer = this.renderTarget1;
+	this.readBuffer = this.renderTarget2;
+
+	this.passes = [];
+
+	if ( THREE.CopyShader === undefined )
+		console.error( "THREE.EffectComposer relies on THREE.CopyShader" );
+
+	this.copyPass = new THREE.ShaderPass( THREE.CopyShader );
+
+};
+
+THREE.EffectComposer.prototype = {
+
+	swapBuffers: function() {
+
+		var tmp = this.readBuffer;
+		this.readBuffer = this.writeBuffer;
+		this.writeBuffer = tmp;
+
+	},
+
+	addPass: function ( pass ) {
+
+		this.passes.push( pass );
+
+	},
+
+	insertPass: function ( pass, index ) {
+
+		this.passes.splice( index, 0, pass );
+
+	},
+
+	render: function ( delta ) {
+
+		this.writeBuffer = this.renderTarget1;
+		this.readBuffer = this.renderTarget2;
+
+		var maskActive = false;
+
+		var pass, i, il = this.passes.length;
+
+		for ( i = 0; i < il; i ++ ) {
+
+			pass = this.passes[ i ];
+
+			if ( !pass.enabled ) continue;
+
+			pass.render( this.renderer, this.writeBuffer, this.readBuffer, delta, maskActive );
+
+			if ( pass.needsSwap ) {
+
+				if ( maskActive ) {
+
+					//var context = this.renderer.context;
+
+					//context.stencilFunc( context.NOTEQUAL, 1, 0xffffffff );
+
+					this.copyPass.render( this.renderer, this.writeBuffer, this.readBuffer, delta );
+
+					//context.stencilFunc( context.EQUAL, 1, 0xffffffff );
+
+				}
+
+				this.swapBuffers();
+
+			}
+
+			if ( pass instanceof THREE.MaskPass ) {
+
+				maskActive = true;
+
+			} else if ( pass instanceof THREE.ClearMaskPass ) {
+
+				maskActive = false;
+
+			}
+
+		}
+
+	},
+
+	reset: function ( renderTarget ) {
+
+		if ( renderTarget === undefined ) {
+
+			renderTarget = this.renderTarget1.clone();
+
+			renderTarget.width = window.innerWidth;
+			renderTarget.height = window.innerHeight;
+
+		}
+
+		this.renderTarget1 = renderTarget;
+		this.renderTarget2 = renderTarget.clone();
+
+		this.writeBuffer = this.renderTarget1;
+		this.readBuffer = this.renderTarget2;
+
+	},
+
+	setSize: function ( width, height ) {
+
+		var renderTarget = this.renderTarget1.clone();
+
+		renderTarget.width = width;
+		renderTarget.height = height;
+
+		this.reset( renderTarget );
+
+	}
+
+};
+
+/**
+ * @author alteredq / http://alteredqualia.com/
+ */
+
+THREE.MaskPass = function ( scene, camera ) {
+
+	this.scene = scene;
+	this.camera = camera;
+
+	this.enabled = true;
+	this.clear = true;
+	this.needsSwap = false;
+
+	this.inverse = false;
+
+};
+
+THREE.MaskPass.prototype = {
+
+	render: function ( renderer, writeBuffer, readBuffer, delta ) {
+
+		var context = renderer.context;
+
+		// don't update color or depth
+
+		context.colorMask( false, false, false, false );
+		context.depthMask( false );
+
+		// set up stencil
+
+		var writeValue, clearValue;
+
+		if ( this.inverse ) {
+
+			writeValue = 0;
+			clearValue = 1;
+
+		} else {
+
+			writeValue = 1;
+			clearValue = 0;
+
+		}
+
+		context.enable( context.STENCIL_TEST );
+		context.stencilOp( context.REPLACE, context.REPLACE, context.REPLACE );
+		context.stencilFunc( context.ALWAYS, writeValue, 0xffffffff );
+		context.clearStencil( clearValue );
+
+		// draw into the stencil buffer
+
+		renderer.render( this.scene, this.camera, readBuffer, this.clear );
+		renderer.render( this.scene, this.camera, writeBuffer, this.clear );
+
+		// re-enable update of color and depth
+
+		context.colorMask( true, true, true, true );
+		context.depthMask( true );
+
+		// only render where stencil is set to 1
+
+		context.stencilFunc( context.EQUAL, 1, 0xffffffff );  // draw if == 1
+		context.stencilOp( context.KEEP, context.KEEP, context.KEEP );
+
+	}
+
+};
+
+
+THREE.ClearMaskPass = function () {
+
+	this.enabled = true;
+
+};
+
+THREE.ClearMaskPass.prototype = {
+
+	render: function ( renderer, writeBuffer, readBuffer, delta ) {
+
+		var context = renderer.context;
+
+		context.disable( context.STENCIL_TEST );
+
+	}
+
+};
+
+/**
+ * @author alteredq / http://alteredqualia.com/
+ */
+
+THREE.RenderPass = function ( scene, camera, overrideMaterial, clearColor, clearAlpha ) {
+
+	this.scene = scene;
+	this.camera = camera;
+
+	this.overrideMaterial = overrideMaterial;
+
+	this.clearColor = clearColor;
+	this.clearAlpha = ( clearAlpha !== undefined ) ? clearAlpha : 1;
+
+	this.oldClearColor = new THREE.Color();
+	this.oldClearAlpha = 1;
+
+	this.enabled = true;
+	this.clear = true;
+	this.needsSwap = false;
+
+};
+
+THREE.RenderPass.prototype = {
+
+	render: function ( renderer, writeBuffer, readBuffer, delta ) {
+
+		this.scene.overrideMaterial = this.overrideMaterial;
+
+		if ( this.clearColor ) {
+
+			this.oldClearColor.copy( renderer.getClearColor() );
+			this.oldClearAlpha = renderer.getClearAlpha();
+
+			renderer.setClearColor( this.clearColor, this.clearAlpha );
+
+		}
+
+		renderer.render( this.scene, this.camera, readBuffer, this.clear );
+
+		if ( this.clearColor ) {
+
+			renderer.setClearColor( this.oldClearColor, this.oldClearAlpha );
+
+		}
+
+		this.scene.overrideMaterial = null;
+
+	}
+
+};
+
+/**
+ * @author alteredq / http://alteredqualia.com/
+ */
+
+THREE.ShaderPass = function ( shader, textureID ) {
+
+	this.textureID = ( textureID !== undefined ) ? textureID : "tDiffuse";
+
+	this.uniforms = THREE.UniformsUtils.clone( shader.uniforms );
+
+	this.material = new THREE.ShaderMaterial( {
+
+		uniforms: this.uniforms,
+		vertexShader: shader.vertexShader,
+		fragmentShader: shader.fragmentShader
+
+	} );
+
+	this.renderToScreen = false;
+
+	this.enabled = true;
+	this.needsSwap = true;
+	this.clear = false;
+
+
+	this.camera = new THREE.OrthographicCamera( -1, 1, 1, -1, 0, 1 );
+	this.scene  = new THREE.Scene();
+
+	this.quad = new THREE.Mesh( new THREE.PlaneGeometry( 2, 2 ), null );
+	this.scene.add( this.quad );
+
+};
+
+THREE.ShaderPass.prototype = {
+
+	render: function ( renderer, writeBuffer, readBuffer, delta ) {
+
+		if ( this.uniforms[ this.textureID ] ) {
+
+			this.uniforms[ this.textureID ].value = readBuffer;
+
+		}
+
+		this.quad.material = this.material;
+
+		if ( this.renderToScreen ) {
+
+			renderer.render( this.scene, this.camera );
+
+		} else {
+
+			renderer.render( this.scene, this.camera, writeBuffer, this.clear );
+
+		}
+
+	}
+
+};
+
+/**
+ * @author alteredq / http://alteredqualia.com/
+ */
+
+THREE.TexturePass = function ( texture, opacity ) {
+
+	if ( THREE.CopyShader === undefined )
+		console.error( "THREE.TexturePass relies on THREE.CopyShader" );
+
+	var shader = THREE.CopyShader;
+
+	this.uniforms = THREE.UniformsUtils.clone( shader.uniforms );
+
+	this.uniforms[ "opacity" ].value = ( opacity !== undefined ) ? opacity : 1.0;
+	this.uniforms[ "tDiffuse" ].value = texture;
+
+	this.material = new THREE.ShaderMaterial( {
+
+		uniforms: this.uniforms,
+		vertexShader: shader.vertexShader,
+		fragmentShader: shader.fragmentShader
+
+	} );
+
+	this.enabled = true;
+	this.needsSwap = false;
+
+
+	this.camera = new THREE.OrthographicCamera( -1, 1, 1, -1, 0, 1 );
+	this.scene  = new THREE.Scene();
+
+	this.quad = new THREE.Mesh( new THREE.PlaneGeometry( 2, 2 ), null );
+	this.scene.add( this.quad );
+
+};
+
+THREE.TexturePass.prototype = {
+
+	render: function ( renderer, writeBuffer, readBuffer, delta ) {
+
+		this.quad.material = this.material;
+
+		renderer.render( this.scene, this.camera, readBuffer );
+
+	}
+
+};
 /* exported module */
 
 /**
@@ -2533,26 +2961,25 @@ var VWebSocket = function(args) {
 VWebSocket.inheritsFrom(EventDispatcher);
 
 VWebSocket.prototype._createSocket = function() {
+    if (this._interval) {
+        clearInterval(this._interval);
+    }
+
     this.socket = new WebSocket(this._url);
     this.socket.onmessage = this.message.bind(this);
+
     var self = this;
     this.socket.onopen = function() {
-        if (self.interval) {
-            clearInterval(self.interval);
-        }
-        self.interval = setInterval(function(){
-            self.socket.send("ping");
+        self._interval = setInterval(function() {
+            self.open();
+            if (self.socket.readyState === WebSocket.CONNECTED) {
+                self.socket.send("ping");
+            }
         }, 5000);
-        self.flush.bind(self);
     };
 };
 
 VWebSocket.prototype.open = function() {
-    if (!this.socket) {
-        this._createSocket();
-        return true;
-    }
-
     var state = this.socket.readyState;
     if (state === WebSocket.CLOSED || state === WebSocket.CLOSING) {
         this._createSocket();
@@ -3196,57 +3623,6 @@ FPSControl.prototype.update = function() {
 "use strict";
 
 /**
- * Provides static methods to detect the geometry type
- * 
- * @class GeometryType
- */
-var GeometryType = function() {};
-
-/**
- * @method isPoint Check if the geometry is a point
- * @param {THREE.Geometry} geometry Geometry to check
- * @returns {Boolean} true if the geometry is a point, false otherwise.
- */
-GeometryType.isPoint = function(geometry) {
-    var verticesCount = geometry.vertices.length;
-    if (verticesCount === 1) {
-        return true;
-    }
-    return false;
-};
-
-/**
- * @method isLine Check if the geometry is a line
- * @param {THREE.Geometry} geometry Geometry to check
- * @returns {Boolean} true if the geometry is a line, false otherwise.
- */
-GeometryType.isLine = function(geometry) {
-    var verticesCount = geometry.vertices.length;
-    var facesCount = geometry.faces.length;
-    if ((verticesCount > 1) && (facesCount === 0)) {
-        return true;
-    }
-    return false;
-};
-
-/**
- * @method isPolyhedral Check if the geometry is a polyhedral
- * @param {THREE.Geometry} geometry Geometry to check
- * @returns {Boolean} true if the geometry is a polyhedral, false otherwise.
- */
-GeometryType.isPolyhedral = function(geometry) {
-    var verticesCount = geometry.vertices.length;
-    var facesCount = geometry.faces.length;
-    if ((verticesCount > 2) && (facesCount > 0)) {
-        return true;
-    }
-    return false;
-};
-
-/* global GeometryType */
-"use strict";
-
-/**
  * Create an Object3D from a JSON Object containing the geometries. It must be
  * extended.
  * 
@@ -3260,18 +3636,21 @@ GeometryType.isPolyhedral = function(geometry) {
  */
 var GeometryFactory = function(args) {
     args = args || {};
+    this._layer = args.layer;
 
-    this._polyhedralMaterial = args.polyhedralMaterial ||
-                               new THREE.MeshLambertMaterial();
+    this._polyhedralMaterial = args.polyhedralMaterial || new THREE.MeshLambertMaterial({
+        transparent: true,
+    });
 
-    this._pointMaterial = args.pointMaterial ||
-                          new THREE.ParticleSystemMaterial({
-                              size: 50
-                          });
+    this._pointMaterial = args.pointMaterial || new THREE.ParticleBasicMaterial({
+        size: 5,
+        transparent: true,
+    });
 
     this._lineMaterial = args.lineMaterial || new THREE.LineBasicMaterial({
         color: 0x00ee22,
-        linewidth: 3
+        linewidth: 3,
+        transparent: true,
     });
 
     this._layer = args.layer;
@@ -3289,58 +3668,112 @@ GeometryFactory.prototype._centroid = function(geometry) {
         centroid.add(vertices[i]);
     }
     centroid.divideScalar(vertices.length);
+
     return centroid;
 };
 
-/**
- * Creates an extruded geometry from a JSON object
- * 
- * @method parseGeometry
- * @param {Object} obj JSON object representing the geometry
- * @return {THREE.Geometry} Extruded geometry
- */
-GeometryFactory.prototype.parseGeometry = function() {
-    throw "To be implemented";
-};
+GeometryFactory.prototype._centerGeometry = function(geometry, centroid) {
+    var centro = centroid || this._centroid(geometry);
+    centro.z = 0;
 
-/**
- * Checks if the object containing the geometries is valid
- * 
- * @method isValid
- * @param {Object} obj Object to be checked
- * @returns {Boolean} True if valid, false otherwise.
- */
-GeometryFactory.prototype.isValid = function() {
-    throw "To be implemented";
-};
-
-/**
- * Creates an Object3D based on a geometry and its type.
- * 
- * @method createFromGeometry
- * @param {THREE.Geometry} geometry
- * @param {THREE.Material} materials Container for all the type of materials
- * @returns {THREE.Object3D} The Object 3D representing the geometry
- */
-GeometryFactory.prototype.createFromGeometry = function(geometry, materials) {
-    // Center the geometry
-    var centroid = this._centroid(geometry);
     var translationMatrix = new THREE.Matrix4();
-    translationMatrix.makeTranslation(-centroid.x, -centroid.y, -centroid.z);
+    translationMatrix.makeTranslation(-centro.x, -centro.y, -centro.z);
     geometry.applyMatrix(translationMatrix);
-    // Create the mesh
-    var mesh;
-    if (GeometryType.isPoint(geometry)) {
-        mesh = new THREE.ParticleSystem(geometry, materials.point);
+
+    geometry.centroid = centro;
+    return centro;
+};
+
+GeometryFactory.prototype._levelPoint = function(point) {
+    if (!this.dem) {
+        return;
     }
-    else if (GeometryType.isLine(geometry)) {
-        mesh = new THREE.Line(geometry, materials.line);
+    var position = point.centroid || point;
+    var height = this.dem.height(position);
+    point.z += height;
+};
+
+GeometryFactory.prototype._levelLine = function(line) {
+    if (!this.dem) {
+        return;
     }
-    else {
-        mesh = new THREE.Mesh(geometry, materials.polyhedral);
+    var self = this;
+    line.vertices.forEach(function(point) {
+        self._levelPoint(point);
+    });
+};
+
+GeometryFactory.prototype._levelPolygon = function(polygon) {
+    if (!this.dem) {
+        return;
     }
+    var position = polygon.centroid || this._centroid(polygon);
+    var height = this.dem.height(position);
+
+    var translationMatrix = new THREE.Matrix4();
+    translationMatrix.makeTranslation(0, 0, height);
+    polygon.applyMatrix(translationMatrix);
+};
+
+GeometryFactory.prototype._createLines = function(uuid, geometries, color) {
+    var material = this._lineMaterial.clone();
+    material.color = color;
+
+    var self = this;
+    geometries.forEach(function(element) {
+        // Line geometry
+        var geometry = self._parseLine(element);
+        var centroid = self._centroid(geometry);
+        self._centerGeometry(geometry, centroid);
+        self._levelLine(geometry);
+        // Line mesh
+        var mesh = new THREE.Line(geometry, material);
+        mesh.position = centroid;
+
+        self._layer.addToTile(mesh, uuid);
+    });
+};
+
+GeometryFactory.prototype._createPoints = function(uuid, geometries, color) {
+    var material = this._pointMaterial.clone();
+    material.color = color;
+
+    var self = this;
+    var particles = new THREE.Geometry();
+    geometries.forEach(function(element) {
+        // Point geometry
+        var particle = self._parsePoint(element);
+        self._levelPoint(particle);
+        particles.vertices.push(particle);
+    });
+    // One mesh for all points
+    var centroid = this._centerGeometry(particles);
+    var particleSystem = new THREE.ParticleSystem(particles, material);
+    particleSystem.position = centroid;
+    this._layer.addToTile(particleSystem, uuid);
+};
+
+GeometryFactory.prototype._createPolygons = function(uuid, geometries, color) {
+    var material = this._polyhedralMaterial.clone();
+    material.color = color;
+
+    var self = this;
+    var geomBuffer = new THREE.Geometry();
+    // Buffering all polygon geometries
+    geometries.forEach(function(element) {
+        // Polygon geometry
+        var geometry = self._parsePolygon(element);
+        // Do not center since we are using buffering
+        self._levelPolygon(geometry);
+
+        THREE.GeometryUtils.merge(geomBuffer, geometry);
+    });
+
+    // Translate mesh to geometries centroid
+    var centroid = this._centerGeometry(geomBuffer);
+    var mesh = new THREE.Mesh(geomBuffer, material);
     mesh.position = centroid;
-    return mesh;
+    this._layer.addToTile(mesh, uuid);
 };
 
 /**
@@ -3353,29 +3786,18 @@ GeometryFactory.prototype.createFromGeometry = function(geometry, materials) {
  * @returns {Array} array containing the meshes to add
  */
 GeometryFactory.prototype.create = function(obj) {
-    if (!this.isValid(obj)) {
-        throw "Invalid geometry container";
-    }
-
-    var materials = {
-        polyhedral: this._polyhedralMaterial.clone(),
-        point: this._pointMaterial.clone(),
-        line: this._lineMaterial.clone(),
-    };
-
     var color = new THREE.Color(parseInt(obj.color.substring(1), 16));
-    materials.polyhedral.color = color;
-    materials.point.color = color;
-    materials.line.color = color;
 
-    var self = this;
-    var meshes = [];
-    obj.geometries.forEach(function(element) {
-        var geometry = self.parseGeometry(element, obj.type);
-        var mesh = self.createFromGeometry(geometry, materials);
-	self._layer.addToTile(mesh, obj.uuid);
-    });
-    return meshes;
+    var type = obj.type;
+    if (type === "point") {
+        this._createPoints(obj.uuid, obj.geometries, color);
+    }
+    if (type === "line") {
+        this._createLines(obj.uuid, obj.geometries, color);
+    }
+    else {
+        this._createPolygons(obj.uuid, obj.geometries, color);
+    }
 };
 
 /* global GeometryFactory */
@@ -3396,60 +3818,38 @@ GeometryFactory.prototype.create = function(obj) {
 var Geometry2DFactory = function(args) {
     args = args || {};
     GeometryFactory.call(this, args);
-
-    this._polyhedralMaterial = args.polyhedralMaterial ||
-                               new THREE.MeshLambertMaterial({
-                                   color: 0x0000cc,
-                               });
 };
 Geometry2DFactory.inheritsFrom(GeometryFactory);
 
-/**
- * Check if the object containing the geometries is valid
- * 
- * @method isValid
- * @param {Object} obj Object to be checked
- * @returns {Boolean} True if valid, false otherwise.
- */
-Geometry2DFactory.prototype.isValid = function(obj) {
-    if (!obj || obj.dim !== "2") {
-        return false;
-    }
-    return true;
+Geometry2DFactory.prototype._parsePoint = function(obj) {
+    var point = obj.coordinates[0];
+    return new THREE.Vector3(point[0], point[1], 0);
 };
 
-/**
- * @method parseGeometry Creates an extruded geometry from a JSON object
- * @param {Object} obj JSON object representing the geometry
- * @return {THREE.Geometry} 2D Geometry
- */
-Geometry2DFactory.prototype.parseGeometry = function(obj, geometryType) {
+Geometry2DFactory.prototype._parseLine = function(obj) {
     var points = obj.coordinates;
-    var points3D = []; // List of 2D vector representing points
-    // Each coordinate of the geometry
+    var geometry = new THREE.Geometry();
     for (var i = 0; i < points.length; i = i + 2) {
-        points3D.push(new THREE.Vector3(points[i], points[i + 1], 0));
+        var coords = new THREE.Vector3(points[i], points[i + 1], 0);
+        geometry.vertices.push(coords);
     }
-    // Extrude geometry
-    if(geometryType === "point" ||
-        geometryType === "line") {
+    return geometry;
+};
 
-        var geometry = new THREE.Geometry();
-        points3D.forEach(function(point) {
-            geometry.vertices.push(point);
-        });
-        return geometry;
-    } else {
-        var shape = new THREE.Shape(points3D);
-        return shape.makeGeometry();
+Geometry2DFactory.prototype._parsePolygon = function(obj) {
+    var points = obj.coordinates;
+    var shape = new THREE.Shape();
+    for (var i = 0; i < points.length; i = i + 2) {
+        shape.moveTo(points[i], points[i + 1]);
     }
+    return shape.makeGeometry();
 };
 
 /* global GeometryFactory */
 "use strict";
 
 /**
- * This class creates extruded geometries from polygon
+ * This create a Flat Object3D from a polygon
  * 
  * @class Geometry25DFactory
  * @extends GeometryFactory
@@ -3463,6 +3863,7 @@ Geometry2DFactory.prototype.parseGeometry = function(obj, geometryType) {
 var Geometry25DFactory = function(args) {
     args = args || {};
     GeometryFactory.call(this, args);
+
     this._extrudeSettings = {
         bevelEnabled: false,
         steps: 1,
@@ -3470,66 +3871,32 @@ var Geometry25DFactory = function(args) {
 };
 Geometry25DFactory.inheritsFrom(GeometryFactory);
 
-/**
- * Creates an extruded geometry from a JSON object
- * 
- * @method parseGeometry
- * @param {Object} obj JSON object representing the geometry
- * @return {THREE.Geometry} Extruded geometry
- */
-Geometry25DFactory.prototype.parseGeometry = function(obj, geometryType) {
+Geometry25DFactory.prototype._parsePoint = function(obj) {
+    var point = obj.coordinates[0];
+    var height = obj.height || 0;
+    return new THREE.Vector3(point[0], point[1], height);
+};
+
+Geometry25DFactory.prototype._parseLine = function(obj) {
     var points = obj.coordinates;
-    var points3D = []; // List of 2D vector representing points
-    // Each coordinate of the geometry
+    var height = obj.height || 0;
+    var geometry = new THREE.Geometry();
     for (var i = 0; i < points.length; i = i + 2) {
-        points3D.push(new THREE.Vector3(points[i], points[i + 1], obj.height));
+        var coords = new THREE.Vector3(points[i], points[i + 1], height);
+        geometry.vertices.push(coords);
     }
-
-    if(geometryType === "point" ||
-        geometryType === "line") {
-
-        var geom = new THREE.Geometry();
-        points3D.forEach(function(point) {
-            geom.vertices.push(point);
-        });
-        return geom;
-    } else {
-        // Extrude geometry
-        var shape = new THREE.Shape(points3D);
-        this._extrudeSettings.amount = obj.height;
-        var geometry = shape.extrude(this._extrudeSettings);
-        return geometry;
-    }
+    return geometry;
 };
 
-/**
- * @method _centroid
- * @param geometry
- * @returns {THREE.Vector3}
- */
-Geometry25DFactory.prototype._centroid = function(geometry) {
-    var centroid = new THREE.Vector3();
-    var vertices = geometry.vertices;
-    for (var i = 0; i < vertices.length; i++) {
-        centroid.add(vertices[i]);
+Geometry25DFactory.prototype._parsePolygon = function(obj) {
+    var points = obj.coordinates;
+    var shape = new THREE.Shape();
+    for (var i = 0; i < points.length; i = i + 2) {
+        shape.moveTo(points[i], points[i + 1]);
     }
-    centroid.z = 0;
-    centroid.divideScalar(vertices.length);
-    return centroid;
-};
-
-/**
- * Check if the object containing the geometries is valid
- * 
- * @method isValid
- * @param {Object} obj Object to be checked
- * @returns {Boolean} True if valid, false otherwise.
- */
-Geometry25DFactory.prototype.isValid = function(obj) {
-    if (!obj || obj.dim !== "2.5") {
-        return false;
-    }
-    return true;
+    this._extrudeSettings.amount = obj.height;
+    var geometry = shape.extrude(this._extrudeSettings);
+    return geometry;
 };
 
 /* global GeometryFactory */
@@ -3554,18 +3921,16 @@ var Geometry3DFactory = function(args) {
 };
 Geometry3DFactory.inheritsFrom(GeometryFactory);
 
-/**
- * Check if the object containing the geometries is valid
- * 
- * @method isValid
- * @param {Object} obj Object to be checked
- * @returns {Boolean} True if valid, false otherwise.
- */
-Geometry3DFactory.prototype.isValid = function(obj) {
-    if (!obj || obj.dim !== "3") {
-        return false;
-    }
-    return true;
+Geometry3DFactory.prototype._parsePoint = function(obj) {
+    return this._parseGeometry(obj);
+};
+
+Geometry3DFactory.prototype._parseLine = function(obj) {
+    return this._parseGeometry(obj);
+};
+
+Geometry3DFactory.prototype._parsePolygon = function(obj) {
+    return this._parseGeometry(obj);
 };
 
 /**
@@ -3576,13 +3941,131 @@ Geometry3DFactory.prototype.isValid = function(obj) {
  *                geometry
  * @return {THREE.Geometry} Created geometry
  */
-Geometry3DFactory.prototype.parseGeometry = function(geometry) {
+Geometry3DFactory.prototype._parseGeometry = function(obj) {
     // THREE.JSONLoader() returns an object containing the geometry
-    var object = this._loader.parse(geometry);
-    return object.geometry;
+    var parsedObject = this._loader.parse(obj);
+    return parsedObject.geometry;
 };
 
-/* global Geometry2DFactory, Geometry25DFactory, Geometry3DFactory */
+/* global Geometry2DFactory */
+"use strict";
+
+/**
+ * This create a Flat Object3D from a polygon
+ * 
+ * @class GeometryShadowVolumeFactory
+ * @extends GeometryFactory
+ * @constructor
+ * @param {Object} args JSON Object containing the arguments
+ * @param {THREE.Material} args.polyhedralMaterial Material to use on polyhedral
+ *                geometries
+ * @param {THREE.Material} args.pointMaterial Material to use on points
+ * @param {THREE.Material} args.lineMaterial Material to use on lines
+ */
+var GeometryVolumeFactory = function(args) {
+    args = args || {};
+    Geometry2DFactory.call(this, args);
+
+    this._minHeight = args.minHeight || -1;
+    this._maxHeight = args.maxHeight || 1;
+
+    this._extrudeSettings = {
+        bevelEnabled: false,
+        steps: 1,
+        amount: this.maxHeight() - this.minHeight(),
+    };
+};
+GeometryVolumeFactory.inheritsFrom(Geometry2DFactory);
+
+GeometryVolumeFactory.prototype.setMinHeight = function(height) {
+    this._minHeight = height;
+    this._extrudeSettings.amount = this.maxHeight() - this.minHeight();
+};
+
+GeometryVolumeFactory.prototype.setMaxHeight = function(height) {
+    this._maxHeight = height;
+    this._extrudeSettings.amount = this.maxHeight() - this.minHeight();
+};
+
+GeometryVolumeFactory.prototype.minHeight = function() {
+    return this._minHeight;
+};
+
+GeometryVolumeFactory.prototype.maxHeight = function() {
+    return this._maxHeight;
+};
+
+GeometryVolumeFactory.prototype._levelPolygon = function(polygon) {
+    var translationMatrix = new THREE.Matrix4();
+    translationMatrix.makeTranslation(0, 0, this.minHeight());
+    polygon.applyMatrix(translationMatrix);
+};
+
+GeometryVolumeFactory.prototype._parseLine = function(obj) {
+    var points = obj.coordinates;
+    var geometry = new THREE.Geometry();
+    for (var i = 0; i < points.length; i = i + 2) {
+        var coords = new THREE.Vector3(points[i], points[i + 1], 0);
+        geometry.vertices.push(coords);
+    }
+
+    return geometry;
+};
+
+GeometryVolumeFactory.prototype._parsePolygon = function(obj) {
+    var points = obj.coordinates;
+    var shape = new THREE.Shape();
+    for (var i = 0; i < points.length; i = i + 2) {
+        shape.moveTo(points[i], points[i + 1]);
+    }
+    // console.log("not extruded", shape);
+    var geometry = shape.extrude(this._extrudeSettings);
+    return geometry;
+};
+
+GeometryVolumeFactory.prototype._createLines = function(uuid, geometries, color) {
+    var material = this._lineMaterial.clone();
+    material.color = color;
+
+    var self = this;
+    geometries.forEach(function(element) {
+        // Line geometry
+        var geometry = self._parseLine(element);
+        var centroid = self._centroid(geometry);
+        self._centerGeometry(geometry, centroid);
+        self._levelLine(geometry);
+        // Line mesh
+        var mesh = new THREE.Line(geometry, material);
+        mesh.position = centroid;
+
+        self._layer.addToTile(mesh, uuid);
+    });
+};
+
+GeometryVolumeFactory.prototype._createPolygons = function(uuid, geometries,
+                                                           color) {
+    var material = this._polyhedralMaterial.clone();
+    material.color = color;
+
+    var self = this;
+    var geomBuffer = new THREE.Geometry();
+    // Buffering all polygon geometries
+    geometries.forEach(function(element) {
+        // Polygon geometry
+        var geometry = self._parsePolygon(element);
+        // Do not center since we are using buffering
+        self._levelPolygon(geometry);
+        THREE.GeometryUtils.merge(geomBuffer, geometry);
+    });
+
+    // Translate mesh to geometries centroid
+    var centroid = this._centerGeometry(geomBuffer);
+    var mesh = new THREE.Mesh(geomBuffer, material);
+    mesh.position = centroid;
+    this._layer.addToVolume(mesh, uuid);
+};
+
+/* global Geometry2DFactory, Geometry25DFactory, Geometry3DFactory, GeometryVolumeFactory */
 "use strict";
 
 /**
@@ -3592,21 +4075,39 @@ Geometry3DFactory.prototype.parseGeometry = function(geometry) {
  * @class GeometryFactoryComposite
  * @constructor
  */
-var GeometryFactoryComposite = function(layer) {
+var GeometryFactoryComposite = function(args) {
     var self = this;
+    this._layer = args.layer;
+    this._objects = [];
     this._interval = setInterval(function() {
          var _object = self._objects.shift();
          if (_object === undefined) {
-             layer.loadingListener.dispatchEvent(new CustomEvent('loading', {'detail': false}));
+             self._layer.loadingListener.dispatchEvent(new CustomEvent('loading', {'detail': false}));
          } else {
-             layer.loadingListener.dispatchEvent(new CustomEvent('loading', {'detail': true}));
+             self._layer.loadingListener.dispatchEvent(new CustomEvent('loading', {'detail': true}));
          }
          self._create(_object);
     }, 300);
-    this._geometry2DFactory = new Geometry2DFactory({layer: layer});
-    this._geometry25DFactory = new Geometry25DFactory({layer: layer});
-    this._geometry3DFactory = new Geometry3DFactory({layer: layer});
-    this._objects = [];
+    this._geometry2DFactory = new Geometry2DFactory({
+        layer: this._layer
+    });
+    this._geometry25DFactory = new Geometry25DFactory({
+        layer: this._layer
+    });
+    this._geometry3DFactory = new Geometry3DFactory({
+        layer: this._layer
+    });
+};
+
+GeometryFactoryComposite.prototype.setDEM = function(dem) {
+    this._geometry25DFactory.dem = dem;
+    this._geometry3DFactory.dem = dem;
+    this._geometry2DFactory = new GeometryVolumeFactory({
+        layer: this._layer,
+        minHeight: dem.minHeight,
+        maxHeight: dem.maxHeight
+    });
+    this._geometry2DFactory.dem = dem;
 };
 
 /**
@@ -3622,7 +4123,7 @@ var GeometryFactoryComposite = function(layer) {
 GeometryFactoryComposite.prototype._create = function(obj) {
     if (!obj || !obj.dim) {
         return;
-        //throw "Invalid geometry container";
+        // throw "Invalid geometry container";
     }
 
     switch (obj.dim) {
@@ -3713,7 +4214,7 @@ CanvasTile.prototype.value = function(point) {
  * @param {int} args.gridDensity Number of lines on the x and y axis
  */
 var Layer = function(args) {
-    THREE.Object3D.call(this);
+    THREE.Scene.call(this);
     args = args || {};
     this.originX = args.x || 0;
     this.originY = args.y || 0;
@@ -3753,9 +4254,8 @@ var Layer = function(args) {
     this._spatialIndex.load(extents);
 
     this._tiles = [];
-    this._frustum = new THREE.Frustum();
 };
-Layer.inheritsFrom(THREE.Object3D);
+Layer.inheritsFrom(THREE.Scene);
 
 /**
  * @method isTileCreated Returns if a tile exists at index
@@ -3843,12 +4343,11 @@ Layer.prototype.addToTile = function(mesh) {
  * @returns {THREE.Vector2}
  */
 Layer.prototype.tileIndex = function(coords) {
-    if (coords.x > this.originX + this._layerWidth) {
-        return;
-    }
-    if (coords.y > this.originY + this._layerHeight) {
-        return;
-    }
+    /*
+     * if (coords.x > this.originX + this._layerWidth) { console.log("out of
+     * bounds x", coords); return; } if (coords.y > this.originY +
+     * this._layerHeight) { console.log("out of bounds x", coords); return; }
+     */
     var x = Math.floor((coords.x - this.originX) / this._tileSize);
     var y = Math.floor((coords.y - this.originY) / this._tileSize);
     return new THREE.Vector2(x, y);
@@ -3976,20 +4475,8 @@ Layer.prototype._loadData = function() {
 
 Layer.prototype.display = function(camera) {
 
-    camera.updateMatrix();
-    camera.updateMatrixWorld();
-    camera.matrixWorldInverse.getInverse(camera.matrixWorld);
-
-    // Create frustum from camera
-    var matrixFrustum = camera.projectionMatrix.clone();
-    matrixFrustum.multiply(camera.matrixWorldInverse);
-    this._frustum.setFromMatrix(matrixFrustum);
-
-    var position = camera.position;
-    var extent = [position.x - camera.far,
-                  position.y - camera.far,
-                  position.x + camera.far,
-                  position.y + camera.far];
+    var frustum = camera.frustum();
+    var extent = camera.extent();
     var tileIndexes = this._spatialIndex.search(extent);
 
     var tileExtent = new THREE.Box3();
@@ -4004,7 +4491,7 @@ Layer.prototype.display = function(camera) {
         tileExtent.max.y = tileIndex[3];
         var index = tileIndex[4];
         if (!self.isTileCreated(index.x, index.y)) {
-            if (self._frustum.intersectsBox(tileExtent)) {
+            if (frustum.intersectsBox(tileExtent)) {
                 self.tile(index.x, index.y);
                 self._loadData(tileIndex);
             }
@@ -4012,8 +4499,89 @@ Layer.prototype.display = function(camera) {
     });
 };
 
-Layer.prototype.refresh = function(uuid) {
-    return uuid;
+"use strict";
+
+var QGISLayer = function(args) {
+    args = args || {};
+    THREE.Object3D.call(this, args);
+    this._uuid = args.uuid;
+
+    this._tiles = [];
+    this._dirty = [];
+    this._volumes = [];
+};
+QGISLayer.inheritsFrom(THREE.Object3D);
+
+QGISLayer.prototype.isTileCreated = function(index) {
+    return (this._tiles[index] !== undefined);
+};
+
+QGISLayer.prototype.isVolumeCreated = function(index) {
+    return (this._volumes[index] !== undefined);
+};
+
+QGISLayer.prototype.isDirty = function(index) {
+    return (this._dirty[index] === true);
+};
+
+QGISLayer.prototype.refresh = function(index) {
+    if (index !== undefined) {
+        this._dirty[index] = true;
+        return;
+    }
+
+    for (var i = 0; i < this._dirty.length; i++) {
+        //console.log(index);
+        //throw "bad refresh";
+        this._dirty[i] = true;
+    }
+};
+
+QGISLayer.prototype.tile = function(index) {
+    return this._tiles[index];
+};
+
+QGISLayer.prototype.volume = function(index) {
+    var volume = this._volumes[index];
+    if (!volume && this.isTileCreated(index)) {
+        volume = new THREE.Scene();
+        this._volumes[index] = volume;
+        volume.position = this.tile(index).position;
+    }
+    return volume;
+};
+
+QGISLayer.prototype.createTile = function(index) {
+    if (this.isTileCreated(index)) {
+        this.destroyTile(index);
+    }
+    this._tiles[index] = new THREE.Object3D();
+    this._dirty[index] = false;
+    this.add(this._tiles[index]);
+    return this._tiles[index];
+};
+
+QGISLayer.prototype.destroyTile = function(index) {
+    if (!this.isTileCreated(index)) {
+        return;
+    }
+
+    var tile = this.tile(index);
+    this.remove(tile);
+
+    var removeChild = function(child) {
+        if (child.geometry !== undefined) {
+            child.geometry.dispose();
+        }
+        if (child.material !== undefined) {
+            child.material.dispose();
+        }
+    };
+
+    tile.traverse(removeChild);
+
+    delete this._tiles[index];
+    delete this._dirty[index];
 };
 
 /* global FPSControl, VectorLayer, Camera, SceneSocket, TerrainLayer, VWebSocket */
@@ -4043,92 +4611,63 @@ var Scene = function(args) {
         maxY: parseFloat(sceneSettings.extent.yMax),
     };
 
+    // Init
+    this._url = args.url || location.host;
     this._originX = extent.minX;
     this._originY = extent.minY;
-
-    var x = (extent.maxX - extent.minX) / 2;
-    var y = (extent.maxY - extent.minY) / 2;
-
+    this._width = extent.maxX - extent.minX;
+    this._height = extent.maxY - extent.minY;
     this._window = args.window || window;
     this._document = args.document || document;
-
-    this._renderer = new THREE.WebGLRenderer();
-    this._renderer.sortObjects = false;
-    this._renderer.setClearColor(0xdbdbdb, 1);
-    this._renderer.setSize(window.innerWidth, window.innerHeight);
-
     this._hasRaster = args.hasRaster || sceneSettings.hasRaster;
 
+    // Renderer
+    this._renderer = new THREE.WebGLRenderer();
+    this._renderer.setClearColor(0xdbdbdb, 0);
+    this._renderer.setSize(this._window.innerWidth, this._window.innerHeight);
+    this._renderer.autoClear = false;
+
+
+    // Camera
+    var camX = this._width * 0.5;
+    var camY = this._height * 0.5;
     this._camera = new Camera({
         window: this._window,
         renderer: this._renderer,
-        x: x,
-        y: y,
+        x: camX,
+        y: camY,
     });
-    this._control = new FPSControl(this._camera, this._document);
 
-    this._scene = new THREE.Scene();
-    this._scene.fog = new THREE.Fog(0xdbdbdb, this._camera.far / 2,
-                                    this._camera.far);
-    var hemiLight = new THREE.HemisphereLight(0x999999, 0xffffff, 1);
-    this._scene.add(hemiLight);
-
-    this.vectors = args.vectors || sceneSettings.vectors;
-
-    this._vectorLayer = new VectorLayer({
-        url: "ws://" + url,
-        x: this._originX,
-        y: this._originY,
-        width: extent.maxX - extent.minX,
-        height: extent.maxY - extent.minY,
-        tileSize: 512,
-        qgisVectors: this.vectors,
-        scene: this._scene,
-        loadingListener: this._document,
-    });
-    this._scene.add(this._vectorLayer);
-
-    var self = this;
-
-    if(this._hasRaster) {
-        this._socketTile = new VWebSocket({
-            url: "ws://" + url + "/tiles_info"
-        });
-
-        this._socketTile.addEventListener("messageReceived", function(obj) {
-                self._terrainLayer = new TerrainLayer({
-                x: self._originX,
-                y: self._originY,
-                width: extent.maxX - extent.minX,
-                height: extent.maxY - extent.minY,
-                ortho: obj.texture || obj.dem,
-                dem: obj.dem || undefined,
-                minHeight: obj.minHeight,
-                maxHeight: obj.maxHeight,
-                gridDensity: 64,
-                tileSize: obj.pixelSize * obj.tileSize,
-            });
-            self._terrainLayer.addLayerToLevel(self._vectorLayer);
-            self._scene.add(self._terrainLayer);                    
-
-        });
+    this.layers = args.layers || sceneSettings.vectors;
+    // Layers
+    this._createVectorLayer(this.layers);
+    if (this._hasRaster) {
+        this._createRasterLayer();
     }
-    this._control.addEventListener("moved", function(args) {
-        if(self._vectorLayer) {
-            self._vectorLayer.display(args.camera);
-        }
-        if(self._terrainLayer) {
-            self._terrainLayer.display(args.camera);    
-        }
-    });
 
+    // Control
+    this._control = new FPSControl(this._camera, this._document);
+    this._control.addEventListener("moved", this.refreshLayers.bind(this));
+
+    // Sync
     this._socket = new SceneSocket({
-        url: "ws://" + url,
+        url: "ws://" + this._url,
         scene: this,
     });
 
-    this._document.getElementById(args.domId)
-            .appendChild(this._renderer.domElement);
+    this._document.getElementById(args.domId).appendChild(this._renderer.domElement);
+
+    this._createPasses();
+    this.refreshLayers();
+};
+
+Scene.prototype.refreshLayers = function() {
+    if (this._vectorLayer) {
+        this._vectorLayer.display(this._camera);
+    }
+    if (this._terrainLayer) {
+        this._terrainLayer.display(this._camera);
+    }
 };
 
 /**
@@ -4149,7 +4688,28 @@ Scene.prototype.moveTo = function(coords) {
  */
 Scene.prototype.render = function() {
     this._window.requestAnimationFrame(this.render.bind(this));
-    this._renderer.render(this._scene, this._camera);
+
+    // var delta = 0.01;
+    // var maskActive = false;
+    this._renderer.clear();
+    // this._composer.render();
+    // if (this._terrainRender) {
+    // this._terrainRender.render(this._renderer, this._target, this._target,
+    // delta, maskActive);
+    // this._vectorLayer.forEachVolume(this._camera, this._volumeDrapping
+    // .bind(this));
+    // this._clearMask.render(this._renderer, this._target, this._target,
+    // delta, maskActive);
+    // }
+    // this._vectorRender.render(this._renderer, this._target, this._target,
+    // delta, maskActive);
+    // this._finalRender.render(this._renderer, this._target, this._target,
+    // delta,
+    // maskActive);
+    if (this._terrainLayer) {
+        this._renderer.render(this._terrainLayer, this._camera);
+    }
+    this._renderer.render(this._vectorLayer, this._camera);
     this._control.update();
 };
 
@@ -4171,12 +4731,129 @@ Scene.prototype.displayVector = function(extents) {
 Scene.prototype.zoom = function(zoomPercent) {
     var zoomMin = 100;
     var zoomMax = 0;
-    this._camera.position.z = (zoomMin - zoomMax) * 100/ zoomPercent;
+    this._camera.position.z = (zoomMin - zoomMax) * 100 / zoomPercent;
 };
 
 Scene.prototype.refreshLayer = function(uuid) {
-    console.log('refresh for ' + uuid);
+    console.log('refresh of the layer: ' + uuid);
     this._vectorLayer.refresh(uuid);
+};
+
+Scene.prototype._createVectorLayer = function(layers) {
+    // Light
+    var hemiLight = new THREE.HemisphereLight(0x999999, 0xffffff, 1);
+
+    this._vectorLayer = VectorLayer.create({
+        url: "ws://" + this._url + "/data",
+        x: this._originX,
+        y: this._originY,
+        width: this._width,
+        height: this._height,
+        qgisLayers: layers,
+        scene: this._scene,
+        loadingListener: this._document,
+    });
+
+    this._vectorLayer.add(hemiLight);
+};
+
+Scene.prototype._createRasterLayer = function() {
+    var socket = new VWebSocket({
+        url: "ws://" + this._url + "/tiles_info"
+    });
+
+    var self = this;
+    socket.addEventListener("messageReceived", function(obj) {
+        self._terrainLayer = new TerrainLayer({
+            x: self._originX,
+            y: self._originY,
+            width: self._width,
+            height: self._height,
+            ortho: obj.texture || obj.dem,
+            dem: obj.dem,
+            minHeight: obj.minHeight,
+            maxHeight: obj.maxHeight,
+            gridDensity: 64,
+            tileSize: obj.pixelSize * obj.tileSize,
+        });
+
+        // self._terrainLayer.fog = new THREE.Fog(0xdbdbdb,
+        // self._camera.far / 2,
+        // self._camera.far);
+        self._vectorLayer.setDEM(self._terrainLayer);
+
+        self._terrainRender = new THREE.RenderPass(self._terrainLayer, self._camera);
+
+        self._composer.insertPass(0, self._terrainRender);
+        self._vectorRender.clear = false;
+
+        self.refreshLayers();
+    });
+
+};
+
+Scene.prototype._createPasses = function() {
+    var renderTargetParameters = {
+        minFilter: THREE.LinearFilter,
+        magFilter: THREE.LinearFilter,
+        format: THREE.RGBAFormat,
+        stencilBuffer: true
+    };
+
+    this._target = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, renderTargetParameters);
+
+    this._clearMask = new THREE.ClearMaskPass();
+    this._clearMask.clear = false;
+
+    this._vectorRender = new THREE.RenderPass(this._vectorLayer, this._camera);
+    // this._vectorRender.clear = false;
+
+    this._finalRender = new THREE.ShaderPass(THREE.CopyShader);
+    this._finalRender.clear = false;
+    this._finalRender.renderToScreen = true;
+
+    this._composer = new THREE.EffectComposer(this._renderer, this._target);
+    this._composer.addPass(this._clearMask);
+    this._composer.addPass(this._vectorRender);
+    this._composer.addPass(this._finalRender);
+};
+
+Scene.prototype._volumeDrapping = function(scene) {
+    console.log(scene);
+    var context = this._renderer.context;
+
+    // don't update color or depth
+    context.colorMask(false, false, false, false);
+    context.depthMask(false);
+
+    context.enable(context.DEPTH_TEST);
+    context.enable(context.STENCIL_TEST);
+    context.stencilFunc(context.ALWAYS, 1, 0xFF); // draw if == 1
+    context.stencilOpSeparate(context.FRONT, context.KEEP, context.KEEP, context.INCR_WRAP);
+    context.stencilOpSeparate(context.BACK, context.KEEP, context.KEEP, context.DECR_WRAP);
+    context.clearStencil(0);
+
+    // We can't do one pass using THREE.CullFaceBackAndFront ?!
+    this._renderer.setFaceCulling(THREE.CullFaceBack, THREE.FrontFaceDirectionCCW);
+    this._renderer.render(scene, this._camera, this._target, false);
+    this._renderer.setFaceCulling(THREE.CullFaceFront, THREE.FrontFaceDirectionCW);
+    this._renderer.render(scene, this._camera, this._target, false);
+
+    // Default value
+    this._renderer.setFaceCulling(THREE.CullFaceBack, THREE.FrontFaceDirectionCCW);
+
+    // re-enable update of color and depth
+    context.colorMask(true, true, true, true);
+    context.depthMask(true);
+
+    // only render where stencil is not set to 0
+    context.enable(context.STENCIL_TEST);
+    context.stencilFunc(context.NOTEQUAL, 0, 0xffffffff); // draw if == 1
+    context.stencilOp(context.ZERO, context.ZERO, context.ZERO);
+
+    this._renderer.render(scene, this._camera, this._target, false);
+    context.clearStencil(0);
+    context.disable(context.STENCIL_TEST);
 };
 
 /* global VWebSocket */
@@ -4232,8 +4909,9 @@ var TerrainLayer = function(args) {
     this._ortho = args.ortho || false;
     this._dem = args.dem || false;
 
-    this._minDEMElevation = args.minHeight || 0;
-    this._maxDEMElevation = args.maxHeight || 100;
+    console.log("dem", args.minHeight, args.maxHeight);
+    this.minHeight = args.minHeight || 0;
+    this.maxHeight = args.maxHeight || 100;
 
     this._shaderDef = args.shaderDef || BasicHeightMapMaterialDefinition;
 
@@ -4266,7 +4944,7 @@ TerrainLayer.prototype._rasterUrl = function(path, x, y, zoomLevel) {
 };
 
 TerrainLayer.prototype._loadDEM = function(x, y) {
-    if(!this._dem) {
+    if (!this._dem) {
         return;
     }
     var index = this._index(x, y);
@@ -4274,14 +4952,21 @@ TerrainLayer.prototype._loadDEM = function(x, y) {
         THREE.ImageUtils.crossOrigin = "anonymous";
         var url = this._rasterUrl(this._dem, x, y, this._zoom);
         var canvasTile = new CanvasTile(url, x, y);
-        canvasTile.addEventListener("demLoaded", this.levelLayers.bind(this));
+        var self = this;
+        canvasTile.addEventListener("demLoaded", function() {
+            var box = self.tileExtent(x, y);
+            self.dispatchEvent({
+                type: "demLoaded",
+                data: [box.min.x, box.min.y, box.max.x, box.max.y]
+            });
+        });
         this._demTextures[index] = canvasTile;
     }
     return this._demTextures[index].texture;
 };
 
 TerrainLayer.prototype._loadOrtho = function(x, y) {
-    if(!this._ortho) {
+    if (!this._ortho) {
         return;
     }
     var index = this._index(x, y);
@@ -4301,8 +4986,8 @@ TerrainLayer.prototype._createMaterial = function(x, y) {
     var uniformsTerrain = THREE.UniformsUtils.clone(this._shaderDef.uniforms);
     uniformsTerrain.dem.value = dem;
     uniformsTerrain.ortho.value = ortho;
-    uniformsTerrain.minHeight.value = this._minDEMElevation;
-    uniformsTerrain.maxHeight.value = this._maxDEMElevation;
+    uniformsTerrain.minHeight.value = this.minHeight;
+    uniformsTerrain.maxHeight.value = this.maxHeight;
 
     var material = this._material.clone();
     material.uniforms = uniformsTerrain;
@@ -4324,14 +5009,9 @@ TerrainLayer.prototype.height = function(position) {
     var xPixel = rPos.x * demSize.x / tileSize;
     var yPixel = demSize.y - (rPos.y * demSize.y / tileSize);
     var pixelValue = dem.value(new THREE.Vector2(xPixel, yPixel));
-    var height = this._minDEMElevation +
-                 ((this._maxDEMElevation - this._minDEMElevation) * pixelValue);
+    var height = this.minHeight +
+                 ((this.maxHeight - this.minHeight) * pixelValue);
     return height;
-};
-
-TerrainLayer.prototype.addLayerToLevel = function(layer) {
-    this._layersToLevel.push(layer);
-    layer.dem = this;
 };
 
 TerrainLayer.prototype.levelLayers = function(tileIndex) {
@@ -4349,55 +5029,83 @@ TerrainLayer.prototype.levelLayers = function(tileIndex) {
     });
 };
 
-/* global Layer, GeometryFactoryComposite, VWebSocket */
+/* global Layer, GeometryFactoryComposite, VWebSocket, QGISLayer */
 "use strict";
 
 var VectorLayer = function VectorLayer(args) {
+    args.tileSize = args.tileSize || 500;
     Layer.call(this, args);
 
-    this._socket = new VWebSocket({
-        url: args.url + "/data"
+    this._factory = new GeometryFactoryComposite({
+        layer: this
     });
+    this._isTileCreated = [];
+    this._volumes = [];
+    this._qgisLayers = {};
 
     this.loadingListener = args.loadingListener || {};
 
-    this._factory = new GeometryFactoryComposite(this);
-
+    var qgisLayers = args.qgisLayers || [];
     var self = this;
-    var qgisVectors = args.qgisVectors || [];
-    this._qgisLayers = {};
-    qgisVectors.forEach(function(vector, i) {
-        self._qgisLayers[vector.uuid] = new THREE.Object3D();
-        self._getQgisLayer(vector.uuid).position.z += i + 1;
-	self._getQgisLayer(vector.uuid).tiles = [];
-	self._getQgisLayer(vector.uuid).dirty = [];
-	self.add(self._getQgisLayer(vector.uuid));
-    });
-    this._isTileCreated = [];
+    qgisLayers.forEach(function(layer, i) {
+        var qgisLayer = new QGISLayer(layer.uuid);
+        qgisLayer.position.z += i + 1;
 
-    this._socket.addEventListener("messageReceived", function(obj) {
-        self._factory.create(obj);
+        self._qgisLayers[layer.uuid] = qgisLayer;
+        self.add(qgisLayer);
     });
 
-    this._createPlan();
 };
 VectorLayer.inheritsFrom(Layer);
 
-VectorLayer.prototype._createPlan = function() {
-    var geometry = new THREE.PlaneGeometry(this._layerWidth, this._layerHeight,
-                                           this._gridDensity, this._gridDensity);
+VectorLayer.create = function(args) {
+    var layer = new VectorLayer(args);
+
+    // WebSocket
+    layer._socket = new VWebSocket({
+        url: args.url
+    });
+    layer._socket.addEventListener("messageReceived", function(obj) {
+        layer._factory.create(obj);
+    });
+
+    // Plane
+    var layerHalfWidth = layer._layerWidth * 0.5;
+    var layerHalfHeight = layer._layerHeight * 0.5;
     var position = new THREE.Matrix4();
-    var layerHalfWidth = this._layerWidth * 0.5;
-    var layerHalfHeight = this._layerHeight * 0.5;
     position.makeTranslation(layerHalfWidth, layerHalfHeight, 0);
+
+    var geometry = new THREE.PlaneGeometry(layer._layerWidth,
+                                           layer._layerHeight, 1, 1);
     geometry.applyMatrix(position);
-    
-    var material = this._material;
+
+    var material = args.material || new THREE.MeshLambertMaterial({
+        color: 0x666666,
+        emissive: 0xaaaaaa,
+        ambient: 0xffffff,
+        wireframe: true,
+    });
     var plan = new THREE.Mesh(geometry, material);
-    this.add(plan);
+    layer.add(plan);
+
+    return layer;
 };
 
-VectorLayer.prototype._getQgisLayer = function(uuid) {
+VectorLayer.prototype.setDEM = function(dem) {
+    this._dem = dem;
+    var self = this;
+    this._dem.addEventListener("demLoaded", function(event) {
+        var ext = [event.data[0] - self.originX,
+                   event.data[1] - self.originY,
+                   event.data[2] - self.originX,
+                   event.data[3] - self.originY,
+        ];
+        self.refreshExtent(ext);
+    });
+    this._factory.setDEM(dem);
+};
+
+VectorLayer.prototype.qgisLayer = function(uuid) {
     return this._qgisLayers[uuid];
 };
 
@@ -4408,13 +5116,15 @@ VectorLayer.prototype._getQgisLayer = function(uuid) {
  * @returns {Boolean} True if a tile exists, false otherwise
  */
 VectorLayer.prototype.isTileCreated = function(x, y) {
-    return (this._isTileCreated[this._index(x, y)] !== undefined);
+    var index = this._index(x, y);
+    return (this._isTileCreated[index] !== undefined);
 };
 
-VectorLayer.prototype.isDirty = function(x, y, uuid) {
-    return (this._getQgisLayer(uuid).dirty[this._index(x, y)] !== undefined);
-};
-
+/**
+ * 
+ * @param extent
+ * @param uuid
+ */
 VectorLayer.prototype._loadData = function(extent, uuid) {
     var ext = {
         Xmin: extent[0] + this.originX,
@@ -4433,38 +5143,59 @@ VectorLayer.prototype._loadData = function(extent, uuid) {
  * 
  * @param x
  * @param y
+ * @param uuid
  * @returns {THREE.Mesh}
  */
 VectorLayer.prototype._createTile = function(x, y, uuid) {
-    var tile = new THREE.Object3D();
+    var index = this._index(x, y);
+    var tile = this.qgisLayer(uuid).createTile(index);
 
     // Tile origin
     var origin = this._tileRelativeOrigin(x, y);
     tile.translateX(origin.x);
     tile.translateY(origin.y);
 
-    this._getQgisLayer(uuid).add(tile);
     return tile;
 };
 
-VectorLayer.prototype.createIfNot = function(x, y) {
-    if (!this.isTileCreated(x, y)) {
-        this._isTileCreated[this._index(x, y)] = 1;
-        var self = this;
-	for (var uuid in this._qgisLayers) {
-            self._getQgisLayer(uuid).tiles[this._index(x, y)] = self._createTile(x, y, uuid);
-        }
+VectorLayer.prototype.createTile = function(x, y) {
+    if (this.isTileCreated(x, y)) {
+        return;
     }
+
+    var index = this._index(x, y);
+    this._isTileCreated[index] = true;
+
+    for ( var uuid in this._qgisLayers) {
+        this._createTile(x, y, uuid);
+    }
+
 };
 
 /**
  * @method tile Returns the tile at the index
  * @param {Number} x X index of the tile. Starting at the upper left corner
  * @param {Number} y Y index of the tile. Starting at the upper left corner
+ * @param {String} uuid
  * @returns {THREE.Mesh} Mesh representing the tile
  */
 VectorLayer.prototype.tile = function(x, y, uuid) {
-    return this._getQgisLayer(uuid).tiles[this._index(x, y)];
+    var index = this._index(x, y);
+    var layer = this.qgisLayer(uuid);
+    return layer.tile(index);
+};
+
+/**
+ * @method volume Returns the scene at the index
+ * @param {Number} x X index of the tile. Starting at the upper left corner
+ * @param {Number} y Y index of the tile. Starting at the upper left corner
+ * @param {String} uuid
+ * @returns {THREE.Scene} Mesh representing the tile
+ */
+VectorLayer.prototype.volume = function(x, y, uuid) {
+    var index = this._index(x, y);
+    var layer = this.qgisLayer(uuid);
+    return layer.volume(index);
 };
 
 /**
@@ -4472,25 +5203,45 @@ VectorLayer.prototype.tile = function(x, y, uuid) {
  * 
  * @method addToTile Add an object to a tile
  * @param {THREE.Object3D} mesh
+ * @param {String} uuid
  */
 VectorLayer.prototype.addToTile = function(mesh, uuid) {
     var tileIndex = this.tileIndex(mesh.position);
-    if(!tileIndex) {
+    if (!tileIndex) {
         return;
     }
+
     if (!this.isTileCreated(tileIndex.x, tileIndex.y)) {
         return;
     }
-    var coordinates = this.tileCoordinates(mesh.position);
+
     var tile = this.tile(tileIndex.x, tileIndex.y, uuid);
 
-    if (this.dem) {
-        var height = this.dem.height(mesh.position);
-        if (height) {
-            coordinates.z = height;
-        }
+    var coordinates = this.tileCoordinates(mesh.position);
+    mesh.position = coordinates;
+    tile.add(mesh);
+};
+
+/**
+ * Add a mesh to the correct tile
+ * 
+ * @method addToTile Add an object to a tile
+ * @param {THREE.Object3D} mesh
+ * @param {String} uuid
+ */
+VectorLayer.prototype.addToVolume = function(mesh, uuid) {
+    var tileIndex = this.tileIndex(mesh.position);
+    if (!tileIndex) {
+        return;
     }
 
+    if (!this.isTileCreated(tileIndex.x, tileIndex.y)) {
+        return;
+    }
+
+    var tile = this.volume(tileIndex.x, tileIndex.y, uuid);
+
+    var coordinates = this.tileCoordinates(mesh.position);
     mesh.position = coordinates;
     tile.add(mesh);
 };
@@ -4500,28 +5251,33 @@ VectorLayer.prototype.addToTile = function(mesh, uuid) {
  * @param {String} uuid Identifier of the layer who needs to be refreshed
  */
 VectorLayer.prototype.refresh = function(uuid) {
+    if (!uuid) {
+        for ( var id in this._qgisLayers) {
+            this.qgisLayer(id).refresh();
+        }
+    }
+    else {
+        this.qgisLayer(uuid).refresh();
+    }
+    this._scene.refreshLayers();
+};
+
+VectorLayer.prototype.refreshExtent = function(extent) {
+    var tileIndexes = this._spatialIndex.search(extent);
     var self = this;
-    this._getQgisLayer(uuid).tiles.forEach(function(tile, _index) {
-        self._getQgisLayer(uuid).dirty[_index] = 1;
+    tileIndexes.forEach(function(tileIndex) {
+        var x = tileIndex[4].x;
+        var y = tileIndex[4].y;
+        var index = self._index(x, y);
+        for ( var id in self._qgisLayers) {
+            self.qgisLayer(id).refresh(index);
+        }
     });
 };
 
-VectorLayer.prototype.display = function(camera) {
-
-    camera.updateMatrix();
-    camera.updateMatrixWorld();
-    camera.matrixWorldInverse.getInverse(camera.matrixWorld);
-
-    // Create frustum from camera
-    var matrixFrustum = camera.projectionMatrix.clone();
-    matrixFrustum.multiply(camera.matrixWorldInverse);
-    this._frustum.setFromMatrix(matrixFrustum);
-
-    var position = camera.position;
-    var extent = [position.x - camera.far,
-                  position.y - camera.far,
-                  position.x + camera.far,
-                  position.y + camera.far];
+VectorLayer.prototype.forEachVolume = function(camera, callback) {
+    var frustum = camera.frustum();
+    var extent = camera.extent();
     var tileIndexes = this._spatialIndex.search(extent);
 
     var tileExtent = new THREE.Box3();
@@ -4530,58 +5286,74 @@ VectorLayer.prototype.display = function(camera) {
 
     var self = this;
     tileIndexes.forEach(function(tileIndex) {
+        var index = tileIndex[4];
+        // Not created yet
+        if (!self.isTileCreated(index.x, index.y)) {
+            return;
+        }
+
+        // Building tile extent
         tileExtent.min.x = tileIndex[0];
         tileExtent.min.y = tileIndex[1];
         tileExtent.max.x = tileIndex[2];
         tileExtent.max.y = tileIndex[3];
-        var index = tileIndex[4];
-        if (!self.isTileCreated(index.x, index.y)) {
-            if (self._frustum.intersectsBox(tileExtent)) {
-                self.createIfNot(index.x, index.y);
-                self._loadData(tileIndex);
-            }
-        } else {
-            var removeChild = function(child) {
-                if(child.geometry !== undefined) {
-                    child.geometry.dispose();
-                    child.material.dispose();
+        if (frustum.intersectsBox(tileExtent)) {
+            var arrayIndex = self._index(index.x, index.y);
+            for ( var uuid in self._qgisLayers) {
+                var layer = self.qgisLayer(uuid);
+                var volume = layer.volume(arrayIndex);
+                if (volume.children.length <= 0) {
+                    continue;
                 }
-            };
-            var _index = self._index(index.x, index.y);
-            for (var uuid in self._qgisLayers) {
-                if (self.isDirty(index.x, index.y, uuid)) {
-                    var tile = self.tile(index.x, index.y, uuid);
-                    self._getQgisLayer(uuid).remove(tile);
-                    tile.traverse(removeChild);
-                    delete self._getQgisLayer(uuid).tiles[_index];
-                    delete self._getQgisLayer(uuid).dirty[_index];
-                    self._getQgisLayer(uuid).tiles[_index] = self._createTile(index.x, index.y, uuid);
-                    self._loadData(tileIndex, uuid);
-                }
+                callback(volume);
             }
         }
     });
 };
 
-VectorLayer.prototype.forEachTileCreatedInExtent = function(extent, func) {
-    var tileIndexes = this._spatialIndex.search([extent.min.x - this.originX,
-                                                 extent.min.y - this.originY,
-                                                 extent.max.x - this.originX,
-                                                 extent.max.y - this.originY]);
+/**
+ * 
+ * @param camera
+ */
+VectorLayer.prototype.display = function(camera) {
+
+    var frustum = camera.frustum();
+    var extent = camera.extent();
+    var tileIndexes = this._spatialIndex.search(extent);
+
+    var tileExtent = new THREE.Box3();
+    tileExtent.min.z = 0;
+    tileExtent.max.z = 0;
+
     var self = this;
     tileIndexes.forEach(function(tileIndex) {
-        var x = tileIndex[4].x;
-        var y = tileIndex[4].y;
-        if (self.isTileCreated(x, y)) {
-            var tileOrigin = self.tileOrigin(x, y);
-            for (var uuid in self._qgisLayers) {
-                var tile = self.tile(x, y, uuid);
-                func(tile, tileOrigin);
+        var index = tileIndex[4];
+        // Not created yet
+        if (!self.isTileCreated(index.x, index.y)) {
+            // Building tile extent
+            tileExtent.min.x = tileIndex[0];
+            tileExtent.min.y = tileIndex[1];
+            tileExtent.max.x = tileIndex[2];
+            tileExtent.max.y = tileIndex[3];
+
+            if (frustum.intersectsBox(tileExtent)) {
+                self.createTile(index.x, index.y);
+                self._loadData(tileIndex);
+            }
+            return;
+        }
+
+        // Need to refresh ?
+        var _index = self._index(index.x, index.y);
+        for ( var uuid in self._qgisLayers) {
+            var layer = self.qgisLayer(uuid);
+            if (layer.isDirty(_index)) {
+                self._createTile(index.x, index.y, uuid);
+                self._loadData(tileIndex, uuid);
             }
         }
     });
 };
-
 
 "use strict";
 
@@ -4618,8 +5390,32 @@ var Camera = function(args) {
     };
 
     this._window.addEventListener('resize', this._onWindowResize, false);
+
+    this._frustum = new THREE.Frustum();
 };
 Camera.inheritsFrom(THREE.PerspectiveCamera);
+
+Camera.prototype.frustum = function() {
+    this.updateMatrix();
+    this.updateMatrixWorld();
+    this.matrixWorldInverse.getInverse(this.matrixWorld);
+
+    // Create frustum from camera
+    var matrixFrustum = this.projectionMatrix.clone();
+    matrixFrustum.multiply(this.matrixWorldInverse);
+    this._frustum.setFromMatrix(matrixFrustum);
+
+    return this._frustum;
+};
+
+Camera.prototype.extent = function() {
+    var position = this.position;
+    var extent = [position.x - this.far,
+                  position.y - this.far,
+                  position.x + this.far,
+                  position.y + this.far];
+    return extent;
+};
 
 /* global FPSControl:true */
 "use strict";
