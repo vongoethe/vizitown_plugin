@@ -2,7 +2,6 @@ var scene = new Scene({
     window: window,
     document: document,
     domId: "container",
-    url: 'localhost:8888',
 });
 
 var btnRefreshValues = {

@@ -1,5 +1,3 @@
-import webbrowser
-
 from qgis.core import *
 from qgis.gui import *
 
