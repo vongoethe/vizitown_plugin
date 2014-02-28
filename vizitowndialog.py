@@ -227,7 +227,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.btn_generate.setText("Server is running")
         self.appServerRunning = True
 
-        time.sleep(1);
+        # Little sleep to avoid launch of the webbrowser before the appserver start
+        time.sleep(0.5);
         url = 'http://localhost:' + str(self.sb_port.value()) + '/app/index.html'
         webbrowser.open(url)
 
