@@ -9,7 +9,7 @@ class PostgisToJSON:
     ## The Constructor
     def __init__(self):
         self.nbPointVertice = 3
-        self.noHeight = 0
+        self.noHeight = "0"
 
         self._jsonThreejs = """{
         "metadata" :
@@ -73,9 +73,7 @@ class PostgisToJSON:
         self.hasH = hasH
         self.color = color
         self.uuid = uuid
-
         exchange = self._jsonExchange
-        exchange = self._replace_metadata(exchange)
 
         geometries = ""
         for r in resultArray:
@@ -97,6 +95,7 @@ class PostgisToJSON:
                 geometries += self._parse_triangle(data) + ','
 
         geometries = PostgisToJSON.remove_comma(geometries)
+        exchange = self._replace_metadata(exchange)
         exchange = re.sub('{JSON_GEOM}', geometries, exchange)
         return exchange
 
@@ -134,12 +133,11 @@ class PostgisToJSON:
         data = []
         if hasH:
             data.append(str(result[0]))
-            data.append(result[1])
-            return data
+            data.append(str(result[1]))
         else:
             data.append(result)
             data.append(self.noHeight)
-            return data
+        return data
 
     ## _parse_point method to parse a point data
     #  @param message to stock the data
@@ -151,10 +149,10 @@ class PostgisToJSON:
             float(dataArray[1])
             vertice = dataArray[0].split(' ')
             vertice.pop()
-            return self._get_json_geom(vertice, str(dataArray[1]))
         except:
             # dataArray[1] NaN probably a json
-            pass
+            self.geometry = 'TIN'
+            return dataArray[1]
 
     # def _is_json(self):
     #     if self.hasH:
@@ -169,7 +167,7 @@ class PostgisToJSON:
         vertices = vertices.split(',')
         for i in range(len(vertices) - 1, 0, -self.nbPointVertice):
             vertices.pop(i)
-        return self._get_json_geom(vertices, str(dataArray[1]))
+        return self._get_json_geom(vertices, dataArray[1])
 
     ## _parse_polygon method to parse a polygon or multipolygon data
     #  @param message to stock the data
@@ -178,12 +176,12 @@ class PostgisToJSON:
     def _parse_polygon(self, dataArray):
         js = json.loads(dataArray[0])
         if js['type'] == 'Polygon':
-            return self._get_json_geom(self._get_polygon_point(js['coordinates'][0]), str(dataArray[1]))
+            return self._get_json_geom(self._get_polygon_point(js['coordinates'][0]), dataArray[1])
 
         elif js['type'] == 'MultiPolygon':
             geometries = ""
             for i in range(len(js['coordinates'])):
-                geometries += self._get_json_geom(self._get_polygon_point(js['coordinates'][i][0]), str(dataArray[1])) + ','
+                geometries += self._get_json_geom(self._get_polygon_point(js['coordinates'][i][0]), dataArray[1]) + ','
             return PostgisToJSON.remove_comma(geometries)
         else:
             return ""

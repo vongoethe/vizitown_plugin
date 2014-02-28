@@ -19,7 +19,7 @@ class PostgisProvider:
     #  @param column of the resource
     #  @param column2 representing a height of column or another geometry (TinZ)
     def __init__(self, layer):
-        self.db = QSqlDatabase.addDatabase("QPSQL")
+        self.db = QSqlDatabase.addDatabase("QPSQL", layer._uuid)
         self.db.setHostName(layer._host)
         self.db.setDatabaseName(layer._dbname)
         self.db.setPort(layer._port)
@@ -75,7 +75,7 @@ class PostgisProvider:
     #  @param Ymax
     #  @return the tile
     def request_tile(self, Xmin, Ymin, Xmax, Ymax):
-        query = QSqlQuery(self.db)
+        query = QSqlQuery(self.db.database(self._layer._uuid))
         request = ""
 
         extent = """POLYGON(({Xmin_} {Ymin_},
