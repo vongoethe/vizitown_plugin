@@ -149,14 +149,12 @@ class PostgisToJSON:
             float(dataArray[1])
             vertice = dataArray[0].split(' ')
             vertice.pop()
+            return self._get_json_geom(vertice, dataArray[1])
         except:
             # dataArray[1] NaN probably a json
             self.geometry = 'TIN'
             return dataArray[1]
 
-    # def _is_json(self):
-    #     if self.hasH:
-    #         if
     ## _parse_line method to parse a line data
     #  @param message to stock the data
     #  @param height to add an information of elevation
