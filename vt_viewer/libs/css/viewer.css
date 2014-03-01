@@ -18,8 +18,12 @@ body {
 	left: 0%;
 	height: 100%;
 	width: 15%;
-	background-color: #dddddd;
+	background-color: #e3e3e3;
 	z-index: 1;
+	-moz-box-shadow:    inset -8px 0 8px #9a9a9a;
+	-webkit-box-shadow: inset -8px 0 8px #9a9a9a;
+	box-shadow:         inset -8px 0 8px #9a9a9a;
+	padding: 10px;
 } 
 
 #layers-column ol {
@@ -29,6 +33,24 @@ body {
 	padding-bottom: 10%;
 	list-style: none outside none;
 } 
+
+#layers-column li {
+	margin: 10px;
+} 
+
+fieldset {
+	background: #ddd;
+	border-radius: 5px;
+}
+
+fieldset legend {
+	font-family: sans-serif;
+	background: #111;
+	color: #fff;
+	padding: 5px 10px ;
+	font-size: 14px;
+	border-radius: 5px;
+}
 
 #settings-button {
 	font-style: bold;

@@ -49,7 +49,6 @@ scene.layers.forEach(function(vector) {
     legend.innerHTML = vector.name;
     inputTimer.setAttribute('type', 'number');
     inputTimer.setAttribute('placeholder', 'Timer in sec');
-    inputTimer.setAttribute('size', 3);
     inputTimer.setAttribute('id', getTimerId(vector.uuid));
     btnRefresh.setAttribute('type', 'button');
     btnRefresh.setAttribute('value', btnRefreshValues.enabled);
