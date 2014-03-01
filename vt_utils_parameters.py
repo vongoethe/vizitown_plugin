@@ -90,5 +90,7 @@ class Parameters:
         self.all_vectors = None
         self.zommLevel = None
         self.tileSize = None
+        self.GDALqueue = Queue()
         if self.GDALprocess and self.GDALprocess.is_alive():
             self.GDALprocess.terminate()
+        self.GDALprocess = None
