@@ -81,7 +81,7 @@ class PostgisProvider:
                    Ymin_=Ymin,
                    Ymax_=Ymax)
 
-        intersect = """ WHERE ST_Intersects(ST_Centroid({column_}), ST_GeomFromText('{extent_}', {srid_})) 
+        intersect = """ WHERE ST_Intersects(ST_Centroid({column_}), ST_GeomFromText('{extent_}', {srid_}))
         """.format(column_=self._layer._column,
                    extent_=extent,
                    srid_=self._layer._srid)
