@@ -219,8 +219,9 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
                 layer = self.tw_layers.item(row_index, 1).data(QtCore.Qt.UserRole)
                 column2 = self.tw_layers.cellWidget(row_index, 2).currentText()
                 if column2 != "None":
-                    layer._column2 = column2.split(" - ")[0]
-                    layer._typeColumn2 = column2.split(" - ")[1]
+                    split = column2.split(" - ")
+                    layer._column2 = split[0]
+                    layer._typeColumn2 = split[1]
                 selectedLayers.append(layer)
         return selectedLayers
 
