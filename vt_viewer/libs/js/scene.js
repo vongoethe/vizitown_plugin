@@ -70,13 +70,13 @@ var changeZoomLevel = function(value) {
 scene.render();
 
 var saveParameters = function() {
-    scene._camera.fov = document.getElementById('angleInput').value;
-    scene._camera.far = document.getElementById('deepInput').value;
-    scene._scene.fog.far = document.getElementById('deepInput').value;
+    scene.updateFov(document.getElementById('angleInput').value);
+    scene.updateFar(document.getElementById('deepInput').value);
+    //scene._scene.fog.far = document.getElementById('deepInput').value;
 };
 
-// document.getElementById('angleInput').value = scene._camera.fov;
-// document.getElementById('deepInput').value = scene._camera.far;
+document.getElementById('angleInput').value = scene._camera.fov;
+document.getElementById('deepInput').value = scene._camera.far;
 // document.getElementById('deepInput').value = scene._scene.fog.far;
 
 document.addEventListener("loading", function(event) {
