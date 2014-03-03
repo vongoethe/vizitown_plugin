@@ -3,11 +3,11 @@
 /***************************************************************************
  Vizitown
                                  A QGIS plugin
- 2D to 3D
+ QGIS Plugin for viewing data in 3D
                               -------------------
-        begin                : 2014-01-09
+        begin                : 2014-02-03
         copyright            : (C) 2014 by Cubee(ESIPE)
-        email                : vizitown@gmail.com
+        email                : lp_vizitown@googlegroups.com
  ***************************************************************************/
 
 /***************************************************************************
