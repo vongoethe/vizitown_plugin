@@ -109,7 +109,7 @@ class Parameters:
         self.port = None
         self.hasRaster = None
         self.all_vectors = None
-        self.zommLevel = None
+        self.zoomLevel = None
         self.tileSize = None
         self.GDALqueue = Queue()
         if self.GDALprocess and self.GDALprocess.is_alive():
