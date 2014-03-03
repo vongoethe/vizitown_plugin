@@ -2,13 +2,14 @@ import unittest
 import datetime
 import os
 import shutil
+from multiprocessing import Queue
 
 from vt_utils_tiler import VTTiler, Extent
 
 ## Test is the VTTiler class apply process on image data
 if __name__ == "__main__":
     originExtent = Extent(839724, 6511958, 861463, 6529147)
-    sourceDem = '/Users/Louis/Desktop/Data/Mnt/MNT2009_Altitude_10m_RGF93.tif'
-    sourceOrtho = '/Users/Louis/Desktop/Data/GrandLyon_L93.png'
-    tiler = VTTiler(originExtent, 4096, 1, sourceDem, None)
-    tiler.create('/Users/Louis/Documents/Cours/3eme_Annee/Last_project/Vizitown_LP/DEV/GitAppServer/rasters')
+    sourceDem = 'MNT2009_Altitude_10m_RGF93.tif'
+    sourceOrtho = 'GrandLyon2m_L93_RGB.tif'
+    tiler = VTTiler(originExtent, 1024, 1, sourceDem, sourceOrtho)
+    tiler.create('rasters', Queue())

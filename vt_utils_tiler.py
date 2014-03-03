@@ -1,4 +1,5 @@
 import math
+import numpy
 try:
     from osgeo import gdal
 except:
@@ -6,7 +7,6 @@ except:
 from gdalconst import *
 from multiprocessing import Queue
 import os
-import math
 import sys
 
 
@@ -53,6 +53,7 @@ class Raster(object):
         self.geoTransform = self.dataSource.GetGeoTransform()
         self.isDem = isDem
         self.path = path
+        self.dem = None
 
     ## rasterName method
     #  Format the name of the raster like this : nameWithoutExtension_zoomLevel_tileX_tileY
@@ -144,37 +145,63 @@ class Raster(object):
             sizes[i] = self.size * (minPixelSize + pixelSizeStep)
 
         return sizes
+        
+    def _normalizeDEM (self):
+        nBand = self.dataSource.RasterCount
+        demElevation = self.demElevation()
+        scaleSrcMax = demElevation[1]
+        scaleSrcMin = demElevation[0]
+        scaleDstMax = 255.999
+        scaleDstMin = 0.0
+        
+        data = self.dataSource.ReadAsArray(0, 0, self.dataSource.RasterXSize, self.dataSource.RasterYSize)
+        data = ( (scaleDstMax - scaleDstMin) * ((data - scaleSrcMin) / (scaleSrcMax - scaleSrcMin)) ) + scaleDstMin
+        data = data.astype(numpy.uint8)
+        
+        driver = gdal.GetDriverByName("MEM")
+        dem = driver.Create('', self.dataSource.RasterXSize, self.dataSource.RasterYSize, nBand, gdal.GDT_Byte)
+        dem.SetProjection(self.dataSource.GetProjectionRef())
+        dem.SetGeoTransform(self.dataSource.GetGeoTransform())
+        
+        for i in range(1, nBand+1):
+            dem.GetRasterBand(i).WriteArray(data)
+            
+        return dem
+       
+    ## createForExtent method
+    #  Produce the tile of data about the extent and reproject it if necessary
+    #  The result is png image
+    #  @param extent the extent of the image
+    #  @param outFilename the name of the tile       
+    def createForExtent(self, extent, outFilename):
+        if (self.isDem):
+            if self.dem is None:
+                self.dem = self._normalizeDEM()
+            self._createForExtent(self.dem, extent, outFilename)
+        else:
+            self._createForExtent(self.dataSource, extent, outFilename)
 
     ## createForExtent method
     #  Produce the tile of data about the extent and reproject it if necessary
     #  The result is png image
     #  @param extent the extent of the image
     #  @param outFilename the name of the tile
-    def createForExtent(self, extent, outFilename):
-        nBand = self.dataSource.RasterCount
-        band = self.dataSource.GetRasterBand(1)
-        # Dem don't have values between 0 and 255
-        if (self.isDem):
-            demElevation = self.demElevation()
-            dfScale = (255 - 0) / (demElevation[1] - demElevation[0])
-            dfOffset = -1 * demElevation[0] * dfScale
-            band.SetScale(dfScale)
-            band.SetOffset(dfOffset)
-
+    def _createForExtent(self, ds, extent, outFilename):
+        nBand = ds.RasterCount
         pixelSizeX = self.pixelSizeXForSize(extent.width())
         pixelSizeY = self.pixelSizeXForSize(extent.height())
         newGeoTransform = (extent.minX, pixelSizeX, 0, extent.maxY, 0, -pixelSizeY)
 
         driver = gdal.GetDriverByName("MEM")
-        dataDest = driver.Create('', self.size, self.size, nBand)
-        dataDest.SetProjection(self.dataSource.GetProjectionRef())
+        dataDest = driver.Create('', self.size, self.size, nBand, gdal.GDT_Byte)
+        dataDest.SetProjection(ds.GetProjectionRef())
         dataDest.SetGeoTransform(newGeoTransform)
 
-        gdal.ReprojectImage(self.dataSource, dataDest)
-
+        gdal.ReprojectImage(ds, dataDest)
+        
         pngDriver = gdal.GetDriverByName("PNG")
         pngDriver.CreateCopy(outFilename, dataDest, 0)
-
+        
     ## createForSizes method
     #  Create data about the array of pixel size
     #  @param extent the extent to produce data
