@@ -92,8 +92,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
         self.cb_tile.addItem('512 x 512')
         self.cb_tile.addItem('1024 x 1024')
         self.cb_tile.addItem('2048 x 2048')
-        self.cb_tile.addItem('4096 x 4096')
-        self.cb_tile.setCurrentIndex(1)
+        self.cb_tile.setCurrentIndex(2)
 
     ## init_layers method
     #  Init combobox and table layers
@@ -193,8 +192,6 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
             return 1024
         if index == 3:
             return 2048
-        if index == 4:
-            return 4096
 
     ## get_gui_extent method
     #  Get the extent specified in the GUI or if the fields filled by the user are incoherent it's the extent of current view of QGIS
@@ -230,7 +227,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     #  @override QtGui.QDialog
     def on_btn_default_released(self):
         self.sb_port.setValue(8888)
-        self.cb_tile.setCurrentIndex(1)
+        self.cb_tile.setCurrentIndex(2)
         self.tw_layers.clear()
         self.tw_layers.setHorizontalHeaderLabels(('Display', 'Layer', 'Field'))
 
