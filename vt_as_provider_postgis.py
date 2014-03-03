@@ -80,6 +80,7 @@ class PostgisProvider:
 
             while query.next():
                 self.geometry1 = query.value(0)
+        self.db.close()
 
     ## request_tile method
     #  Return all the result contains in the extent in param
@@ -89,6 +90,8 @@ class PostgisProvider:
     #  @param Ymax
     #  @return the tile
     def request_tile(self, Xmin, Ymin, Xmax, Ymax):
+        if not self.db.open():
+            raise Exception('Connection to database cannot be established')
         query = QSqlQuery(self.db.database(self._layer._uuid))
         request = ""
 
@@ -116,6 +119,7 @@ class PostgisProvider:
         results = self._sort_result(query)
         colors = self._color_array()
         return {'results': results, 'geom': self.retGeometry, 'hasH': self.hasH, 'color': colors, 'uuid': self._layer._uuid}
+        self.db.close()
 
     ## sort_result method
     #  Sort the request result in function of the type of symbology apply on the data
@@ -330,6 +334,7 @@ class PostgisProvider:
             result = {}
             while query.next():
                 result[query.value(0)] = query.value(1)
+            db.close()
             return result
         else:
             raise Exception('Connection to database cannot be established')
