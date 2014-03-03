@@ -70,8 +70,8 @@ var changeZoomLevel = function(value) {
 scene.render();
 
 var saveParameters = function() {
-    scene.updateFov(document.getElementById('angleInput').value);
-    scene.updateFar(document.getElementById('deepInput').value);
+    scene.updateFov(parseInt(document.getElementById('angleInput').value));
+    scene.updateFar(parseInt(document.getElementById('deepInput').value));
     //scene._scene.fog.far = document.getElementById('deepInput').value;
 };
 
