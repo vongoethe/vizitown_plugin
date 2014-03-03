@@ -24,6 +24,7 @@ body {
 	-webkit-box-shadow: inset -8px 0 8px #9a9a9a;
 	box-shadow:         inset -8px 0 8px #9a9a9a;
 	padding: 10px;
+	padding-right: 40px;
 } 
 
 #layers-column ol {
