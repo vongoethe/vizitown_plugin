@@ -166,34 +166,34 @@ class Raster(object):
             sizes[i] = self.size * (minPixelSize + pixelSizeStep)
 
         return sizes
-        
-    def _normalizeDEM (self):
+
+    def _normalizeDEM(self):
         nBand = self.dataSource.RasterCount
         demElevation = self.demElevation()
         scaleSrcMax = demElevation[1]
         scaleSrcMin = demElevation[0]
         scaleDstMax = 255.999
         scaleDstMin = 0.0
-        
+
         data = self.dataSource.ReadAsArray(0, 0, self.dataSource.RasterXSize, self.dataSource.RasterYSize)
-        data = ( (scaleDstMax - scaleDstMin) * ((data - scaleSrcMin) / (scaleSrcMax - scaleSrcMin)) ) + scaleDstMin
+        data = ((scaleDstMax - scaleDstMin) * ((data - scaleSrcMin) / (scaleSrcMax - scaleSrcMin))) + scaleDstMin
         data = data.astype(numpy.uint8)
-        
+
         driver = gdal.GetDriverByName("MEM")
         dem = driver.Create('', self.dataSource.RasterXSize, self.dataSource.RasterYSize, nBand, gdal.GDT_Byte)
         dem.SetProjection(self.dataSource.GetProjectionRef())
         dem.SetGeoTransform(self.dataSource.GetGeoTransform())
-        
-        for i in range(1, nBand+1):
+
+        for i in range(1, nBand + 1):
             dem.GetRasterBand(i).WriteArray(data)
-            
+
         return dem
-       
+
     ## createForExtent method
     #  Produce the tile of data about the extent and reproject it if necessary
     #  The result is png image
     #  @param extent the extent of the image
-    #  @param outFilename the name of the tile       
+    #  @param outFilename the name of the tile
     def createForExtent(self, extent, outFilename):
         if (self.isDem):
             if self.dem is None:
@@ -219,10 +219,10 @@ class Raster(object):
         dataDest.SetGeoTransform(newGeoTransform)
 
         gdal.ReprojectImage(ds, dataDest)
-        
+
         pngDriver = gdal.GetDriverByName("PNG")
         pngDriver.CreateCopy(outFilename, dataDest, 0)
-        
+
     ## createForSizes method
     #  Create data about the array of pixel size
     #  @param extent the extent to produce data
