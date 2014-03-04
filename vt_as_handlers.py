@@ -24,6 +24,7 @@ import json
 from multiprocessing import Queue
 
 import cyclone.websocket
+import cyclone.escape
 
 from vt_utils_converter import PostgisToJSON
 from vt_as_provider_manager import ProviderManager
@@ -83,6 +84,7 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
     #  @override cyclone.websocket.WebSocketHandler
     def connectionMade(self):
         print "WebSocket data opened"
+        self.translator = PostgisToJSON()
 
     ## messageReceived method
     #  Method call when a message is received
@@ -96,16 +98,17 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
         if message == "ping":
             self.sendMessage("pong")
             return
+
         d = json.loads(message)
         vectors = ProviderManager.instance().request_tile(**d)
         if not vectors:
             self.sendMessage("{}")
             return
-        translator = PostgisToJSON()
+
         for v in vectors:
             for i in range(len(v['results'])):
                 if v['results'][i]:
-                    json_ = translator.parse(v['results'][i], v['geom'], v['hasH'], v['color'][i], v['uuid'])
+                    json_ = self.translator.parse(v['results'][i], v['geom'], v['hasH'], v['color'][i], v['uuid'])
                     self.sendMessage(json_)
 
     ## connectionLost method
