@@ -228,8 +228,8 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     def on_btn_default_released(self):
         self.sb_port.setValue(8888)
         self.cb_tile.setCurrentIndex(2)
-        self.tw_layers.clear()
-        self.tw_layers.setHorizontalHeaderLabels(('Display', 'Layer', 'Field'))
+        #self.tw_layers.clear()
+        #self.tw_layers.setHorizontalHeaderLabels(('Display', 'Layer', 'Field'))
 
     ## on_btn_generate_released method
     #  Generate and launch the rendering of the 3D scene
