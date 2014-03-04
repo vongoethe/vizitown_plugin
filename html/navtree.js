@@ -28,8 +28,8 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "____init_____8py.html",
-"class_git_app_server_1_1vt__test__providers_1_1_test_raster_provider.html#a7dc0d5595149947969ef9b2ce269f7fd",
-"vt__utils__result__vttiler_8py.html"
+"class_git_app_server_1_1vt__test__providers_1_1_test_raster_provider.html#a79d32f7b9d981ade8fdb9a59ce14cca7",
+"vt__utils__layer_8py.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
@@ -142,7 +142,7 @@ function createIndent(o,domNode,node,level)
     span.style.display = 'inline-block';
     span.style.width   = 16*(level+1)+'px';
     span.style.height  = '22px';
-    span.innerHTML = '&nbsp;';
+    span.innerHTML = '&#160;';
     domNode.appendChild(span);
   } 
 }

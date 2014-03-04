@@ -20,6 +20,5 @@ var class_git_app_server_1_1vt__utils__parameters_1_1_parameters =
     [ "texture", "class_git_app_server_1_1vt__utils__parameters_1_1_parameters.html#a5244d27e16c80ce682642c3614030320", null ],
     [ "tileSize", "class_git_app_server_1_1vt__utils__parameters_1_1_parameters.html#a35a60f1b2eeb374eb79620686f3dbd73", null ],
     [ "viewerPath", "class_git_app_server_1_1vt__utils__parameters_1_1_parameters.html#adf8309e2dd54411e54d92dcea79e7021", null ],
-    [ "zommLevel", "class_git_app_server_1_1vt__utils__parameters_1_1_parameters.html#a05b29e905b6f78d64c63eb8a54fb8115", null ],
     [ "zoomLevel", "class_git_app_server_1_1vt__utils__parameters_1_1_parameters.html#aacaafabd9739ecd0951abb4245727f81", null ]
 ];

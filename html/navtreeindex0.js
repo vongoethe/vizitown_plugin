@@ -112,6 +112,7 @@ var NAVTREEINDEX0 =
 "class_git_app_server_1_1vt__as__handlers_1_1_data_handler.html":[1,0,0,6,2],
 "class_git_app_server_1_1vt__as__handlers_1_1_data_handler.html#a226e75b4fbfe67890c507c00c42d9cc3":[1,0,0,6,2,0],
 "class_git_app_server_1_1vt__as__handlers_1_1_data_handler.html#a38a0dea502bb8d1449f00cf1de5c92fc":[1,0,0,6,2,1],
+"class_git_app_server_1_1vt__as__handlers_1_1_data_handler.html#a5bb72460e247031cf14aa7e467af89ff":[1,0,0,6,2,3],
 "class_git_app_server_1_1vt__as__handlers_1_1_data_handler.html#ac99bb6a73c765e97360032bfa7d01ee6":[1,0,0,6,2,2],
 "class_git_app_server_1_1vt__as__handlers_1_1_init_handler.html":[1,0,0,6,1],
 "class_git_app_server_1_1vt__as__handlers_1_1_init_handler.html#a1e1b5038f95f040f8eb188e7036eb113":[1,0,0,6,1,2],
@@ -248,6 +249,5 @@ var NAVTREEINDEX0 =
 "class_git_app_server_1_1vt__test__providers_1_1_test_raster_provider.html#a0412b8768160888f1c809558def91d01":[1,0,0,13,2,3],
 "class_git_app_server_1_1vt__test__providers_1_1_test_raster_provider.html#a04a84f0479c334fcf3ae830204db5b86":[1,0,0,13,2,6],
 "class_git_app_server_1_1vt__test__providers_1_1_test_raster_provider.html#a55d6de6ec242812bc3dd480b76b2f4a4":[1,0,0,13,2,2],
-"class_git_app_server_1_1vt__test__providers_1_1_test_raster_provider.html#a59590a1fa807229d17594ae678d4aa85":[1,0,0,13,2,4],
-"class_git_app_server_1_1vt__test__providers_1_1_test_raster_provider.html#a79d32f7b9d981ade8fdb9a59ce14cca7":[1,0,0,13,2,1]
+"class_git_app_server_1_1vt__test__providers_1_1_test_raster_provider.html#a59590a1fa807229d17594ae678d4aa85":[1,0,0,13,2,4]
 };
