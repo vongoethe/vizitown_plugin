@@ -34,54 +34,43 @@ class PostgisToJSON:
         self.noHeight = "0"
 
         self._jsonThreejs = """{
-        "metadata" :
-        {
-            "formatVersion" : 3.1,
-            "generatedBy"   : "Vizitown Creation",
-            "vertices"      : {VERTICES},
-            "faces"         : {FACES},
-            "normals"       : 0,
-            "colors"        : 0,
-            "uvs"           : 0,
-            "materials"     : 0,
-            "morphTargets"  : 0,
-            "bones"         : 0
-        },
-
-        "vertices" : [{TAB_VERTICES}],
-
-        "morphTargets" : [],
-
-        "normals" : [],
-
-        "colors" : [],
-
-        "uvs" : [],
-
-        "faces" : [{TAB_FACES}],
-
-        "bones" : [],
-
-        "skinIndices" : [],
-
-        "skinWeights" : [],
-
-        "animations" : []
-
+"metadata" :
+{
+"formatVersion" : 3.1,
+"generatedBy"   : "Vizitown Creation",
+"vertices"      : {VERTICES},
+"faces"         : {FACES},
+"normals"       : 0,
+"colors"        : 0,
+"uvs"           : 0,
+"materials"     : 0,
+"morphTargets"  : 0,
+"bones"         : 0
+},
+"vertices" : [{TAB_VERTICES}],
+"morphTargets" : [],
+"normals" : [],
+"colors" : [],
+"uvs" : [],
+"faces" : [{TAB_FACES}],
+"bones" : [],
+"skinIndices" : [],
+"skinWeights" : [],
+"animations" : []
     }"""
 
         self._jsonExchange = """{
-    "dim"          : "{TYPE}",
-    "color"        : "{COLOR}",
-    "type"         : "{GEOMETRY}",
-    "uuid"         : "{UUID}",
-    "geometries"   : [{JSON_GEOM}]
+"dim"          : "{TYPE}",
+"color"        : "{COLOR}",
+"type"         : "{GEOMETRY}",
+"uuid"         : "{UUID}",
+"geometries"   : [{JSON_GEOM}]
 }"""
 
         self._jsonGeom = """{
-        "height"        : {HEIGHT},
-        "coordinates"   : [{COORDINATES}]
-    }"""
+"height"        : {HEIGHT},
+"coordinates"   : [{COORDINATES}]
+}"""
 
     ## parse method
     #  Manage the process in the class and use the appropriate process in function of the data
