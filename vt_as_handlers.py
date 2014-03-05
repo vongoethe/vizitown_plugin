@@ -185,6 +185,8 @@ class TilesInfoHandler(cyclone.websocket.WebSocketHandler):
         if not self.result.is_define():
             self.result.set_result(self.parameters.GDALqueue.get())
             self.parameters.GDALqueue.close()
+            self.parameters.GDALprocess.terminate()
+            
 
         if self.parameters.GDALprocess and self.parameters.GDALprocess.is_alive():
             print "Wait GDAL tiling ..."
