@@ -40034,11 +40034,7 @@ Geometry25DFactory.inheritsFrom(GeometryFactory);
 Geometry25DFactory.prototype._parsePoint = function(obj) {
     var point = obj.coordinates;
     var height = obj.height || 0;
-    console.log(point[0]);
-    console.log(point[1]);
-    console.log(height);
     var vec = new THREE.Vector3(point[0], point[1], height);
-    console.log(vec);
     return vec;
 };
 
