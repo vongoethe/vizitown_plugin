@@ -39958,9 +39958,7 @@ Geometry2DFactory.inheritsFrom(GeometryFactory);
  */
 Geometry2DFactory.prototype._parsePoint = function(obj) {
     var point = obj.coordinates;
-    console.log(obj);
     var vec = new THREE.Vector3(point[0], point[1], 0);
-    console.log(vec);
     return vec;
 };
 
@@ -40034,9 +40032,14 @@ Geometry25DFactory.inheritsFrom(GeometryFactory);
  * @return {THREE.Vector3} Created vector
  */
 Geometry25DFactory.prototype._parsePoint = function(obj) {
-    var point = obj.coordinates[0];
+    var point = obj.coordinates;
     var height = obj.height || 0;
-    return new THREE.Vector3(point[0], point[1], height);
+    console.log(point[0]);
+    console.log(point[1]);
+    console.log(height);
+    var vec = new THREE.Vector3(point[0], point[1], height);
+    console.log(vec);
+    return vec;
 };
 
 /**
