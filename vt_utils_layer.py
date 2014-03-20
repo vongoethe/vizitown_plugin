@@ -84,9 +84,13 @@ class Layer:
     #  @return String with vectors informations
     def parse_vector(self, source):
         m = re.match(r"""
-        \s*dbname='(?P<dbname>.*?)'\s*host=(?P<host>\d+.\d+.\d+.\d+)\s*port=(?P<port>\d+)
-        \s*user='(?P<user>.*?)'\s*password='(?P<password>.*?)'\s*.*
-        \s*.*\s*table=(?P<table>\S+)\s*\((?P<column>.*?)\)""", source, re.X)
+        \s*dbname='(?P<dbname>.*?)'
+        (\s*host=(?P<host>\d+.\d+.\d+.\d+))?
+        \s*port=(?P<port>\d+)
+        \s*user='(?P<user>.*?)'
+        (\s*password='(?P<password>.*?)')?
+        \s*.*
+        \s*table=(?P<table>\S+)\s*\((?P<column>.*?)\)""", source, re.X)
         return {
             'dbname': m.group('dbname'),
             'host': m.group('host'),
