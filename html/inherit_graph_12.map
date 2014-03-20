@@ -1,6 +1,0 @@
-<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node2" href="$class_git_app_server_1_1vt__test__converter_1_1translate_j_s_o_n.html" title="Test postgisToJSON class if the conversion of an X3D formats into a json operates. " alt="" coords="153,5,329,46"/>
-<area shape="rect" id="node3" href="$class_git_app_server_1_1vt__test__providers_1_1_test_postgis_provider.html" title="Test if the PostgisProvider class can connect to a postGis database and if they can request the datab..." alt="" coords="138,70,345,111"/>
-<area shape="rect" id="node4" href="$class_git_app_server_1_1vt__test__providers_1_1_test_provider_manager.html" title="Test if the ProviderManager class can be instantiated Test is the ProviderManager class can add a vec..." alt="" coords="133,135,349,177"/>
-<area shape="rect" id="node5" href="$class_git_app_server_1_1vt__test__providers_1_1_test_raster_provider.html" title="Test if the RasterProvider class can stock the attribute to use a raster resource. " alt="" coords="140,201,343,242"/>
-</map>
