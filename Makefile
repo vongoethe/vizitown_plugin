@@ -33,9 +33,12 @@ TRANSLATIONS =
 
 PLUGINNAME = vizitown
 
-PY_FILES = vizitown.py vizitowndialog.py __init__.py
+PY_FILES = vizitown.py vizitowndialog.py __init__.py vt_as_app.py vt_as_cyclone.py vt_as_handlers.py vt_as_provider_manager.py vt_as_provider_postgis.py vt_as_provider_raster.py vt_as_sync.py vt_test_converter.py vt_test_handlers.py vt_test_providers.py vt_test_tiler.py vt_utils_converter.py vt_utils_gui.py vt_utils_layer.py vt_utils_parameters.py vt_utils_provider_factory.py vt_utils_result_vttiler.py vt_utils_singleton.py vt_utils_tiler.py
 
-EXTRAS = icon.png metadata.txt
+
+EXTRAS = vt.png metadata.txt
+
+EXTRA_DIRS = cyclone twisted zope
 
 UI_FILES = ui_vizitown.py
 
@@ -65,8 +68,9 @@ deploy: compile doc transcompile
 	cp -vf $(UI_FILES) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vf $(RESOURCE_FILES) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vf $(EXTRAS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
-	cp -vfr i18n $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
+	cp -vfr html $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vfr $(HELP) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)/help
+	cp -vfr $(EXTRA_DIRS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 
 # The dclean target removes compiled python files from plugin directory
 # also delets any .svn entry
@@ -116,4 +120,4 @@ clean:
 
 # build documentation with sphinx
 doc:
-	cd help; make html
+	doxygen
