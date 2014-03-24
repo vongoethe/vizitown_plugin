@@ -1,4 +1,13 @@
-130a131,133
->     
-> def unrun():
->     reactor.callFromThread(reactor.stop)
+diff --git a/cyclone/bottle.py b/cyclone/bottle.py
+index 834c281..c7e07ff 100644
+--- a/cyclone/bottle.py
++++ b/cyclone/bottle.py
+@@ -127,7 +127,4 @@ def run(**settings):
+     interface = settings.get("host", "0.0.0.0")
+     log.startLogging(settings.pop("log", sys.stdout))
+     reactor.listenTCP(port, create_app(**settings), interface=interface)
+-    reactor.run(installSignalHandlers = False)
+-    
+-def unrun():
+-    reactor.callFromThread(reactor.stop)
++    reactor.run()

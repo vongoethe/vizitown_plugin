@@ -28,6 +28,10 @@ from PyQt4.QtGui import *
 from qgis.core import *
 from qgis.gui import *
 
+# add the current directory to the system include path
+# this way local versions of python modules are loaded insted of the system ones
+sys.path = [os.path.dirname(__file__)] + sys.path
+
 # Initialize Qt resources from file resources.py
 import resources_rc
 # Import the code for the dialog
