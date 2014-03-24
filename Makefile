@@ -38,7 +38,7 @@ PY_FILES = vizitown.py vizitowndialog.py __init__.py vt_as_app.py vt_as_cyclone.
 
 EXTRAS = vt.png metadata.txt
 
-EXTRA_DIRS = cyclone twisted zope
+EXTRA_DIRS = cyclone twisted zope vt_viewer
 
 UI_FILES = ui_vizitown.py
 
@@ -69,7 +69,7 @@ deploy: compile doc transcompile
 	cp -vf $(RESOURCE_FILES) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vf $(EXTRAS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vfr html $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
-	cp -vfr $(HELP) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)/help
+#	cp -vfr $(HELP) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)/help
 	cp -vfr $(EXTRA_DIRS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 
 # The dclean target removes compiled python files from plugin directory
