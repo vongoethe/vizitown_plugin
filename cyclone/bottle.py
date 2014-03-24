@@ -127,7 +127,7 @@ def run(**settings):
     interface = settings.get("host", "0.0.0.0")
     log.startLogging(settings.pop("log", sys.stdout))
     reactor.listenTCP(port, create_app(**settings), interface=interface)
-    reactor.run()
+    reactor.run(installSignalHandlers = False)
     
 def unrun():
     reactor.callFromThread(reactor.stop)
