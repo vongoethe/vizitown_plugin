@@ -77,14 +77,22 @@ class InitHandler(cyclone.web.RequestHandler):
 #  Use to handle the transmission of the data
 #  retreived from postgis to the web browser
 #  Unherited cyclone.websocket.WebSocketHandler
-class DataHandler(cyclone.websocket.WebSocketHandler):
+class DataHandler(cyclone.web.RequestHandler):
 
-    ## connectionMade method
-    #  Method call when the websocket is opened
-    #  @override cyclone.websocket.WebSocketHandler
-    def connectionMade(self):
-        print "WebSocket data opened"
+    ## initialize method
+    #  Initialize the handler for the init parameter
+    #  @override cyclone.web.RequestHandler
+    def initialize(self):
+        self.parameters = Parameters.instance()
         self.translator = PostgisToJSON()
+
+    ## set_default_headers method
+    #  Define the headers for the default handler
+    #  @override cyclone.web.RequestHandler
+    def set_default_headers(self):
+        self.set_header('Access-Control-Allow-Origin', '*')
+        self.set_header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        self.set_header('Access-Control-Allow-Headers', 'X-Requested-With')
 
     ## messageReceived method
     #  Method call when a message is received
@@ -93,31 +101,19 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
     #   '{"Xmin": 0, "Ymin": 0, "Xmax": 50, "Ymax": 50}' for request all vectors
     #   '{"Xmin": 0, "Ymin": 0, "Xmax": 50, "Ymax": 50, uuid: "my_uuid"}' for a request only a specific vector
     #  @override cyclone.websocket.WebSocketHandler
-    def messageReceived(self, message):
-        # Keep alive connection
-        if message == "ping":
-            self.sendMessage("pong")
-            return
-
-        d = json.loads(message)
+    def post(self ):
+        d = json.loads(self.request.body)
+        print "ask for tile", d
         vectors = ProviderManager.instance().request_tile(**d)
         if not vectors:
-            self.sendMessage("{}")
+            self.write("{}")
             return
 
         for v in vectors:
             for i in range(len(v['results'])):
                 if v['results'][i]:
                     json_ = self.translator.parse(v['results'][i], v['geom'], v['hasH'], v['color'][i], v['uuid'])
-                    self.sendMessage(json_)
-
-    ## connectionLost method
-    #  Method call when the websocket is closed
-    #  @param reason to indicate the reason of the closed instance
-    #  @override cyclone.websocket.WebSocketHandler
-    def connectionLost(self, reason):
-        print "WebSocket data closed"
-
+                    self.write(json_)
 
 ## Synchronisation Handler
 #  Use to handle the synchronisation of the view
