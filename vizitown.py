@@ -30,6 +30,7 @@ from qgis.gui import *
 
 # add the current directory to the system include path
 # this way local versions of python modules are loaded insted of the system ones
+old_path = sys.path
 sys.path = [os.path.dirname(__file__)] + sys.path
 
 # Initialize Qt resources from file resources.py
@@ -39,6 +40,8 @@ import vt_as_app
 from vizitowndialog import VizitownDialog
 from vt_as_sync import SyncManager
 
+# restore original sys.path
+sys.path = old_path
 
 ## Class Vizitown
 #  This class manage the plugin in QGIS and instanciate the service
