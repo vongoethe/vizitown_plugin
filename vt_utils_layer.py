@@ -87,7 +87,7 @@ class Layer:
         \s*dbname='(?P<dbname>.*?)'
         (\s*host=(?P<host>\d+.\d+.\d+.\d+))?
         \s*port=(?P<port>\d+)
-        \s*user='(?P<user>.*?)'
+        (\s*user='(?P<user>.*?)')?
         (\s*password='(?P<password>.*?)')?
         \s*.*
         \s*table=(?P<table>\S+)\s*\((?P<column>.*?)\)""", source, re.X)
