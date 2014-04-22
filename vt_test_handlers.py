@@ -19,15 +19,18 @@
  *                                                                         *
  ***************************************************************************/
 """
-import cyclone.escape
-import cyclone.web
-import cyclone.websocket
+import sys
+import os
+sys.path.insert(0, os.path.dirname(__file__))
+from cyclone.web import RequestHandler
+from cyclone.websocket import WebSocketHandler
+sys.path.pop(0)
 
 
 ## Ping handler
 #  Basic HTTP request handler which return "pong"
 #  to a GET HTTP
-class PingHandler(cyclone.web.RequestHandler):
+class PingHandler(RequestHandler):
     def set_default_headers(self):
         self.set_header('Access-Control-Allow-Origin', '*')
         self.set_header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
@@ -41,7 +44,7 @@ class PingHandler(cyclone.web.RequestHandler):
 ## Echo handler
 #  Basic HTTP request handler which return "pong"
 #  to a GET HTTP
-class EchoHandler(cyclone.websocket.WebSocketHandler):
+class EchoHandler(WebSocketHandler):
     ## Method call when the websocket is opened
     def connectionMade(self):
         print "WebSocket opened"

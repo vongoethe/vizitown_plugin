@@ -19,12 +19,15 @@
  *                                                                         *
  ***************************************************************************/
 """
+import sys
 import os
 import json
 from multiprocessing import Queue
 
+sys.path.insert(0, os.path.dirname(__file__))
 import cyclone.websocket
 import cyclone.escape
+sys.path.pop(0)
 
 from vt_utils_converter import PostgisToJSON
 from vt_as_provider_manager import ProviderManager

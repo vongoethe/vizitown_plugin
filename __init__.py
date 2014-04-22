@@ -20,11 +20,6 @@ VizitownDialog
 ***************************************************************************/
 """
 
-import sys
-import os
-sys.path.append(os.path.dirname(__file__))
-
-
 ## classFactory load Vizitown class from file Vizitown
 def classFactory(iface):
     from vizitown import Vizitown
