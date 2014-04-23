@@ -25,8 +25,8 @@ import json
 from multiprocessing import Queue
 
 sys.path.insert(0, os.path.dirname(__file__))
-import cyclone.websocket
-import cyclone.escape
+from cyclone.websocket import WebSocketHandler
+from cyclone.web import StaticFileHandler, RequestHandler
 sys.path.pop(0)
 
 from vt_utils_converter import PostgisToJSON
@@ -39,7 +39,7 @@ from vt_utils_parameters import Parameters
 ## Class CorsStaticFileHandler
 #  A static file handler which authorize cross origin
 #  Unherited cyclone.web.StaticFileHandler
-class CorsStaticFileHandler(cyclone.web.StaticFileHandler):
+class CorsStaticFileHandler(StaticFileHandler):
 
     ## set_default_headers method
     #  Define the headers for the default handler
@@ -53,7 +53,7 @@ class CorsStaticFileHandler(cyclone.web.StaticFileHandler):
 ## Class InitHandler
 #  A handler give initial parameters to the browser
 #  Unherited cyclone.web.RequestHandler
-class InitHandler(cyclone.web.RequestHandler):
+class InitHandler(RequestHandler):
 
     ## initialize method
     #  Initialize the handler for the init parameter
@@ -80,7 +80,7 @@ class InitHandler(cyclone.web.RequestHandler):
 #  Use to handle the transmission of the data
 #  retreived from postgis to the web browser
 #  Unherited cyclone.websocket.WebSocketHandler
-class DataHandler(cyclone.websocket.WebSocketHandler):
+class DataHandler(WebSocketHandler):
 
     ## connectionMade method
     #  Method call when the websocket is opened
@@ -126,7 +126,7 @@ class DataHandler(cyclone.websocket.WebSocketHandler):
 #  Use to handle the synchronisation of the view
 #  from QGIS to the web browser
 #  Unherited cyclone.websocket.WebSocketHandler
-class SyncHandler(cyclone.websocket.WebSocketHandler):
+class SyncHandler(WebSocketHandler):
 
     ## initialize method
     #  Method to initialize the handler
@@ -170,7 +170,7 @@ class SyncHandler(cyclone.websocket.WebSocketHandler):
 #  Use to give the information related to the tiles generated
 #  when the GDAL tiling is finished
 #  Unherited cyclone.websocket.WebSocketHandler
-class TilesInfoHandler(cyclone.websocket.WebSocketHandler):
+class TilesInfoHandler(WebSocketHandler):
 
     ## initialize method
     #  Method to initialize the handler

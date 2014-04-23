@@ -24,7 +24,6 @@ import os
 from PyQt4.QtCore import *
 
 sys.path.insert(0, os.path.dirname(__file__))
-import cyclone.web
 from cyclone.bottle import run, route, unrun
 sys.path.pop(0)
 
