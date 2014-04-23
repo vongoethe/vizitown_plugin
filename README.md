@@ -80,11 +80,25 @@ In case a problem occurs, please use github issue reporting facility and add the
 Credits
 =======
 
+Contributors to this project are :
+
+- Mathieu CATTIN, IG
+- Guillaume GIMENO, IG
+- Alexandre KURTH, IG
+- Nicolas MEUNIER, IG
+- Louis POIGNANT, IG
+- Camille TJHOA, IR
+- Pierre-André LE NY, LeNy Conseil
+- Vincent PICAVET, Oslandia
+- Vincent MORA, Oslandia
+- Hugo MERCIER, Oslandia
+
+Special thanks to ESIPE, IG master, University of Marne-La-Vallée and Yves Barthelemy.
 
 License
 =======
 
-
+This plugin is distributed under the GPL licence version 2 or later.
 
 
 
