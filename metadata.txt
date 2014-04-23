@@ -26,9 +26,9 @@ email=vizitown@gmail.com
 # tags are comma separated with spaces allowed
 tags=
 
-homepage=
-tracker=
-repository=
+homepage=https://github.com/Oslandia/vizitown_plugin
+tracker=https://github.com/Oslandia/vizitown_plugin
+repository=https://github.com/Oslandia/vizitown_plugin
 icon=vt.png
 # experimental flag
 experimental=True
