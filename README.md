@@ -25,7 +25,7 @@ ViziTown is a web server running within QGIS.
 
 QGIS and the ViziTown window are used to configure and launch the server (based on [cyclone](http://cyclone.io/)).
 
-A web client (your defaut web server) is used to visualize and travel trough the 3D scene.
+A web client (your defaut web browser) is used to visualize and travel trough the 3D scene.
 
 
 Restrictions
