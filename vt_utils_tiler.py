@@ -20,6 +20,7 @@
  ***************************************************************************/
 """
 import math
+import time
 import numpy
 try:
     from osgeo import gdal
@@ -326,4 +327,4 @@ class VTTiler(object):
         # We sleep so the calling process have time to kill us
         # Killing the process prevents the system from raising an error
         # about pythonw.exe crashing
-        sleep(60000)
+        time.sleep(60000)
