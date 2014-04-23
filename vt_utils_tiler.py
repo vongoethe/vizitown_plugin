@@ -240,7 +240,8 @@ class Raster(object):
         destPath = os.path.join(baseDestPath, fileName)
         print "Destination folder:"
         print destPath
-        os.mkdir(destPath)
+        if not os.path.isdir(destPath):
+            os.makedirs(destPath)
 
         # Foreach zoom level
         for (zoom, size) in sizes.items():
