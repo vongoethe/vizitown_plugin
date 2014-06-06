@@ -181,6 +181,7 @@ class Raster(object):
         data = data.astype(numpy.uint8)
 
         driver = gdal.GetDriverByName("MEM")
+
         dem = driver.Create('', self.dataSource.RasterXSize, self.dataSource.RasterYSize, nBand, gdal.GDT_Byte)
         dem.SetProjection(self.dataSource.GetProjectionRef())
         dem.SetGeoTransform(self.dataSource.GetGeoTransform())
@@ -293,8 +294,9 @@ class VTTiler(object):
     #  @param baseDestPath the repository where the data is produce
     #  @param queue the list where the name of data is stock
     def create(self, baseDestPath, queue):
-        sys.stderr = open(os.path.join(os.path.dirname(__file__), "GDAL_Process.err"), "w")
-        sys.stdout = open(os.path.join(os.path.dirname(__file__), "GDAL_Process.out"), "w")
+        sys.stderr = open(os.path.join(os.path.dirname(__file__), "GDAL_Process.err"), "w", 0)
+        sys.stdout = open(os.path.join(os.path.dirname(__file__), "GDAL_Process.out"), "w", 0)
+
         if self.dem is not None and self.ortho is not None:
             self.ROrtho = Raster(self.ortho, self.tileSize)
             self.RDem = Raster(self.dem, self.tileSize, True)
@@ -322,11 +324,11 @@ class VTTiler(object):
             self.ROrtho.createForSizes(self.extent, sizes, baseDestPath, self.tileSize, self.zoom)
 
             queue.put([self.ROrtho.pixelSizeX()])
-        
+
         # Close log files
         sys.stderr.close()
         sys.stdout.close()
-        
+
         # GDAL's readAsArray makes python crash when the script ends
         # We sleep so the calling process have time to kill us
         # Killing the process prevents the system from raising an error
