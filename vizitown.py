@@ -38,6 +38,7 @@ import vt_as_app
 from vizitowndialog import VizitownDialog
 from vt_as_sync import SyncManager
 
+
 ## Class Vizitown
 #  This class manage the plugin in QGIS and instanciate the service
 class Vizitown:
