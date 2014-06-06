@@ -323,6 +323,10 @@ class VTTiler(object):
 
             queue.put([self.ROrtho.pixelSizeX()])
         
+        # Close log files
+        sys.stderr.close()
+        sys.stdout.close()
+        
         # GDAL's readAsArray makes python crash when the script ends
         # We sleep so the calling process have time to kill us
         # Killing the process prevents the system from raising an error
