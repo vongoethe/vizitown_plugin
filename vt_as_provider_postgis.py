@@ -322,14 +322,14 @@ class PostgisProvider:
         if db.open():
             query = QSqlQuery(db)
             st = layer._table.split('.')
-            st[0] = re.sub('"', '\'', st[0])
-            st[1] = re.sub('"', '\'', st[1])
+            schema = re.sub('"', '\'', st[0])
+            table = re.sub('"', '\'', st[1])
             getInfo = """
                 SELECT column_name, udt_name
                 FROM information_schema.columns
                 WHERE table_name = {table_} AND table_schema = {schema_}
                 ORDER BY column_name;
-            """.format(table_=st[1], schema_=st[0])
+                """.format(table_=table, schema_=schema)
             query.exec_(getInfo)
             result = {}
             while query.next():
@@ -337,4 +337,4 @@ class PostgisProvider:
             db.close()
             return result
         else:
-            raise Exception('Connection to database cannot be established')
+            raise Exception(db.lastError().text())
