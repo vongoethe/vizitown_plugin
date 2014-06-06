@@ -83,37 +83,38 @@ class Layer:
     #  @param source String information to query the database
     #  @return String with vectors informations
     def parse_vector(self, source):
-        dbname = re.match(r"dbname='(\S+)'", source)
+        print source
+        dbname = re.match(r".*dbname='(\S+)'", source)
         dbname = dbname.group(1)
 
-        host = re.match(r"host=(\S+)", source)
+        host = re.match(r".*host=(\S+)", source)
         host = host.group(1)
 
-        port = re.match(r"port=(\d+)", source)
-        port = port.group(1)
+        port = re.match(r".*port=(\d+)", source)
+        port = int(port.group(1))
 
-        user = re.match(r"user=(\S+)", source)
-        if not user.group(1):
+        user = re.match(r".*user='(\S+)'", source)
+        if not user:
             user = ""
         else:
             user = user.group(1)
 
-        password = re.match(r"password='(\S+)'", source)
-        if not password.group(1):
+        password = re.match(r".*password='(\S+)'", source)
+        if not password:
             password = ""
         else:
             password = password.group(1)
 
-        table = re.match(r"table=(\S+)\.", source)
+        table = re.match(r".*table=(\S+)", source)
         table = table.group(1)
 
-        column = re.match(r"table=\S+\.(\S+)", source)
+        column = re.match(r".*\((\S+)\)", source)
         column = column.group(1)
 
         return {
             'dbname': dbname,
             'host': host,
-            'port': int(port),
+            'port': port,
             'user': user,
             'password': password,
             'table': table,
