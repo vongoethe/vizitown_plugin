@@ -24,9 +24,11 @@ import time
 import numpy
 try:
     from osgeo import gdal
+    from osgeo.gdalconst import *
 except:
     import gdal
-from gdalconst import *
+    from gdalconst import *
+
 from multiprocessing import Queue
 import os
 import sys
