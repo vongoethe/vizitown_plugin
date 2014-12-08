@@ -98,7 +98,7 @@ class VizitownDialog(QtGui.QDialog, Ui_Vizitown):
     #  Init combobox and table layers
     def init_layers(self):
         self.reset_all_fields()
-        layerListIems = QgsMapLayerRegistry().instance().mapLayers().items()
+        layerListIems = QgsMapLayerRegistry.instance().mapLayers().items()
         for id, qgisLayer in layerListIems:
             if is_dem(qgisLayer):
                 self.cb_dem.addItem(qgisLayer.name(), qgisLayer)
